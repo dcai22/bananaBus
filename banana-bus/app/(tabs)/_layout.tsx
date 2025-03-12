@@ -1,5 +1,7 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
+import React from "react";
+import { StyleSheet } from "react-native";
 
 export default function TabLayout() {
     return (
@@ -15,6 +17,8 @@ export default function TabLayout() {
                     margin: 0,
                     padding: 0,
                     borderRadius: 0,
+                    alignItems: 'center',
+                    flexDirection: 'row',
                 },
                 tabBarLabelPosition: "below-icon",
                 tabBarLabelStyle: {
@@ -62,3 +66,9 @@ export default function TabLayout() {
         </Tabs>
     );
 }
+
+const styles = StyleSheet.create({
+    icons : {
+        color: 'black',
+    }
+});
