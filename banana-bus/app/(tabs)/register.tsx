@@ -1,19 +1,27 @@
 import { Text, View, StyleSheet, TextInput, Button } from 'react-native';
 import React, { useState } from 'react';
-import { Link } from "expo-router";
+import { useNavigation } from '@react-navigation/native'
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const navigation = useNavigation();
 
-    const handleLogin = () => {
+    const handleRegister = () => {
         console.log('Email:', email);
         console.log('Password:', password);
+        if (password !== confirmPassword) {
+            console.log('Passwords do not match');
+            return;
+        }
+        // TODO: Register user
+        navigation.navigate('index');
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>BIG BANANA</Text>
+            <Text style={styles.title}>REGISTER</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -23,16 +31,20 @@ export default function LoginScreen() {
                 autoCapitalize="none"
             />
             <TextInput
-                style={[styles.input, styles.password]}
+                style={[styles.input]}
                 placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
             />
-            <Link href="/(tabs)/register">
-                <Button title="Register" />
-            </Link>
-            <Button title="Login" onPress={handleLogin} />
+            <TextInput
+                style={[styles.input, styles.password]}
+                placeholder="Confirm Password"
+                value={password}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+            />
+            <Button title="Register" onPress={handleRegister}/>
         </View>
     );
 }
