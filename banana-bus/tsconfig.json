@@ -7,7 +7,7 @@
         "./*"
       ]
     },
-    "jsx": "react"
+    "jsx": "react",
     "esModuleInterop": true,
   },
   "include": [
