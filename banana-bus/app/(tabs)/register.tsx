@@ -1,11 +1,13 @@
 import { Text, View, StyleSheet, TextInput, Button } from 'react-native';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation } from 'expo-router';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [firstname, setFirstName] = useState('');
+    const [surname, setSurname] = useState('');
     const navigation = useNavigation();
 
     const handleRegister = () => {
@@ -22,6 +24,18 @@ export default function LoginScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>REGISTER</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="First name"
+                value={firstname}
+                onChangeText={setFirstName}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Surname"
+                value={surname}
+                onChangeText={setSurname}
+            />
             <TextInput
                 style={styles.input}
                 placeholder="Email"

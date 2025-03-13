@@ -1,14 +1,16 @@
 import { Text, View, StyleSheet, TextInput, Button } from 'react-native';
 import React, { useState } from 'react';
-import { Link } from "expo-router";
+import { Link, useNavigation } from "expo-router";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigation = useNavigation();
 
     const handleLogin = () => {
         console.log('Email:', email);
         console.log('Password:', password);
+        navigation.navigate('index');
     };
 
     return (
