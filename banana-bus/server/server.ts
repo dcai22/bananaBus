@@ -29,7 +29,9 @@ app.post('/login', (req: Request, res: Response) => {
 app.post('/register', (req: Request, res: Response) => {
     const email = req.body.email as string;
     const password = req.body.password as string;
-    res.json(authRegister(email, password));
+    const firstName = req.body.firstName as string;
+    const surname = req.body.surname as string;
+    res.json(authRegister(email, password, firstName, surname));
     return;
 })
 

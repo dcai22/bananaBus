@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, Button } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { Link, useNavigation } from "expo-router";
 
@@ -7,10 +7,32 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         console.log('Email:', email);
         console.log('Password:', password);
-        navigation.navigate('index');
+
+        try {
+            const response = await fetch('http://localhost:3000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            }); 
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Login successful, uid: ${data.userId}, token: ${data.token}`);
+                // TODO: Save token/uid to secure storage
+                navigation.navigate('index');
+            } else {
+                const errorData = await response.json();
+                Alert.alert('Error', errorData.message || 'Login failed');
+            }
+        } catch(error) {
+            Alert.alert('Error', 'An error occurred. Please try again.');
+        }
+
     };
 
     return (
