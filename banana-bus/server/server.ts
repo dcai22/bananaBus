@@ -19,10 +19,16 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Hello world');
 });
 
-// Login route
 app.post('/login', (req: Request, res: Response) => {
     const email = req.body.email as string;
     const password = req.body.password as string;
     res.json(authLogin(email, password));
     return;
 });
+
+app.post('/register', (req: Request, res: Response) => {
+    const email = req.body.email as string;
+    const password = req.body.password as string;
+    res.json(authRegister(email, password));
+    return;
+})
