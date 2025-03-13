@@ -51,3 +51,33 @@ export function authLogin(email: string, password: string) {
     }
     throw HTTPError(400, 'email not found');
 }
+
+export function authAutoLogin(token: string) {
+    const data = getData();
+    for (const user of data.users) {
+        for (const userToken of user.tokens) {
+            if (compareHash(token, userToken)) {
+                return {
+                    userId: user.userId,
+                    token: token
+                }
+            }
+        }
+    }
+    throw HTTPError(400, 'invalid token');
+}
+
+export function authLogout(userId: number, token: string) {
+    const data = getData();
+    for (const user of data.users) {
+        if (user.userId === userId) {
+            for (const index in user.tokens) {
+                if (compareHash(token, user.tokens[index])) {
+                    user.tokens.splice(parseInt(index), 1);
+                    setData(data);
+                    return;
+                }
+            }
+        }
+    }
+}
