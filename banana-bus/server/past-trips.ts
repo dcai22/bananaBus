@@ -1,5 +1,6 @@
 import HTTPError from "http-errors";
-import { trip } from "./interface"
+import { trip } from "./interface";
+import { getData } from "./dataStore";
 
 function tripsBinarySearch(trips: trip[], tripId: number): trip {
     let left: number = 0;
