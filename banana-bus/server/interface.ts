@@ -24,6 +24,6 @@ export interface trip {
     tripId: number,
     vehicleId: number,
     price: number,
-    departure_time: string,
-    arrival_time: string,
+    departure_time: string, // ISO String
+    arrival_time: string,   // ISO String
 }
