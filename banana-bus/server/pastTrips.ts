@@ -25,7 +25,7 @@ export function pastTrips(userId: number, numTrips?: number) {
             continue;
         }
 
-        numTrips = typeof numTrips === 'undefined' ? user.trips.length : numTrips;
+        numTrips = typeof numTrips === 'undefined' ? user.trips.length : Math.min(numTrips, user.trips.length);
         const reverseTripIds = user.trips.reverse().slice(0, numTrips);
         
         // O(m * log(n)), where m = user.trips.length, n = data.trips.length.
@@ -35,7 +35,7 @@ export function pastTrips(userId: number, numTrips?: number) {
         reverseTripIds.forEach((tripId: number) => {
             displayTrips.push(tripsBinarySearch(data.trips, tripId));
         })
-        return displayTrips;
+        return { trips: displayTrips };
     }
     
     // userId does not exist

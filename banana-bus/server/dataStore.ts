@@ -1,5 +1,5 @@
 import { dataStore } from "./interface";
-import fs from 'fs'
+import fs from 'fs';
 
 let data: dataStore = {
     users: [],
