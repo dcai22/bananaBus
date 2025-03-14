@@ -1,6 +1,7 @@
 import { Text, View, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from 'expo-router';
+import { saveItem } from '../helper';
 
 export default function RegisterScreen() {
     const [email, setEmail] = useState('');
@@ -32,7 +33,9 @@ export default function RegisterScreen() {
             if (response.ok) {
                 const data = await response.json();
                 console.log(`Registration successful, uid: ${data.userId}, token: ${data.token}`);
-                // TODO: Save token/uid to secure storage
+                // This only works on mobile
+                saveItem('uid', data.userId);
+                saveItem('token', data.token);
                 navigation.navigate('index');
             } else {
                 const errorData = await response.json();

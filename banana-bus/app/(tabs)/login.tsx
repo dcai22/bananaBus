@@ -2,6 +2,8 @@ import { Text, View, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { Link, useNavigation } from "expo-router";
 
+import { saveItem } from '../helper';
+
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -23,7 +25,9 @@ export default function LoginScreen() {
             if (response.ok) {
                 const data = await response.json();
                 console.log(`Login successful, uid: ${data.userId}, token: ${data.token}`);
-                // TODO: Save token/uid to secure storage
+                // This only works on mobile
+                saveItem('uid', data.userId);
+                saveItem('token', data.token);
                 navigation.navigate('index');
             } else {
                 const errorData = await response.json();
