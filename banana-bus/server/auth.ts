@@ -29,7 +29,7 @@ export function authRegister(email: string, password: string) {
     });
 
     setData(data);
-    return;
+    return {};
 }
 
 export function authLogin(email: string, password: string) {
@@ -76,7 +76,7 @@ export function authLogout(userId: number, token: string) {
                 if (compareHash(token, user.tokens[index])) {
                     user.tokens.splice(parseInt(index), 1);
                     setData(data);
-                    return;
+                    return {};
                 }
             }
         }
