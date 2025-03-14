@@ -25,7 +25,7 @@ export function authRegister(email: string, password: string) {
         password: hashedPassword,
         tokens: [],
         userId,
-        trips: [],
+        bookings: [],
     });
 
     setData(data);

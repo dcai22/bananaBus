@@ -4,6 +4,7 @@ import fs from 'fs';
 let data: dataStore = {
     users: [],
     trips: [],
+    bookings: [],
 }
 
 export function getData() {
