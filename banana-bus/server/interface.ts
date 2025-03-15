@@ -32,20 +32,14 @@ export interface trip {
     vehicleId: number,
     routeId: number,
     bookings: number[],
-    stopTimes: string[],                // array of ISO String
-
-    // price: number,
-    // departure_time: string,             // ISO String
-    // arrival_time: string,               // ISO String
-    // origin: number,                     // stopId
-    // destination: number,                // stopId
+    stopTimes: string[],					// array of ISO String
 }
 
 export interface booking {
     bookingId: number,
     userId: number,
     tripId: number,
-    bookingTime: string,                    // ISO String
+    bookingTime: string,					// ISO String
     origin: number,
     dest: number,
 }
