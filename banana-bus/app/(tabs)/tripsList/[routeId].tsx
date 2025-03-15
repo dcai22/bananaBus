@@ -1,10 +1,11 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, StyleSheet, TouchableHighlight } from "react-native";
-
+import { format } from "date-fns"
 // TODO: fix up stack/tabs so router back works properly
 
 // sample routes
+// TODO: redo data storage
 const currentTime = new Date()
 const routes = [{
     routeId: 1,
@@ -28,7 +29,8 @@ const routes = [{
         }
     ]
 }]
-const date = new Date
+
+
 export default function tripsList() {
 
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
@@ -42,10 +44,9 @@ export default function tripsList() {
     ///////////////////////////////////////////////////////////
 
     // TODO: make more responsive to screen size and create stylesheets
-    // TODO: replace schedule box with function goes through all trips
     
     // simulate trips data with 30 min interval 
-    for (let i= 1; i < 5; i++) {
+    for (let i= 1; i < 10; i++) {
         route?.trips.push({
             id: 123,
             vehicleId: 1,
@@ -55,40 +56,102 @@ export default function tripsList() {
         })
     }
 
-    // TODO: backend get trips (maybe also filter out dates to be for one day or change how data stored)
-    // TODO: function to sort trip times and to filter ones that have already left
-
-    // TODO: display date nicely
     // TODO: add refresh
 
+    // TODO: make proper function to format the time till depart
+    // i.e 30min, 1hr, 1 day, etc 
+    // also need ago for past trips
+    function timeTillDepart(departureTime: Date) {
+        
+    }
+
+    // move to a component (to be reused in booking page/ past trips)
     function tripBox(trip) {
-        // TODO: make it look nice
+        // TODO: get actual numbers from backend
+        const vehicleCur = 14 // needs to be calculated depending on bookings
+        const vehicleMax = 16 // should store in vehicle and get vehicle from id
         return(
             <View
             style = {{
-                backgroundColor: "lightgrey",
-                margin: 5,
+                backgroundColor: "white",
+                marginBottom: 15,
+                boxShadow: "0px 2px 5px -2px grey",
+                borderRadius: 10,     
+                flexDirection: "row",
+                height: 75,
              }}
             >
-                <Text>{(trip.departureTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60)}hrs</Text>
-                <Text>{trip.departureTime.getHours()}:{trip.departureTime.getMinutes()}</Text>
-                <Text>{trip.arrivalTime.getHours()}:{trip.arrivalTime.getMinutes()}</Text>
+                <View
+                    style = {{
+                        backgroundColor: "#266ce5",
+                        padding: 10,
+                        borderTopLeftRadius: 10,
+                        borderBottomLeftRadius: 10,
+                        width: 75,
+                        justifyContent: "center",
+                    }}
+                >
+                    {/* to be replaced with function time till depart*/}
+                    <Text
+                        style = {{
+                            color: "white",
+                            textAlign: "center",
+                            fontSize: 17,
+                        }}
+                    >{(trip.departureTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60)}hrs</Text>
+                </View>
+                <View
+                    style = {{
+                        flex: 1,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        padding: 10
+                    }}
+                >
+                    <View style = {{justifyContent: 'space-between'}}>
+                        <Text style = {{fontWeight: "200", fontSize: 12}}>Bus Stand</Text>
+                        <Text style = {{fontWeight: "bold"}}>{format(trip.departureTime, "kk:mm")}</Text>
+                        <View style = {{flexDirection: "row"}}>
+                            {/* need to calc whether bus is late */}
+                            <FontAwesome name="square" style= {{color: "green", padding: 2}}></FontAwesome>
+                            <Text style = {{fontWeight: "200", fontSize: 12, paddingLeft: 3}}>On Time</Text>
+                        </View>
+                    </View>
+                    <View style = {{justifyContent: 'space-between'}}>
+                        <Text style = {{textAlign: "right", fontWeight: "200", fontSize: 12}}>{trip.price}RM</Text>
+                        <Text style = {{textAlign: "right", fontWeight: "bold"}}>{format(trip.arrivalTime, "kk:mm")}</Text>
+                        <View style = {{flexDirection: "row"}}>
+                            {/* calc disabled space */}
+                            <FontAwesome name="wheelchair" style = {{fontSize: 10, margin: 2, paddingRight: 2}}></FontAwesome>
+                            <View style = {{ flexDirection: "row", padding: 2}}>
+                                {/* calc luggage space */}
+                                <FontAwesome name="suitcase" style = {{fontSize: 10, margin: 1}}></FontAwesome>
+                                <FontAwesome name="suitcase" style = {{fontSize: 10, margin: 1}}></FontAwesome>
+                                <FontAwesome name="suitcase" style = {{fontSize: 10, margin: 1}}></FontAwesome>
+                            </View>
+                            <Text style = {{fontWeight: "200", fontSize: 12, paddingLeft: 3}}>{vehicleCur}/{vehicleMax}</Text>
+                        </View>
+                    </View>
+                </View>
             </View>
         ) 
             
-    }    
+    }
+    
+    
     return (
         <View
             style={{
-                display: "flex",
                 height: "100%",
-                backgroundColor: "lightblue"
+                backgroundColor: "lightblue",
+                overflowY: "scroll"
             }}
         >
             <View style= {{
                 backgroundColor: "white",
                 height: "20%",
-                padding: 15,
+                padding: 20,
+                boxShadow: "0px 0px 5px grey"
             }}>
                 <TouchableHighlight
                     style={{
@@ -98,7 +161,6 @@ export default function tripsList() {
                 >
                     <View
                         style={{
-                            display: "flex",
                             flexDirection: "row",
                         }}
                     >
@@ -121,7 +183,6 @@ export default function tripsList() {
                 </TouchableHighlight>
                 <View
                     style = {{
-                        display: "flex",
                         justifyContent: "center",
                         height: "80%" 
                     }}
@@ -134,7 +195,6 @@ export default function tripsList() {
                     >{departName}</Text>
                     <View
                         style={{
-                            display: "flex",
                             flexDirection: "row",
                         }}
                     >
@@ -157,10 +217,16 @@ export default function tripsList() {
                     margin: 20,
                 }}
             >   
-            <Text>{currentTime.getDate()}/{currentTime.getMonth()}/{currentTime.getFullYear()}</Text>
-                
-                <View
-                >
+            <Text
+                style = {{
+                    fontWeight: "bold",
+                    fontSize: 20,
+                    paddingBottom: 20,
+                    paddingLeft: 10,
+                }}
+            
+            >{format(currentTime, "E, do LLL y")}</Text>
+                <View>
                     {route.trips.map(t => tripBox(t))}
                 </View>
             </View>
