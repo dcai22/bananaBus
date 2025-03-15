@@ -12,30 +12,62 @@ beforeEach(() => {
 })
 
 describe("GET /pastBookings", () => {
-    const booking0: booking = {
+    const booking00: booking = {
         bookingId: 0,
-        bookingTimes: [[0, new Date(0).toISOString()]],
-        routeId: 0,
+        userId: 0,
+        tripId: 0,
+        bookingTime: new Date(0).toISOString(),
+        origin: 0,
+        dest: 1,
     };
-    const booking1: booking = {
+    const booking01: booking = {
         bookingId: 1,
-        bookingTimes: [[0, new Date(1).toISOString()]],
-        routeId: 1,
+        userId: 0,
+        tripId: 0,
+        bookingTime: new Date(1).toISOString(),
+        origin: 0,
+        dest: 1,
     };
-    const booking2: booking = {
+    const booking02: booking = {
         bookingId: 2,
-        bookingTimes: [[0, new Date(2).toISOString()]],
-        routeId: 2,
+        userId: 0,
+        tripId: 0,
+        bookingTime: new Date(2).toISOString(),
+        origin: 0,
+        dest: 1,
     };
-    const booking3: booking = {
+    const booking03: booking = {
         bookingId: 3,
-        bookingTimes: [[0, new Date(3).toISOString()]],
-        routeId: 3,
+        userId: 0,
+        tripId: 0,
+        bookingTime: new Date(3).toISOString(),
+        origin: 0,
+        dest: 1,
     };
-    const booking4: booking = {
+    const booking04: booking = {
         bookingId: 4,
-        bookingTimes: [[0, new Date(4).toISOString()]],
-        routeId: 4,
+        userId: 0,
+        tripId: 0,
+        bookingTime: new Date(4).toISOString(),
+        origin: 0,
+        dest: 1,
+    };
+
+    const booking10: booking = {
+        bookingId: 5,
+        userId: 1,
+        tripId: 0,
+        bookingTime: new Date(0).toISOString(),
+        origin: 0,
+        dest: 1,
+    };
+    const booking11: booking = {
+        bookingId: 6,
+        userId: 1,
+        tripId: 0,
+        bookingTime: new Date(1).toISOString(),
+        origin: 0,
+        dest: 1,
     };
 
     test("No bookings", async () => {
@@ -60,7 +92,7 @@ describe("GET /pastBookings", () => {
     });
 
     test("2 total bookings, 2 user bookings", async () => {
-        const expected = [ booking1, booking0 ];
+        const expected = [ booking01, booking00 ];
         setData({
             users: [{
                 email: 'email',
@@ -70,7 +102,7 @@ describe("GET /pastBookings", () => {
                 bookings: [ 0, 1 ],
             }],
             trips: [],
-            bookings: [ booking0, booking1 ],
+            bookings: [ booking00, booking01 ],
         });
 
         const response = await request(app)
@@ -83,7 +115,7 @@ describe("GET /pastBookings", () => {
     });
 
     test("2 total bookings, 2 user bookings, display 1", async () => {
-        const expected = [ booking1 ];
+        const expected = [ booking01 ];
         setData({
             users: [{
                 email: 'email',
@@ -93,7 +125,7 @@ describe("GET /pastBookings", () => {
                 bookings: [ 0, 1 ],
             }],
             trips: [],
-            bookings: [ booking0, booking1 ],
+            bookings: [ booking00, booking01 ],
         });
 
         const response = await request(app)
@@ -106,7 +138,7 @@ describe("GET /pastBookings", () => {
     });
 
     test("2 total bookings, 1 user booking", async () => {
-        const expected = [ booking0 ];
+        const expected = [ booking00 ];
         setData({
             users: [{
                 email: 'email',
@@ -116,7 +148,7 @@ describe("GET /pastBookings", () => {
                 bookings: [ 0 ],
             }],
             trips: [],
-            bookings: [ booking0, booking1 ],
+            bookings: [ booking00, booking10 ],
         });
 
         const response = await request(app)
@@ -129,7 +161,7 @@ describe("GET /pastBookings", () => {
     });
 
     test("2 total bookings, 2 user bookings, display 3", async () => {
-        const expected = [ booking1, booking0 ];
+        const expected = [ booking01, booking00 ];
         setData({
             users: [{
                 email: 'email',
@@ -139,7 +171,7 @@ describe("GET /pastBookings", () => {
                 bookings: [ 0, 1 ],
             }],
             trips: [],
-            bookings: [ booking0, booking1 ],
+            bookings: [ booking00, booking01 ],
         });
 
         const response = await request(app)
@@ -152,7 +184,7 @@ describe("GET /pastBookings", () => {
     });
 
     test("5 total bookings, 3 user bookings", async () => {
-        const expected = [ booking3, booking2, booking0 ];
+        const expected = [ booking03, booking02, booking00 ];
         setData({
             users: [{
                 email: 'email',
@@ -162,7 +194,7 @@ describe("GET /pastBookings", () => {
                 bookings: [ 0, 2, 3 ],
             }],
             trips: [],
-            bookings: [ booking0, booking1, booking2, booking3, booking4 ],
+            bookings: [ booking00, booking10, booking02, booking03, booking11 ],
         });
 
         const response = await request(app)

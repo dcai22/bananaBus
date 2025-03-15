@@ -21,18 +21,31 @@ export interface authUserId {
     token: string,
 }
 
+export interface route {
+    routeId: number,
+    stops: number[],
+    trips: number[],
+}
+
 export interface trip {
     tripId: number,
     vehicleId: number,
-    price: number,
-    departure_time: string,             // ISO String
-    arrival_time: string,               // ISO String
-    origin: number,                     // stopId
-    destination: number,                // stopId
+    routeId: number,
+    bookings: number[],
+    stopTimes: string[],                // array of ISO String
+
+    // price: number,
+    // departure_time: string,             // ISO String
+    // arrival_time: string,               // ISO String
+    // origin: number,                     // stopId
+    // destination: number,                // stopId
 }
 
 export interface booking {
     bookingId: number,
-    bookingTimes: [number, string][],   // array of [userId: number, time: ISO String]
-    routeId: number,
+    userId: number,
+    tripId: number,
+    bookingTime: string,                    // ISO String
+    origin: number,
+    dest: number,
 }
