@@ -1,6 +1,8 @@
 import { Text, View, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from 'expo-router';
+import * as Device from 'expo-device';
+
 import { saveItem } from '../helper';
 
 export default function RegisterScreen() {
@@ -33,9 +35,15 @@ export default function RegisterScreen() {
             if (response.ok) {
                 const data = await response.json();
                 console.log(`Registration successful, uid: ${data.userId}, token: ${data.token}`);
-                // This only works on mobile
-                saveItem('uid', data.userId);
-                saveItem('token', data.token);
+                if (Device.deviceType === Device.DeviceType.PHONE) {
+                    // This only works on mobile
+                    saveItem('uid', data.userId);
+                    saveItem('token', data.token);
+                } else {
+                    // Save to local storage on web for testing purposes
+                    localStorage.setItem('uid', data.userId);
+                    localStorage.setItem('token', data.token);
+                }
                 navigation.navigate('index');
             } else {
                 const errorData = await response.json();
