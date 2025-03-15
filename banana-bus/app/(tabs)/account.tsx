@@ -36,22 +36,22 @@ export default function Account() {
                 </View>
                 <View style={styles.menuContainer}>
                     {/* TODO do these pages */}
-                    <MenuItem title="Payment" icon="💳" onPress={() => navigation.navigate('Payment')} />
-                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => navigation.navigate('PastBookings')} />
-                    <MenuItem title="Support" icon="📞" onPress={() => navigation.navigate('Support')} />
+                    <MenuItem title="Payment" icon="💳" onPress={() => navigation.navigate('payment')} />
+                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => navigation.navigate('pastBookings')} />
+                    <MenuItem title="Support" icon="📞" onPress={() => navigation.navigate('support')} />
                     { isAdmin && (
-                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => navigation.navigate('AdminPanel')} />
+                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => navigation.navigate('adminPanel')} />
                     )}
-                    <MenuItem title="Settings" icon="⚙️" onPress={() => navigation.navigate('Settings')} />
+                    <MenuItem title="Settings" icon="⚙️" onPress={() => navigation.navigate('settings')} />
                 </View>
             </View>
         </View>
     );
 }
 
-function MenuItem({ title, icon }) {
+function MenuItem({ title, icon, onPress }) {
     return (
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={onPress}>
             <Text style={styles.menuItemText}>{icon} {title}</Text>
         </TouchableOpacity>
     );
