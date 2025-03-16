@@ -4,7 +4,7 @@ import { getData, setData } from "./dataStore";
 import { getHash, compareHash } from "./helper";
 import crypto from "crypto";
 
-export function authRegister(email: string, password: string, firstName: string, surname: string) {
+export function authRegister(email: string, password: string, firstName: string, lastName: string) {
     const data = getData();
 
     for (const index in data.users) {
@@ -24,7 +24,7 @@ export function authRegister(email: string, password: string, firstName: string,
 
     data.users.push({
         firstName,
-        surname,
+        lastName,
         email,
         password: hashedPassword,
         tokens: [hashedToken],

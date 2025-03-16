@@ -4,7 +4,7 @@ export interface error {
 
 export interface user {
     firstName: string,
-    surname: string,
+    lastName: string,
     email: string,
     password: string,
     tokens: string[],
