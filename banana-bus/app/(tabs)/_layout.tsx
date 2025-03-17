@@ -64,7 +64,7 @@ export default function TabLayout() {
                 }}
             />
              <Tabs.Screen
-                name="tripsList/[routeId]"
+                name="tripsList"
                 options={{
                     href: null,
                 }}
