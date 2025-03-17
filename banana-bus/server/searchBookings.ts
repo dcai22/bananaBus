@@ -18,7 +18,10 @@ function bookingsBinarySearch(bookings: booking[], bookingId: number): booking {
     throw HTTPError(400, 'booking not found');
 }
 
-// timeFrame: 'past', 'upcoming', 'ongoing', 'all'
+// timeFrame: 'past', 'upcoming', 'ongoing', 'all'.
+// Past bookings have already arrived at their destination,
+// upcoming bookings are yet to depart from their origin,
+// and so on.
 export function searchBookings(userId: number, timeFrame: string, numBookings: number) {
     const data = getData();
 
