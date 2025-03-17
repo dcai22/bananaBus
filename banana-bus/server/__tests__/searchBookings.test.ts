@@ -1,6 +1,6 @@
 import express, { json, Request, Response } from 'express';
 import { setData } from "../dataStore";
-import { booking } from "../interface";
+import { booking, trip, route } from "../interface";
 
 const request = require("supertest");
 const app = require("../app");
@@ -8,7 +8,7 @@ const app = require("../app");
 const newDb = { users: [{ email: 'email', password: 'password', tokens: [], userId: 0, bookings: [] }], bookings: [] };
 
 beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [] });
+    setData({ users: [], trips: [], bookings: [], routes: [] });
 })
 
 describe("GET /pastBookings", () => {
@@ -70,6 +70,20 @@ describe("GET /pastBookings", () => {
         dest: 1,
     };
 
+    const trip0: trip = {
+        tripId: 0,
+        vehicleId: 0,
+        routeId: 0,
+        bookings: [0, 1, 2, 3, 4, 5, 6],
+        stopTimes: [new Date(0).toISOString(), new Date(1).toISOString()],
+    };
+
+    const route0: route = {
+        routeId: 0,
+        stops: [0, 1],
+        trips: [0, 1],
+    };
+
     test("No bookings", async () => {
         setData({
             users: [{
@@ -79,8 +93,9 @@ describe("GET /pastBookings", () => {
                 userId: 0,
                 bookings: []
             }],
-            trips: [],
+            trips: [ trip0 ],
             bookings: [],
+            routes: [ route0 ],
         });
         const response = await request(app)
             .get("/pastBookings")
@@ -88,7 +103,7 @@ describe("GET /pastBookings", () => {
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
-        expect(response.body.bookings).toStrictEqual([]);
+        expect(response.body.userBookings).toStrictEqual([]);
     });
 
     test("2 total bookings, 2 user bookings", async () => {
@@ -101,8 +116,9 @@ describe("GET /pastBookings", () => {
                 userId: 0,
                 bookings: [ 0, 1 ],
             }],
-            trips: [],
+            trips: [ trip0 ],
             bookings: [ booking00, booking01 ],
+            routes: [ route0 ],
         });
 
         const response = await request(app)
@@ -111,7 +127,7 @@ describe("GET /pastBookings", () => {
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
-        expect(response.body.bookings).toEqual(expected);
+        expect(response.body.userBookings).toEqual(expected);
     });
 
     test("2 total bookings, 2 user bookings, display 1", async () => {
@@ -124,8 +140,9 @@ describe("GET /pastBookings", () => {
                 userId: 0,
                 bookings: [ 0, 1 ],
             }],
-            trips: [],
+            trips: [ trip0 ],
             bookings: [ booking00, booking01 ],
+            routes: [ route0 ],
         });
 
         const response = await request(app)
@@ -134,7 +151,7 @@ describe("GET /pastBookings", () => {
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
-        expect(response.body.bookings).toEqual(expected);
+        expect(response.body.userBookings).toEqual(expected);
     });
 
     test("2 total bookings, 1 user booking", async () => {
@@ -147,8 +164,9 @@ describe("GET /pastBookings", () => {
                 userId: 0,
                 bookings: [ 0 ],
             }],
-            trips: [],
+            trips: [ trip0 ],
             bookings: [ booking00, booking10 ],
+            routes: [ route0 ],
         });
 
         const response = await request(app)
@@ -157,7 +175,7 @@ describe("GET /pastBookings", () => {
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
-        expect(response.body.bookings).toEqual(expected);
+        expect(response.body.userBookings).toEqual(expected);
     });
 
     test("2 total bookings, 2 user bookings, display 3", async () => {
@@ -170,8 +188,9 @@ describe("GET /pastBookings", () => {
                 userId: 0,
                 bookings: [ 0, 1 ],
             }],
-            trips: [],
+            trips: [ trip0 ],
             bookings: [ booking00, booking01 ],
+            routes: [ route0 ],
         });
 
         const response = await request(app)
@@ -180,7 +199,7 @@ describe("GET /pastBookings", () => {
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
-        expect(response.body.bookings).toEqual(expected);
+        expect(response.body.userBookings).toEqual(expected);
     });
 
     test("5 total bookings, 3 user bookings", async () => {
@@ -193,8 +212,9 @@ describe("GET /pastBookings", () => {
                 userId: 0,
                 bookings: [ 0, 2, 3 ],
             }],
-            trips: [],
+            trips: [ trip0 ],
             bookings: [ booking00, booking10, booking02, booking03, booking11 ],
+            routes: [ route0 ],
         });
 
         const response = await request(app)
@@ -203,6 +223,6 @@ describe("GET /pastBookings", () => {
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
-        expect(response.body.bookings).toEqual(expected);
+        expect(response.body.userBookings).toEqual(expected);
     });
 });

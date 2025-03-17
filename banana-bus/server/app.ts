@@ -2,7 +2,7 @@ import express, { json, Request, Response } from 'express';
 import cors from 'cors';
 
 import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
-import { pastBookings } from './pastBookings';
+import { searchBookings } from './searchBookings';
 
 const app = express();
 
@@ -46,6 +46,13 @@ app.post('/logout', (req: Request, res: Response) => {
 app.get('/pastBookings', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
     const numBookings = req.body.numBookings as number;
-    res.json(pastBookings(userId, numBookings));
+    res.json(searchBookings(userId, 'past', numBookings));
+    return;
+})
+
+app.get('/upcomingBookings', (req: Request, res: Response) => {
+    const userId = req.body.userId as number;
+    const numBookings = req.body.numBookings as number;
+    res.json(searchBookings(userId, 'upcoming', numBookings));
     return;
 })
