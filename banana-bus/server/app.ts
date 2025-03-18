@@ -1,8 +1,10 @@
 import express, { json, Request, Response } from 'express';
 import cors from 'cors';
+import errorHandler from "middleware-http-errors"
 
 import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
 import { pastBookings } from './pastBookings';
+import { tripsList } from './tripsList';
 
 const app = express();
 
@@ -49,3 +51,18 @@ app.get('/pastBookings', (req: Request, res: Response) => {
     res.json(pastBookings(userId, numBookings));
     return;
 })
+
+app.get('/tripsList', (req: Request, res: Response, next) => {
+    try {
+        const routeId = parseInt(req.query.routeId as string);
+        const departId = parseInt(req.query.departId as string); 
+        const arriveId = parseInt(req.query.arriveId as string);
+        const date = req.query.date as string;
+    
+        res.json(tripsList(routeId, departId, arriveId, date));
+    } catch (err) {
+        next(err)
+    }
+})
+
+app.use(errorHandler())

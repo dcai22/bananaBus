@@ -1,3 +1,4 @@
+import { tripBox, tripList } from "@/server/interface";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format, formatDistance } from "date-fns";
 import { useLocalSearchParams, router } from "expo-router";
@@ -17,12 +18,8 @@ function timeTillDepart(departureTime: Date) {
     return text
 } 
 
-// move to a component (to be reused in booking page/ past trips)
-export default function TripListBox(trip) {
-    // TODO: get actual numbers from backend
-    const vehicleCur = 14 // needs to be calculated depending on bookings
-    const vehicleMax = 16 // should store in vehicle and get vehicle from id
-
+// (to be reused in booking page/ past trips)
+export default function TripListBox(trip: tripBox) {
     const nowToDepart = timeTillDepart(trip.departureTime)
 
     return(
@@ -53,7 +50,7 @@ export default function TripListBox(trip) {
                             <FontAwesome name="suitcase" style = {styles.luggage2}></FontAwesome>
                             <FontAwesome name="suitcase" style = {styles.luggage3}></FontAwesome>
                         </View>
-                        <Text style = {styles.personCapacity}>{vehicleCur}/{vehicleMax}</Text>
+                        <Text style = {styles.personCapacity}>{trip.curCapacity}/{trip.maxCapacity}</Text>
                     </View>
                 </View>
             </View>

@@ -14,6 +14,7 @@ export interface dataStore {
     users: user[],
     trips: trip[],
     bookings: booking[],
+    routes: route[]
 }
 
 export interface authUserId {
@@ -23,8 +24,13 @@ export interface authUserId {
 
 export interface route {
     routeId: number,
-    stops: number[],
+    stops: stop[],
     trips: number[],
+}
+
+export interface stop {
+    stopId: number,
+    name: string,
 }
 
 export interface trip {
@@ -35,6 +41,19 @@ export interface trip {
     stopTimes: string[],					// array of ISO String
 }
 
+export interface tripList {
+    departName: string,
+    arriveName: string,
+    trips: tripBox[],
+}
+
+export interface tripBox {
+    departureTime: Date,
+    arrivalTime: Date,
+    price: number,
+    curCapacity: number, 
+    maxCapacity: number,
+}
 export interface booking {
     bookingId: number,
     userId: number,
