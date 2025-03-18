@@ -1,5 +1,6 @@
 import HTTPError from "http-errors";
 import { getData } from "./dataStore";
+import { getRouteById } from "./helper";
 
 export function saveRoute(userId: number, routeId: number) {
     const data = getData();
@@ -44,7 +45,7 @@ export function unsaveRoute(userId: number, routeId: number) {
             throw HTTPError(400, 'route was not saved')
         }
 
-        user.savedRoutes.filter((savedRouteId) => {
+        user.savedRoutes = user.savedRoutes.filter((savedRouteId) => {
             savedRouteId !== routeId;
         });
     }
@@ -61,7 +62,7 @@ export function getSavedRoutes(userId: number) {
             continue;
         }
 
-        return { savedRoutes: user.savedRoutes };
+        return { savedRoutes: user.savedRoutes.map((savedRouteId) => { return getRouteById(savedRouteId); }) };
     }
 
     // userId does not exist
