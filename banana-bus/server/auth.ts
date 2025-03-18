@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { authUserId, dataStore, error } from "./interface";
+import { AuthUserId, DataStore, Error } from "./interface";
 import { getData, setData } from "./dataStore";
 import { getHash, compareHash } from "./helper";
 import crypto from "crypto";

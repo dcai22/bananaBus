@@ -1,7 +1,7 @@
-import { dataStore } from "./interface";
+import { DataStore } from "./interface";
 import fs from 'fs';
 
-let data: dataStore = {
+let data: DataStore = {
     users: [],
     trips: [],
     bookings: [],
@@ -12,7 +12,7 @@ export function getData() {
     return data;
 }
 
-export function setData(newData: dataStore) {
+export function setData(newData: DataStore) {
     data = newData;
     const dataOut = JSON.stringify(newData, null, 2);
     fs.writeFileSync('./data.json', dataOut, { flag: 'w' }); // for testing

@@ -1,9 +1,9 @@
 import HTTPError from "http-errors";
-import { booking } from "./interface";
+import { Booking } from "./interface";
 import { getData } from "./dataStore";
 import { getTripById, getRouteById } from "./helper";
 
-function bookingsBinarySearch(bookings: booking[], bookingId: number): booking {
+function bookingsBinarySearch(bookings: Booking[], bookingId: number): Booking {
     let left: number = 0;
     let right: number = bookings.length - 1;
 
@@ -35,7 +35,7 @@ export function searchBookings(userId: number, timeFrame: string, numBookings: n
         // O(m * log(n)), where m = user.bookings.length, n = data.bookings.length.
         // It assumes data.bookings is listed in ascending bookingId.
         // An O(n) algorithm is possible, but we expect n >> m.
-        let userBookings: booking[] = [];
+        let userBookings: Booking[] = [];
         reverseBookingIds.forEach((bookingId: number) => {
             userBookings.push(bookingsBinarySearch(data.bookings, bookingId));
         });
