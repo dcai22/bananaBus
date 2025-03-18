@@ -1,24 +1,57 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, ImageBackground } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from 'expo-router';
+import * as Device from 'expo-device';
 
-export default function LoginScreen() {
+import { saveItem } from '../helper';
+
+export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [firstname, setFirstName] = useState('');
+    const [firstName, setFirstName] = useState('');
     const [surname, setSurname] = useState('');
     const navigation = useNavigation();
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         console.log('Email:', email);
         console.log('Password:', password);
         if (password !== confirmPassword) {
             console.log('Passwords do not match');
             return;
         }
-        // TODO: Register user
-        navigation.navigate('index');
+
+        // Register user
+
+        try {
+            const response = await fetch('http://localhost:3000/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password, firstName, surname }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Registration successful, uid: ${data.userId}, token: ${data.token}`);
+                if (Device.deviceType === Device.DeviceType.PHONE) {
+                    // This only works on mobile
+                    saveItem('uid', data.userId);
+                    saveItem('token', data.token);
+                } else {
+                    // Save to local storage on web for testing purposes
+                    localStorage.setItem('uid', data.userId);
+                    localStorage.setItem('token', data.token);
+                }
+                navigation.navigate('index');
+            } else {
+                const errorData = await response.json();
+                Alert.alert('Error', errorData.message || 'Registration failed');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'An error occurred. Please try again.');
+        }
     };
 
     return (
@@ -36,7 +69,7 @@ export default function LoginScreen() {
                     <TextInput
                         style={styles.input}
                         placeholder="first name"
-                        value={firstname}
+                        value={firstName}
                         onChangeText={setFirstName}
                     />
                     <TextInput
@@ -61,7 +94,7 @@ export default function LoginScreen() {
                         secureTextEntry
                     />
                     <TextInput
-                        style={[styles.input, styles.password]}
+                        style={styles.input}
                         placeholder="confirm password"
                         value={password}
                         onChangeText={setConfirmPassword}

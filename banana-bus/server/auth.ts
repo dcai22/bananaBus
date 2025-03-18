@@ -1,0 +1,92 @@
+import HTTPError from "http-errors";
+import { authUserId, dataStore, error } from "./interface";
+import { getData, setData } from "./dataStore";
+import { getHash, compareHash } from "./helper";
+import crypto from "crypto";
+
+export function authRegister(email: string, password: string, firstName: string, lastName: string) {
+    const data = getData();
+
+    for (const index in data.users) {
+        if (email === data.users[index].email) {
+            throw HTTPError(400, 'email address already in use');
+        }
+    }
+
+    const hashedPassword = getHash(password);
+    
+    let userId = 0;
+    if (data.users.length !== 0) {
+        userId = data.users[data.users.length - 1].userId + 1;
+    }
+    const token = crypto.randomBytes(64).toString('hex')
+    const hashedToken = getHash(token);
+
+    data.users.push({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        tokens: [hashedToken],
+        userId,
+        bookings: [],
+    });
+
+
+    setData(data);
+    return {
+        userId,
+        token
+    };
+}
+
+export function authLogin(email: string, password: string) {
+    const data = getData();
+    for (const index in data.users) {
+        if (email === data.users[index].email) {
+            if (!compareHash(password, data.users[index].password)) {
+                throw HTTPError(400, 'incorrect password');
+            } else {
+                const token = crypto.randomBytes(64).toString('hex')
+                const hashedToken = getHash(token);
+                data.users[index].tokens.push(hashedToken);
+                setData(data);
+                return {
+                    userId: data.users[index].userId,
+                    token: token
+                }
+            }
+        }
+    }
+    throw HTTPError(400, 'email not found');
+}
+
+export function authAutoLogin(token: string) {
+    const data = getData();
+    for (const user of data.users) {
+        for (const userToken of user.tokens) {
+            if (compareHash(token, userToken)) {
+                return {
+                    userId: user.userId,
+                    token: token
+                }
+            }
+        }
+    }
+    throw HTTPError(400, 'invalid token');
+}
+
+export function authLogout(userId: number, token: string) {
+    const data = getData();
+    for (const user of data.users) {
+        if (user.userId === userId) {
+            for (const index in user.tokens) {
+                if (compareHash(token, user.tokens[index])) {
+                    user.tokens.splice(parseInt(index), 1);
+                    setData(data);
+                    return {};
+                }
+            }
+        }
+    }
+}
