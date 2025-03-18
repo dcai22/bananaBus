@@ -103,6 +103,8 @@ describe("GET /pastBookings", () => {
     test("No past bookings", async () => {
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -126,6 +128,8 @@ describe("GET /pastBookings", () => {
         const expected = [ booking01, booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -150,6 +154,8 @@ describe("GET /pastBookings", () => {
         const expected = [ booking01 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -174,6 +180,8 @@ describe("GET /pastBookings", () => {
         const expected = [ booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -198,6 +206,8 @@ describe("GET /pastBookings", () => {
         const expected = [ booking01, booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -222,6 +232,8 @@ describe("GET /pastBookings", () => {
         const expected = [ booking03, booking02, booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -335,6 +347,8 @@ describe("GET /upcomingBookings", () => {
     test("No past bookings", async () => {
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -358,6 +372,8 @@ describe("GET /upcomingBookings", () => {
         const expected = [ booking01, booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -382,6 +398,8 @@ describe("GET /upcomingBookings", () => {
         const expected = [ booking01 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -406,6 +424,8 @@ describe("GET /upcomingBookings", () => {
         const expected = [ booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -430,6 +450,8 @@ describe("GET /upcomingBookings", () => {
         const expected = [ booking01, booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
@@ -454,6 +476,8 @@ describe("GET /upcomingBookings", () => {
         const expected = [ booking03, booking02, booking00 ];
         setData({
             users: [{
+                firstName: 'first',
+                lastName: 'last',
                 email: 'email',
                 password: 'password',
                 tokens: [],
