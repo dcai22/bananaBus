@@ -1,13 +1,13 @@
 import HTTPError from "http-errors";
 import { getData } from "./dataStore";
-import { dataStore, trip, tripBox, tripList } from "./interface";
+import { DataStore, Trip, TripBox, TripList } from "./interface";
 import { isSameDay } from "date-fns";
 
-export function tripsList(routeId: number, departId: number, arriveId: number, date: string) :tripList {
+export function tripsList(routeId: number, departId: number, arriveId: number, date: string): TripList {
     //const data: dataStore = getData();
 
     // sample data used to test frontend
-    const data: dataStore = {
+    const data: DataStore = {
       users: [],
       trips: [],
       bookings:[],
@@ -70,16 +70,16 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
     const arriveIndex = route.stops.indexOf(arriveId)
     const arriveName = arriveStop.name
     
-    const trips: trip[] = data.trips
-                              .filter((t: trip ) => t.routeId === routeId)
-                              .filter((t: trip ) => {
+    const trips: Trip[] = data.trips
+                              .filter((t: Trip ) => t.routeId === routeId)
+                              .filter((t: Trip ) => {
                                 const tripDate = new Date(t.stopTimes[0])
                                 const searchDate = new Date(date)
                                 return isSameDay(tripDate, searchDate)
                               })
      
     // convert dataStore info to tripBox(info needed by frontend)
-    const tripBoxes: tripBox[] = trips.map((t: trip) => ({
+    const tripBoxes: TripBox[] = trips.map((t: Trip) => ({
       tripId: t.tripId,
       departureTime: new Date(t.stopTimes[departIndex]),
       arrivalTime: new Date(t.stopTimes[arriveIndex]),

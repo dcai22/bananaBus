@@ -29,6 +29,20 @@ export default function TabLayout() {
             backBehavior="history"
         >
             <Tabs.Screen
+                name="login"
+                options={{
+                    href: null,
+                    tabBarStyle: {display: 'none'},
+                }}
+            />
+            <Tabs.Screen
+                name="register"
+                options={{
+                    href: null,
+                    tabBarStyle: {display: 'none'},
+                }}
+            />
+            <Tabs.Screen
                 name="index"
                 options={{
                     title: "Home",

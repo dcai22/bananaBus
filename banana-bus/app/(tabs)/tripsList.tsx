@@ -1,11 +1,11 @@
+import React, { useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, StyleSheet} from "react-native";
-import { format, set } from "date-fns"
+import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
-import { useEffect, useState } from "react";
 import axios from "axios";
-import { tripBox } from "@/server/interface";
+import { TripBox } from "@/server/interface";
 
 export default function tripsList() {
     const { routeId, departId, arriveId, date } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string, date: string}>()
@@ -14,7 +14,7 @@ export default function tripsList() {
     const [error, setError] = useState("")
     const [departName, setDepartName] = useState("");
     const [arriveName, setArriveName] = useState("");
-    const [trips, setTrips] = useState<tripBox[]>([]);
+    const [trips, setTrips] = useState<TripBox[]>([]);
 
     useEffect(() => {
         setLoading(true)

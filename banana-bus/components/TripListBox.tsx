@@ -1,7 +1,8 @@
-import { tripBox, tripList } from "@/server/interface";
+import React from "react";
+import { TripBox, TripList } from "@/server/interface";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format, formatDistance } from "date-fns";
-import { useLocalSearchParams, router, Link } from "expo-router";
+import { router } from "expo-router";
 import { View, Text, StyleSheet, TouchableOpacity} from "react-native";
 
 // produce text for time distance from now to departure time
@@ -19,7 +20,7 @@ function timeTillDepart(departureTime: Date) {
 } 
 
 // (to be reused in booking page/ past trips)
-export default function TripListBox(trip: tripBox) {
+export default function TripListBox(trip: TripBox) {
     const nowToDepart = timeTillDepart(trip.departureTime)
 
     const departed = nowToDepart.endsWith("ago")
@@ -69,7 +70,6 @@ export default function TripListBox(trip: tripBox) {
                     </View>
                 </View>
             </View>
-        
         </TouchableOpacity>
     )       
 }

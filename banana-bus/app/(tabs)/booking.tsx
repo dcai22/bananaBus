@@ -1,3 +1,4 @@
+import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, StyleSheet} from "react-native";
@@ -5,7 +6,6 @@ import { format, set } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { tripBox } from "@/server/interface";
 
 // TODO: fix up stack/tabs so router back works properly
 
