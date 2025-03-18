@@ -10,11 +10,17 @@ export interface user {
     bookings: number[],
 }
 
+export interface stop {
+    stopId: number,
+    name: string,
+}
+
 export interface dataStore {
     users: user[],
     trips: trip[],
     bookings: booking[],
     routes: route[],
+    stops: stop[],
 }
 
 export interface authUserId {
@@ -24,14 +30,11 @@ export interface authUserId {
 
 export interface route {
     routeId: number,
-    stops: stop[],
+    stops: number[],
     trips: number[],
 }
 
-export interface stop {
-    stopId: number,
-    name: string,
-}
+
 
 export interface trip {
     tripId: number,
@@ -48,6 +51,7 @@ export interface tripList {
 }
 
 export interface tripBox {
+    tripId: number
     departureTime: Date,
     arrivalTime: Date,
     price: number,

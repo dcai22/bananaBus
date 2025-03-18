@@ -13,18 +13,19 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
       bookings:[],
       routes: [{
         routeId: 1,
-        stops: [
-          {
-            stopId: 1,
-            name: "airport"
-          },
-          {
-            stopId: 2,
-            name: "utama mall"
-          }
-        ],
+        stops: [1, 2],
         trips: [0]
-      }]
+      }],
+      stops: [
+        {
+          stopId: 1,
+          name: "airport"
+        },
+        {
+          stopId: 2,
+          name: "utama mall"
+        }
+      ],
     }
     
 
@@ -59,14 +60,14 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
     })
     } 
 
-    const departStop = route.stops.find(s => s.stopId === departId)
+    const departStop = data.stops.find(s => s.stopId === departId)
     if (!departStop) throw HTTPError(400, `DepartId ${departId} not found`);
-    const departIndex = route.stops.findIndex(s => s.stopId === departId)
+    const departIndex = route.stops.indexOf(departId)
     const departName = departStop.name
     
-    const arriveStop = route.stops.find(s => s.stopId === arriveId)
+    const arriveStop = data.stops.find(s => s.stopId === arriveId)
     if (!arriveStop) throw HTTPError(400, `ArriveId ${arriveId} not found`);
-    const arriveIndex = route.stops.findIndex(s => s.stopId === arriveId)
+    const arriveIndex = route.stops.indexOf(arriveId)
     const arriveName = arriveStop.name
     
     const trips: trip[] = data.trips
