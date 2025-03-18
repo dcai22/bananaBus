@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 export default function Tab() {
     // TODO saved trip list that gets from backend
     const date: string = new Date().toISOString()
-    console.log(date)
+
     return (
         <View style={styles.container}>
             <Text>Tab [Home|Settings]</Text>

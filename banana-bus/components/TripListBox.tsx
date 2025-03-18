@@ -1,8 +1,8 @@
 import { tripBox, tripList } from "@/server/interface";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format, formatDistance } from "date-fns";
-import { useLocalSearchParams, router } from "expo-router";
-import { View, Text, StyleSheet} from "react-native";
+import { useLocalSearchParams, router, Link } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity} from "react-native";
 
 // produce text for time distance from now to departure time
 function timeTillDepart(departureTime: Date) {
@@ -22,39 +22,55 @@ function timeTillDepart(departureTime: Date) {
 export default function TripListBox(trip: tripBox) {
     const nowToDepart = timeTillDepart(trip.departureTime)
 
+    const departed = nowToDepart.endsWith("ago")
+
+    function handlePress() {
+        if (!departed) {
+            router.push({
+                pathname: '/booking',
+                params: { routeId: 1, departId: 1, arriveId: 2, tripId: `${trip.tripId}`},
+            })
+        } else {
+            // make a pop up or something
+            console.log("already departed")
+        }
+    }
+
     return(
-        <View style = {styles.tripListContainer}>
-            <View style = {[styles.timeTillDepartContainer, nowToDepart.endsWith("ago") && styles.departedContainer]}>
-                {/* to be replaced with function time till depart*/}
-                <Text style = {styles.timeTillDepartText}>{nowToDepart}</Text>
-            </View>
-            <View style = {styles.infoContainer}>
-                <View style = {styles.leftInfoContainer}>
-                    <Text style = {styles.pickUpLocation}>Bus Stand</Text>
-                    <Text style = {styles.departTime}>{format(trip.departureTime, "HH:mm")}</Text>
-                    <View style = {styles.trackingContainer}>
-                        {/* need to calc whether bus is late */}
-                        <FontAwesome name="square" style= {styles.trackingSquare}></FontAwesome>
-                        <Text style = {styles.trackingText}>On Time</Text>
-                    </View>
+        <TouchableOpacity onPress={handlePress}>
+            <View style = {styles.tripListContainer}>
+                <View style = {[styles.timeTillDepartContainer, departed && styles.departedContainer]}>
+                    <Text style = {styles.timeTillDepartText}>{nowToDepart}</Text>
                 </View>
-                <View style = {styles.rightInfoContainer}>
-                    <Text style = {styles.price}>{trip.price}RM</Text>
-                    <Text style = {styles.arriveTime}>{format(trip.arrivalTime, "HH:mm")}</Text>
-                    <View style = {styles.capacityContainer}>
-                        {/* calc disabled space */}
-                        <FontAwesome name="wheelchair" style = {styles.wheelchair}></FontAwesome>
-                        <View style = {styles.luggageContainer}>
-                            {/* calc luggage space */}
-                            <FontAwesome name="suitcase" style = {styles.luggage1}></FontAwesome>
-                            <FontAwesome name="suitcase" style = {styles.luggage2}></FontAwesome>
-                            <FontAwesome name="suitcase" style = {styles.luggage3}></FontAwesome>
+                <View style = {styles.infoContainer}>
+                    <View style = {styles.leftInfoContainer}>
+                        <Text style = {styles.pickUpLocation}>Bus Stand</Text>
+                        <Text style = {styles.departTime}>{format(trip.departureTime, "HH:mm")}</Text>
+                        <View style = {styles.trackingContainer}>
+                            {/* need to calc whether bus is late */}
+                            <FontAwesome name="square" style= {styles.trackingSquare}></FontAwesome>
+                            <Text style = {styles.trackingText}>On Time</Text>
                         </View>
-                        <Text style = {styles.personCapacity}>{trip.curCapacity}/{trip.maxCapacity}</Text>
+                    </View>
+                    <View style = {styles.rightInfoContainer}>
+                        <Text style = {styles.price}>{trip.price}RM</Text>
+                        <Text style = {styles.arriveTime}>{format(trip.arrivalTime, "HH:mm")}</Text>
+                        <View style = {styles.capacityContainer}>
+                            {/* calc disabled space */}
+                            <FontAwesome name="wheelchair" style = {styles.wheelchair}></FontAwesome>
+                            <View style = {styles.luggageContainer}>
+                                {/* calc luggage space */}
+                                <FontAwesome name="suitcase" style = {styles.luggage1}></FontAwesome>
+                                <FontAwesome name="suitcase" style = {styles.luggage2}></FontAwesome>
+                                <FontAwesome name="suitcase" style = {styles.luggage3}></FontAwesome>
+                            </View>
+                            <Text style = {styles.personCapacity}>{trip.curCapacity}/{trip.maxCapacity}</Text>
+                        </View>
                     </View>
                 </View>
             </View>
-        </View>
+        
+        </TouchableOpacity>
     )       
 }
 
@@ -66,6 +82,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,     
         flexDirection: "row",
         height: 75,
+        width: "100%"
     },
     timeTillDepartContainer: {
         backgroundColor: "#266ce5",

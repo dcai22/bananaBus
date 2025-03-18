@@ -9,13 +9,7 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
     // sample data used to test frontend
     const data: dataStore = {
       users: [],
-      trips: [{
-        tripId: 0,
-        vehicleId: 1,
-        routeId: 1,
-        bookings: [],
-        stopTimes: []
-      }],
+      trips: [],
       bookings:[],
       routes: [{
         routeId: 1,
@@ -41,6 +35,16 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
     const lookUpDate = new Date(date)
     
     // adding sample trips for testing frontend
+    data.trips.push({
+      tripId: 0,
+      vehicleId: 1,
+      routeId: 1,
+      stopTimes:[
+        new Date(lookUpDate.getTime()).toISOString(),
+        new Date(lookUpDate.getTime() + 30 * 60 * 1000).toISOString()
+      ],
+      bookings: []
+    })
     for (let i= 1; i < 10; i++) {
       route.trips.push(i)
       data.trips.push({
@@ -75,6 +79,7 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
      
     // convert dataStore info to tripBox(info needed by frontend)
     const tripBoxes: tripBox[] = trips.map((t: trip) => ({
+      tripId: t.tripId,
       departureTime: new Date(t.stopTimes[departIndex]),
       arrivalTime: new Date(t.stopTimes[arriveIndex]),
       // to be calculated using functions and vehicle info

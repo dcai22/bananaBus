@@ -26,6 +26,7 @@ export default function TabLayout() {
                 },
                 headerShown: false,
             }}
+            backBehavior="history"
         >
             <Tabs.Screen
                 name="index"
@@ -63,8 +64,14 @@ export default function TabLayout() {
                     ),
                 }}
             />
-             <Tabs.Screen
+            <Tabs.Screen
                 name="tripsList"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="booking"
                 options={{
                     href: null,
                 }}

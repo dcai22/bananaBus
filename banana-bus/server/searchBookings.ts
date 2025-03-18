@@ -49,8 +49,8 @@ export function searchBookings(userId: number, timeFrame: string, numBookings: n
 
                 const trip = getTripById(booking.tripId);
                 const route = getRouteById(trip.routeId);
-                const originIndex = route.stops.indexOf(booking.origin);
-                const destIndex = route.stops.indexOf(booking.dest);
+                const originIndex = route.stops.findIndex(s => s.stopId === booking.origin);
+                const destIndex = route.stops.findIndex(s => s.stopId === booking.dest);
                 if (originIndex < 0 || destIndex < 0) {
                     throw HTTPError(500, 'route does not contain required stop');
                 }

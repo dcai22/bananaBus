@@ -7,9 +7,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { tripBox } from "@/server/interface";
 
-// TODO: fix up stack/tabs so router back works properly
-
-
 export default function tripsList() {
     const { routeId, departId, arriveId, date } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string, date: string}>()
 

@@ -96,7 +96,16 @@ describe("GET /pastBookings", () => {
 
     const route0: route = {
         routeId: 0,
-        stops: [ 0, 1 ],
+        stops: [
+            {
+                stopId: 0,
+                name: "a",
+            },
+            {
+                stopId: 1,
+                name: "b",
+            }
+        ],
         trips: [ 0, 1 ],
     };
 
@@ -328,7 +337,16 @@ describe("GET /upcomingBookings", () => {
 
     const route0: route = {
         routeId: 0,
-        stops: [ 0, 1 ],
+        stops: [ 
+            {
+                stopId: 0,
+                name: "a",
+            },
+            {
+                stopId: 1,
+                name: "b",
+            }
+        ],
         trips: [ 0, 1 ],
     };
 
