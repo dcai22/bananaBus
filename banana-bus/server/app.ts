@@ -66,14 +66,14 @@ app.get('/getSavedRoutes', (req: Request, res: Response) => {
     return;
 })
 
-app.get('/saveRoute', (req: Request, res: Response) => {
+app.post('/saveRoute', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
     const routeId = req.body.routeId as number;
     res.json(saveRoute(userId, routeId));
     return;
 })
 
-app.get('/unsaveRoute', (req: Request, res: Response) => {
+app.delete('/unsaveRoute', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
     const routeId = req.body.routeId as number;
     res.json(unsaveRoute(userId, routeId));

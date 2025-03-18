@@ -5,7 +5,7 @@ import { getRouteById } from "./helper";
 export function saveRoute(userId: number, routeId: number) {
     const data = getData();
 
-    if (!data.routes.some((route) => { route.routeId === routeId })) {
+    if (!data.routes.some((route) => { return route.routeId === routeId; })) {
         throw HTTPError(400, 'route does not exist');
     }
 
@@ -14,7 +14,7 @@ export function saveRoute(userId: number, routeId: number) {
             continue;
         }
 
-        if (user.savedRoutes.some((savedRouteId) => { savedRouteId === routeId })) {
+        if (user.savedRoutes.some((savedRouteId) => { return savedRouteId === routeId; })) {
             throw HTTPError(400, 'route is already saved')
         }
 
@@ -23,6 +23,8 @@ export function saveRoute(userId: number, routeId: number) {
         user.savedRoutes.sort((a, b) => {
             return a - b;
         });
+
+        return {};
     }
 
     // userId does not exist
@@ -32,7 +34,7 @@ export function saveRoute(userId: number, routeId: number) {
 export function unsaveRoute(userId: number, routeId: number) {
     const data = getData();
 
-    if (!data.routes.some((route) => { route.routeId === routeId })) {
+    if (!data.routes.some((route) => { return route.routeId === routeId; })) {
         throw HTTPError(400, 'route does not exist');
     }
 
@@ -41,13 +43,15 @@ export function unsaveRoute(userId: number, routeId: number) {
             continue;
         }
 
-        if (!user.savedRoutes.some((savedRouteId) => { savedRouteId === routeId })) {
+        if (!user.savedRoutes.some((savedRouteId) => { return savedRouteId === routeId; })) {
             throw HTTPError(400, 'route was not saved')
         }
 
         user.savedRoutes = user.savedRoutes.filter((savedRouteId) => {
-            savedRouteId !== routeId;
+            return savedRouteId !== routeId;
         });
+
+        return {};
     }
 
     // userId does not exist
