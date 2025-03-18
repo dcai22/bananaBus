@@ -33,14 +33,14 @@ app.post('/register', (req: Request, res: Response) => {
 })
 
 app.post('/autologin', (req: Request, res: Response) => {
-    const token = req.body.token as string;
+    const token = req.headers.authorization as string;
     res.json(authAutoLogin(token));
     return;
 })
 
 app.post('/logout', (req: Request, res: Response) => {
+    const token = req.header('token') as string;
     const userId = req.body.userId as number;
-    const token = req.body.token as string;
     res.json(authLogout(userId, token));
     return;
 })
