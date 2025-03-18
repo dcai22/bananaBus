@@ -1,9 +1,11 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Redirect } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Mapbox from "@rnmapbox/maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapSearch from "@/components/MapSearch";
+import { FontAwesome } from "@expo/vector-icons";
+import * as ExpoLocation from "expo-location";
 
 Mapbox.setAccessToken(
     "pk.eyJ1IjoiMzkwMGYxNWFiYW5hbmEyNSIsImEiOiJjbTg3ZWhxNmMwNzF6MmxvYjg3Z2dwdmx6In0.PlMxV_sUySfYSA3UNzuglA"
@@ -15,6 +17,46 @@ export default function Index() {
         longitude: 101.7007533, // Default to Bus Terminal, KLIA 1
     });
 
+    const cameraRef = useRef<Mapbox.Camera>(null);
+
+    const fetchLocation = async () => {
+        try {
+            // Set location permission
+            const { status } =
+                await ExpoLocation.requestForegroundPermissionsAsync();
+
+            if (status !== "granted") {
+                Alert.alert(
+                    "Permission Denied",
+                    "Please allow location access to use this feature",
+                    [{ text: "OK" }]
+                );
+                return;
+            }
+
+            // Get current location
+            const currentLocation =
+                await ExpoLocation.getCurrentPositionAsync();
+
+            const newLocation = {
+                latitude: currentLocation.coords.latitude,
+                longitude: currentLocation.coords.longitude,
+            };
+            setLocation(newLocation);
+        } catch (error) {
+            console.error("Error getting location:", error);
+            Alert.alert(
+                "Something went wrong!",
+                "Unable to get your current location",
+                [{ text: "OK" }]
+            );
+        }
+    };
+
+    useEffect(() => {
+        fetchLocation();
+    }, []);
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.mapContainer}>
@@ -23,12 +65,13 @@ export default function Index() {
                     styleURL={Mapbox.StyleURL.Street}
                 >
                     <Mapbox.Camera
+                        ref={cameraRef}
                         zoomLevel={14}
                         centerCoordinate={[
                             location.longitude,
                             location.latitude,
                         ]}
-                        animationDuration={0}
+                        animationDuration={300}
                     />
 
                     {/* Location marker */}
@@ -42,6 +85,14 @@ export default function Index() {
                     </Mapbox.PointAnnotation>
                 </Mapbox.MapView>
             </View>
+
+            {/* Location Update */}
+            <TouchableOpacity
+                style={styles.locationButton}
+                onPress={fetchLocation}
+            >
+                <FontAwesome name="location-arrow" size={20} color="white" />
+            </TouchableOpacity>
 
             <View style={styles.MapSearchContainer}>
                 <MapSearch />
@@ -82,6 +133,22 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
+    },
+    locationButton: {
+        position: "absolute",
+        right: 20,
+        bottom: 100,
+        backgroundColor: "#1a73e8",
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
     },
     markerContainer: {
         width: 20,
