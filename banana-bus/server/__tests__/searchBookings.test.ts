@@ -1,6 +1,6 @@
 import express, { json, Request, Response } from 'express';
 import { setData } from "../dataStore";
-import { Booking, trip, route, UserBuilder, Trip } from "../interface";
+import { Booking, Route, UserBuilder, Trip } from "../interface";
 
 const request = require("supertest");
 const app = require("../app");
@@ -23,14 +23,10 @@ describe("GET /pastBookings", () => {
 
     const upcomingBooking: Booking = new Booking(7, 0, 1, 0, 1, new Date(0));
 
-    const trip0: trip = new Trip(0, 0, 0, [ new Date(0), new Date(1) ], [ 0, 1, 2, 3, 4, 5, 6 ]);
-    const upcomingTrip: trip = new Trip(1, 0, 0, [ new Date(3000, 0, 1), new Date(3000, 0, 2) ], [ 7 ]);
+    const trip0: Trip = new Trip(0, 0, 0, [ new Date(0), new Date(1) ], [ 0, 1, 2, 3, 4, 5, 6 ]);
+    const upcomingTrip: Trip = new Trip(1, 0, 0, [ new Date(3000, 0, 1), new Date(3000, 0, 2) ], [ 7 ]);
 
-    const route0: route = {
-        routeId: 0,
-        stops: [ 0, 1 ],
-        trips: [ 0, 1 ],
-    };
+    const route0: Route = new Route(0, [ 0, 1 ], [ 0, 1 ]);
 
     test("No past bookings", async () => {
         setData({
@@ -151,14 +147,10 @@ describe("GET /upcomingBookings", () => {
 
     const pastBooking: Booking = new Booking(7, 0, 1, 0, 1, new Date(0));
 
-    const trip0: trip = new Trip(0, 0, 0, [ new Date(3000, 0, 1), new Date(3000, 0, 2) ], [ 0, 1, 2, 3, 4, 5, 6 ]);
-    const pastTrip: trip = new Trip(1, 0, 0, [ new Date(0), new Date(1) ], [ 7 ]);
+    const trip0: Trip = new Trip(0, 0, 0, [ new Date(3000, 0, 1), new Date(3000, 0, 2) ], [ 0, 1, 2, 3, 4, 5, 6 ]);
+    const pastTrip: Trip = new Trip(1, 0, 0, [ new Date(0), new Date(1) ], [ 7 ]);
 
-    const route0: route = {
-        routeId: 0,
-        stops: [ 0, 1 ],
-        trips: [ 0, 1 ],
-    };
+    const route0: Route = new Route(0, [ 0, 1 ], [ 0, 1 ]);
 
     test("No past bookings", async () => {
         setData({
