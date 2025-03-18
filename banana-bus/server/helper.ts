@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import HTTPError from "http-errors";
 import { getData } from "./dataStore";
 
 export function getHash(text: string) {
@@ -20,4 +21,24 @@ export function isValidToken(token: string) {
         }
     }
     return false;
+}
+
+export function getTripById(tripId: number) {
+    const data = getData();
+    for (const trip of data.trips) {
+        if (trip.tripId === tripId) {
+            return trip;
+        }
+    }
+    throw HTTPError(400, 'trip not found');
+}
+
+export function getRouteById(routeId: number) {
+    const data = getData();
+    for (const route of data.routes) {
+        if (route.routeId === routeId) {
+            return route;
+        }
+    }
+    throw HTTPError(400, 'route not found');
 }
