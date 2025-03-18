@@ -51,7 +51,7 @@ export class UserBuilder implements Partial<User> {
 export interface dataStore {
     users: User[],
     trips: trip[],
-    bookings: booking[],
+    bookings: Booking[],
     routes: route[],
 }
 
@@ -74,11 +74,20 @@ export interface trip {
     stopTimes: string[],					// array of ISO String
 }
 
-export interface booking {
-    bookingId: number,
-    userId: number,
-    tripId: number,
-    bookingTime: string,					// ISO String
-    origin: number,
-    dest: number,
+export class Booking {
+    bookingId: number;
+    userId: number;
+    tripId: number;
+    bookingTime: string;					// ISO String
+    origin: number;
+    dest: number;
+
+    constructor(bookingId: number, userId: number, tripId: number, bookingTime: Date, origin: number, dest: number) {
+        this.bookingId = bookingId;
+        this.userId = userId;
+        this.tripId = tripId;
+        this.bookingTime = bookingTime.toISOString();
+        this.origin = origin;
+        this.dest = dest;
+    }
 }

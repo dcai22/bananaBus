@@ -1,6 +1,6 @@
 import express, { json, Request, Response } from 'express';
 import { setData } from "../dataStore";
-import { booking, trip, route, UserBuilder } from "../interface";
+import { Booking, trip, route, UserBuilder } from "../interface";
 
 const request = require("supertest");
 const app = require("../app");
@@ -12,72 +12,16 @@ beforeEach(() => {
 })
 
 describe("GET /pastBookings", () => {
-    const booking00: booking = {
-        bookingId: 0,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking01: booking = {
-        bookingId: 1,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking02: booking = {
-        bookingId: 2,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(2).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking03: booking = {
-        bookingId: 3,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(3).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking04: booking = {
-        bookingId: 4,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(4).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking00: Booking = new Booking(0, 0, 0, new Date(0), 0, 1);
+    const booking01: Booking = new Booking(1, 0, 0, new Date(1), 0, 1);
+    const booking02: Booking = new Booking(2, 0, 0, new Date(2), 0, 1);
+    const booking03: Booking = new Booking(3, 0, 0, new Date(3), 0, 1);
+    const booking04: Booking = new Booking(4, 0, 0, new Date(4), 0, 1);
 
-    const booking10: booking = {
-        bookingId: 5,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking11: booking = {
-        bookingId: 6,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking10: Booking = new Booking(5, 1, 0, new Date(0), 0, 1);
+    const booking11: Booking = new Booking(6, 1, 0, new Date(1), 0, 1);
 
-    const upcomingBooking: booking = {
-        bookingId: 7,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    }
+    const upcomingBooking: Booking = new Booking(7, 0, 1, new Date(0), 0, 1);
 
     const trip0: trip = {
         tripId: 0,
@@ -87,7 +31,7 @@ describe("GET /pastBookings", () => {
         stopTimes: [ new Date(0).toISOString(), new Date(1).toISOString() ],
     };
     const upcomingTrip: trip = {
-        tripId: 0,
+        tripId: 1,
         vehicleId: 0,
         routeId: 0,
         bookings: [ 7 ],
@@ -208,72 +152,16 @@ describe("GET /pastBookings", () => {
 });
 
 describe("GET /upcomingBookings", () => {
-    const booking00: booking = {
-        bookingId: 0,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking01: booking = {
-        bookingId: 1,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking02: booking = {
-        bookingId: 2,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(2).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking03: booking = {
-        bookingId: 3,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(3).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking04: booking = {
-        bookingId: 4,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(4).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking00: Booking = new Booking(0, 0, 0, new Date(0), 0, 1);
+    const booking01: Booking = new Booking(1, 0, 0, new Date(1), 0, 1);
+    const booking02: Booking = new Booking(2, 0, 0, new Date(2), 0, 1);
+    const booking03: Booking = new Booking(3, 0, 0, new Date(3), 0, 1);
+    const booking04: Booking = new Booking(4, 0, 0, new Date(4), 0, 1);
 
-    const booking10: booking = {
-        bookingId: 5,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking11: booking = {
-        bookingId: 6,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking10: Booking = new Booking(5, 1, 0, new Date(0), 0, 1);
+    const booking11: Booking = new Booking(6, 1, 0, new Date(1), 0, 1);
 
-    const pastBooking: booking = {
-        bookingId: 7,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    }
+    const pastBooking: Booking = new Booking(7, 0, 1, new Date(0), 0, 1);
 
     const trip0: trip = {
         tripId: 0,
@@ -283,7 +171,7 @@ describe("GET /upcomingBookings", () => {
         stopTimes: [ new Date(3000, 0, 1).toISOString(), new Date(3000, 0, 2).toISOString() ],
     };
     const pastTrip: trip = {
-        tripId: 0,
+        tripId: 1,
         vehicleId: 0,
         routeId: 0,
         bookings: [ 7 ],
