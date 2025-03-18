@@ -2,16 +2,54 @@ export interface error {
     error: string
 }
 
-export interface user {
-    email: string,
-    password: string,
-    tokens: string[],
-    userId: number,
-    bookings: number[],
+interface User {
+    email: string;
+    password: string;
+    tokens: string[];
+    userId: number;
+    bookings: number[];
+}
+
+class User implements User {
+    constructor(user: User) {
+        Object.assign(this, user);
+    }
+}
+
+export class UserBuilder implements Partial<User> {
+    email?: string;
+    password?: string;
+    tokens: string[] = [];
+    userId?: number;
+    bookings: number[] = [];
+
+    withEmail(email: string) {
+        return Object.assign(this, { email: email });
+    }
+
+    withPassword(password: string) {
+        return Object.assign(this, { password: password });
+    }
+
+    withTokens(tokens: string[]) {
+        return Object.assign(this, { tokens: tokens });
+    }
+
+    withUserId(userId: number) {
+        return Object.assign(this, { userId: userId });
+    }
+
+    withBookings(bookings: number[]) {
+        return Object.assign(this, { bookings:  bookings });
+    }
+
+    build(this: User) {
+        return new User(this);
+    }
 }
 
 export interface dataStore {
-    users: user[],
+    users: User[],
     trips: trip[],
     bookings: booking[],
     routes: route[],

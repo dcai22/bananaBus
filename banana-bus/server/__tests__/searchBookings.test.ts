@@ -1,6 +1,6 @@
 import express, { json, Request, Response } from 'express';
 import { setData } from "../dataStore";
-import { booking, trip, route } from "../interface";
+import { booking, trip, route, UserBuilder } from "../interface";
 
 const request = require("supertest");
 const app = require("../app");
@@ -102,13 +102,7 @@ describe("GET /pastBookings", () => {
 
     test("No past bookings", async () => {
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: []
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ upcomingBooking ],
             routes: [ route0 ],
@@ -125,13 +119,7 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 2 past user bookings", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
@@ -149,13 +137,7 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 1", async () => {
         const expected = [ booking01 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
@@ -173,13 +155,7 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 1 past user booking", async () => {
         const expected = [ booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking10, upcomingBooking ],
             routes: [ route0 ],
@@ -197,13 +173,7 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 3", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
@@ -221,13 +191,7 @@ describe("GET /pastBookings", () => {
     test("5 total past bookings, 3 past user bookings", async () => {
         const expected = [ booking03, booking02, booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 2, 3 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 2, 3 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking10, booking02, booking03, booking11, upcomingBooking ],
             routes: [ route0 ],
@@ -334,13 +298,7 @@ describe("GET /upcomingBookings", () => {
 
     test("No past bookings", async () => {
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: []
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ pastBooking ],
             routes: [ route0 ],
@@ -357,13 +315,7 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 2 past user bookings", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
@@ -381,13 +333,7 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 1", async () => {
         const expected = [ booking01 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
@@ -405,13 +351,7 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 1 past user booking", async () => {
         const expected = [ booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking10, pastBooking ],
             routes: [ route0 ],
@@ -429,13 +369,7 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 3", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
@@ -453,13 +387,7 @@ describe("GET /upcomingBookings", () => {
     test("5 total past bookings, 3 past user bookings", async () => {
         const expected = [ booking03, booking02, booking00 ];
         setData({
-            users: [{
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 2, 3 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 2, 3 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking10, booking02, booking03, booking11, pastBooking ],
             routes: [ route0 ],
