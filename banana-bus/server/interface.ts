@@ -16,6 +16,7 @@ export interface dataStore {
     users: user[],
     trips: trip[],
     bookings: booking[],
+    routes: route[],
 }
 
 export interface authUserId {

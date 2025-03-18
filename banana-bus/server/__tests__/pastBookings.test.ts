@@ -8,7 +8,7 @@ const app = require("../app");
 const newDb = { users: [{ email: 'email', password: 'password', tokens: [], userId: 0, bookings: [] }], bookings: [] };
 
 beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [] });
+    setData({ users: [], trips: [], bookings: [], routes: [] });
 })
 
 describe("GET /pastBookings", () => {
@@ -83,6 +83,7 @@ describe("GET /pastBookings", () => {
             }],
             trips: [],
             bookings: [],
+            routes: [],
         });
         const response = await request(app)
             .get("/pastBookings")
@@ -107,6 +108,7 @@ describe("GET /pastBookings", () => {
             }],
             trips: [],
             bookings: [ booking00, booking01 ],
+            routes: [],
         });
 
         const response = await request(app)
@@ -132,6 +134,7 @@ describe("GET /pastBookings", () => {
             }],
             trips: [],
             bookings: [ booking00, booking01 ],
+            routes: [],
         });
 
         const response = await request(app)
@@ -157,6 +160,7 @@ describe("GET /pastBookings", () => {
             }],
             trips: [],
             bookings: [ booking00, booking10 ],
+            routes: [],
         });
 
         const response = await request(app)
@@ -182,6 +186,7 @@ describe("GET /pastBookings", () => {
             }],
             trips: [],
             bookings: [ booking00, booking01 ],
+            routes: [],
         });
 
         const response = await request(app)
@@ -207,6 +212,7 @@ describe("GET /pastBookings", () => {
             }],
             trips: [],
             bookings: [ booking00, booking10, booking02, booking03, booking11 ],
+            routes: [],
         });
 
         const response = await request(app)
