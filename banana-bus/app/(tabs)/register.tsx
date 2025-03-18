@@ -10,7 +10,7 @@ export default function RegisterScreen() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [firstName, setFirstName] = useState('');
-    const [surname, setSurname] = useState('');
+    const [lastName, setLastName] = useState('');
     const navigation = useNavigation();
 
     const handleRegister = async () => {
@@ -29,7 +29,7 @@ export default function RegisterScreen() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password, firstName, surname }),
+                body: JSON.stringify({ email, password, firstName, lastName }),
             });
 
             if (response.ok) {
@@ -61,7 +61,16 @@ export default function RegisterScreen() {
         >
             <View style={styles.overlay} />
             <View style={styles.container}>
-                <TouchableOpacity style={styles.goBack} onPress={() => navigation.goBack()}>
+                <TouchableOpacity
+                    style={styles.goBack} onPress={() => {
+                        setFirstName('');
+                        setLastName('');
+                        setEmail('');
+                        setPassword('');
+                        setConfirmPassword('');
+                        navigation.goBack();
+                    }}
+                >
                     <Text style={styles.goBack}>← go back</Text>
                 </TouchableOpacity>
                 <Text style={styles.title}>banana bus      🚌</Text>
@@ -74,9 +83,9 @@ export default function RegisterScreen() {
                     />
                     <TextInput
                         style={styles.input}
-                        placeholder="surname"
-                        value={surname}
-                        onChangeText={setSurname}
+                        placeholder="last name"
+                        value={lastName}
+                        onChangeText={setLastName}
                     />
                     <TextInput
                         style={styles.input}
@@ -96,7 +105,7 @@ export default function RegisterScreen() {
                     <TextInput
                         style={styles.input}
                         placeholder="confirm password"
-                        value={password}
+                        value={confirmPassword}
                         onChangeText={setConfirmPassword}
                         secureTextEntry
                     />

@@ -77,7 +77,14 @@ export default function LoginScreen() {
                     <TouchableOpacity onPress={handleLogin} style={[styles.button, styles.loginButton]}>
                         <Text style={[styles.buttonText, styles.loginText]}>Login →</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate('register')} style={[styles.button, styles.registerButton]}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            setEmail('');
+                            setPassword('');
+                            navigation.navigate('register');
+                        }}
+                        style={[styles.button, styles.registerButton]}
+                    >
                         <Text style={[styles.buttonText, styles.registerText]}>Register</Text>
                     </TouchableOpacity>
                 </View>
