@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     },
     MapSearchContainer: {
         position: "absolute",
-        bottom: 0, // Adjust based on your needs
+        bottom: 0,
         left: 0,
         right: 0,
     },
