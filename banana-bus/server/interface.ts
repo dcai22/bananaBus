@@ -1,4 +1,4 @@
-export interface error {
+export interface Error {
     error: string
 }
 
@@ -48,14 +48,14 @@ export class UserBuilder implements Partial<User> {
     }
 }
 
-export interface dataStore {
+export interface DataStore {
     users: User[],
     trips: Trip[],
     bookings: Booking[],
     routes: Route[],
 }
 
-export interface authUserId {
+export interface AuthUserId {
     userId: number,
     token: string,
 }
