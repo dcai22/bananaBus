@@ -66,6 +66,22 @@ export interface route {
     trips: number[],
 }
 
+export class Trip {
+    tripId: number;
+    vehicleId: number;
+    routeId: number;
+    stopTimes: string[];					// array of ISO String
+    bookings: number[];
+
+    constructor(tripId: number, vehicleId: number, routeId: number, stopTimes: Date[], bookings: number[] = []) {
+        this.tripId = tripId;
+        this.vehicleId = vehicleId;
+        this.routeId = routeId;
+        this.stopTimes = stopTimes.map((date: Date) => date.toISOString());
+        this.bookings = bookings;
+    }
+}
+
 export interface trip {
     tripId: number,
     vehicleId: number,
@@ -78,16 +94,16 @@ export class Booking {
     bookingId: number;
     userId: number;
     tripId: number;
-    bookingTime: string;					// ISO String
     origin: number;
     dest: number;
+    bookingTime: string;					// ISO String
 
-    constructor(bookingId: number, userId: number, tripId: number, bookingTime: Date, origin: number, dest: number) {
+    constructor(bookingId: number, userId: number, tripId: number, origin: number, dest: number, bookingTime: Date = new Date()) {
         this.bookingId = bookingId;
         this.userId = userId;
         this.tripId = tripId;
-        this.bookingTime = bookingTime.toISOString();
         this.origin = origin;
         this.dest = dest;
+        this.bookingTime = bookingTime.toISOString();
     }
 }
