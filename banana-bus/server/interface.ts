@@ -27,6 +27,7 @@ export class UserBuilder implements Partial<User> {
     tokens: string[] = [];
     userId?: number;
     bookings: number[] = [];
+    savedRoutes: number[] = [];
 
     withFirstName(firstName: string) {
         return Object.assign(this, { firstName: firstName });
@@ -54,6 +55,10 @@ export class UserBuilder implements Partial<User> {
 
     withBookings(bookings: number[]) {
         return Object.assign(this, { bookings:  bookings });
+    }
+
+    withSavedRoutes(savedRoutes: number[]) {
+        return Object.assign(this, { savedRoutes: savedRoutes });
     }
 
     build(this: User) {
