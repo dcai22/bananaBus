@@ -4,7 +4,7 @@ import { getData, setData } from "./dataStore";
 import { getHash, compareHash } from "./helper";
 import crypto from "crypto";
 
-export function authRegister(email: string, password: string) {
+export function authRegister(email: string, password: string, firstName: string, lastName: string) {
     const data = getData();
 
     for (const index in data.users) {
@@ -19,17 +19,25 @@ export function authRegister(email: string, password: string) {
     if (data.users.length !== 0) {
         userId = data.users[data.users.length - 1].userId + 1;
     }
+    const token = crypto.randomBytes(64).toString('hex')
+    const hashedToken = getHash(token);
 
     data.users.push({
+        firstName,
+        lastName,
         email,
         password: hashedPassword,
-        tokens: [],
+        tokens: [hashedToken],
         userId,
         bookings: [],
     });
 
+
     setData(data);
-    return {};
+    return {
+        userId,
+        token
+    };
 }
 
 export function authLogin(email: string, password: string) {

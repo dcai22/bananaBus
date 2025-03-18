@@ -3,6 +3,8 @@ export interface Error {
 }
 
 interface User {
+    firstName: string,
+    lastName: string,
     email: string;
     password: string;
     tokens: string[];
@@ -17,11 +19,21 @@ class User implements User {
 }
 
 export class UserBuilder implements Partial<User> {
+    firstName: string = 'anonymous';
+    lastName: string = 'user';
     email?: string;
     password?: string;
     tokens: string[] = [];
     userId?: number;
     bookings: number[] = [];
+
+    withFirstName(firstName: string) {
+        return Object.assign(this, { firstName: firstName });
+    }
+
+    withLastName(lastName: string) {
+        return Object.assign(this, { lastName: lastName });
+    }
 
     withEmail(email: string) {
         return Object.assign(this, { email: email });
