@@ -3,6 +3,7 @@ import cors from 'cors';
 
 import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
 import { searchBookings } from './searchBookings';
+import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 
 const app = express();
 
@@ -56,5 +57,25 @@ app.get('/upcomingBookings', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
     const numBookings = req.body.numBookings as number;
     res.json(searchBookings(userId, 'upcoming', numBookings));
+    return;
+})
+
+app.get('/getSavedRoutes', (req: Request, res: Response) => {
+    const userId = req.body.userId as number;
+    res.json(getSavedRoutes(userId));
+    return;
+})
+
+app.get('/saveRoute', (req: Request, res: Response) => {
+    const userId = req.body.userId as number;
+    const routeId = req.body.routeId as number;
+    res.json(saveRoute(userId, routeId));
+    return;
+})
+
+app.get('/unsaveRoute', (req: Request, res: Response) => {
+    const userId = req.body.userId as number;
+    const routeId = req.body.routeId as number;
+    res.json(unsaveRoute(userId, routeId));
     return;
 })

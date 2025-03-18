@@ -10,6 +10,7 @@ interface User {
     tokens: string[];
     userId: number;
     bookings: number[];
+    savedRoutes: number[];
 }
 
 class User implements User {
