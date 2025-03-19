@@ -20,6 +20,7 @@
     "@react-navigation/native": "^7.0.15",
     "@types/react-native": "^0.72.8",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "expo": "~52.0.37",
     "expo-blur": "~14.0.3",
     "expo-constants": "~17.0.7",

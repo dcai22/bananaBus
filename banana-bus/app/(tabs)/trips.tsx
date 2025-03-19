@@ -2,78 +2,100 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native
 import React, { useState, useEffect } from "react";
 import { ScrollView } from "react-native-gesture-handler";
 import { useNavigation } from "expo-router";
+import { format } from "date-fns";
 
 export default function Trips() {
     interface Trip {
-        id: string;
-        time?: string;
-        terminal?: string;
-        route: string;
+        bookingId: number;
+        userId: number;
+        tripId: number;
+        originName: string;
+        destName: string;
+        bookingTime: string;
+        departureTime: string;
+    }
+
+    interface Route {
+        route: {
+            routeId: number;
+            stops: number[];
+            trips: number[];
+        };
+        originIndex: number;
+        originName: string;
+        destIndex: number;
+        destName: string;
     }
 
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
-    const [watchlistTrips, setWatchlistTrips] = useState<Trip[]>([]);
+    const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
 
     const fetchUpcomingTrips = async () => {
         // TODO fetch actual data
         return [
             {
-                id: '1',
-                time: '12:46 PM, 12th July 2025',
-                terminal: 'Bus Terminal B',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
-            }
+                bookingId: 0,
+                userId: 0,
+                tripId: 0,
+                originName: '1utama Shopping Mall',
+                destName: 'Kuala Lumpur Intl. T1',
+                bookingTime: new Date(0).toISOString(),
+                departureTime: new Date(0).toISOString(),
+            },
+            {
+                bookingId: 1,
+                userId: 0,
+                tripId: 5,
+                originName: 'Kuala Lumpur Intl. T2',
+                destName: '1utama Shopping Mall',
+                bookingTime: new Date(0).toISOString(),
+                departureTime: new Date(0).toISOString(),
+            },
         ];
     };
     
-    const fetchWatchlistTrips = async () => {
+    const fetchWatchlistRoutes = async () => {
         // TODO fetch actual data
         return [
             {
-                id: '1',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
+                route: {
+                    routeId: 0,
+                    stops: [0, 1],      // route visits stop0 (1utama) -> stop1 (terminal 1)
+                    trips: [0, 1, 2, 3, 4],
+                },
+                originIndex: 0,         // user intends to board at stops[0], i.e., stop0 (1utama)
+                originName: '1utama Shopping Mall',
+                destIndex: 1,           // user intends to disembark at stops[1], i.e., stop1 (terminal 1)
+                destName: 'Kuala Lumpur Intl. T1',
             },
             {
-                id: '2',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
+                route: {
+                    routeId: 1,
+                    stops: [2, 1, 0],   // route visits stop2 (terminal 2) -> stop1 (terminal 1) -> stop0 (1utama)
+                    trips: [5, 6, 7, 8, 9],
+                },
+                originIndex: 0,         // user intends to board at stops[0], i.e., stop2 (terminal 2)
+                originName: 'Kuala Lumpur Intl. T2',
+                destIndex: 2,           // user intends to disembark at stops[2], i.e., stop0 (1utama)
+                destName: '1utama Shopping Mall',
             },
-            {
-                id: '3',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
-            },
-            {
-                id: '4',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
-            },
-            {
-                id: '5',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
-            },
-            {
-                id: '6',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
-            },
-            {
-                id: '7',
-                route: 'Kuala Lumpur Intl. T1 → 1utama Shopping Mall'
-            }
         ];
     };
 
     useEffect(() => {
         const getTrips = async () => {
             const upcoming = await fetchUpcomingTrips();
-            const watchlist = await fetchWatchlistTrips();
+            const watchlist = await fetchWatchlistRoutes();
             setUpcomingTrips(upcoming);
-            setWatchlistTrips(watchlist);
+            setWatchlistRoutes(watchlist);
         };
 
         getTrips();
     }, []);
 
     const navigation = useNavigation();
-    const handlePress = (tripId: string) => {
-        navigation.navigate(`/tripsList/${tripId}`);
+    const handlePress = (routeId: number) => {
+        navigation.navigate(`/tripsList/${routeId}`);
     };
 
     return (
@@ -87,14 +109,13 @@ export default function Trips() {
                 <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
                 <FlatList
                     data={upcomingTrips}
-                    keyExtractor={item => item.id}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => handlePress(item.id)}>
+                        <TouchableOpacity>
                             <View style={styles.tripItem}>
                                 <View style={styles.accent} />
                                 <View style={styles.tripContent}>
-                                    <Text>{item.time} @ {item.terminal}</Text>
-                                    <Text style={styles.route}>{item.route}</Text>
+                                    <Text>{format(new Date(item.bookingTime), "hh:mm a, do MMMM yyyy")}</Text>
+                                    <Text style={styles.route}>{item.originName} → {item.destName}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
@@ -104,14 +125,13 @@ export default function Trips() {
             <View style={styles.section}>
                 <Text style={styles.sectionHeader}>My Watchlist</Text>
                 <FlatList
-                    data={watchlistTrips}
-                    keyExtractor={item => item.id}
+                    data={watchlistRoutes}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => handlePress(item.id)}>
+                        <TouchableOpacity onPress={() => handlePress(item.route.routeId)}>
                             <View style={styles.tripItem}>
                                 <View style={styles.accent} />
                                 <View style={styles.tripContent}>
-                                    <Text style={styles.route}>{item.route}</Text>
+                                    <Text style={styles.route}>{item.originName} → {item.destName}</Text>
                                 </View>
                             </View>
                         </TouchableOpacity>
