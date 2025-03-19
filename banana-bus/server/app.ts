@@ -1,8 +1,11 @@
 import express, { json, Request, Response } from 'express';
 import cors from 'cors';
+import errorHandler from "middleware-http-errors"
 
 import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
+import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
+import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 
 const app = express();
 
@@ -58,3 +61,38 @@ app.get('/upcomingBookings', (req: Request, res: Response) => {
     res.json(searchBookings(userId, 'upcoming', numBookings));
     return;
 })
+
+app.get('/tripsList', (req: Request, res: Response, next) => {
+    try {
+        const routeId = parseInt(req.query.routeId as string);
+        const departId = parseInt(req.query.departId as string); 
+        const arriveId = parseInt(req.query.arriveId as string);
+        const date = req.query.date as string;
+    
+        res.json(tripsList(routeId, departId, arriveId, date));
+    } catch (err) {
+        next(err)
+    }
+})
+
+app.get('/getSavedRoutes', (req: Request, res: Response) => {
+    const userId = req.body.userId as number;
+    res.json(getSavedRoutes(userId));
+    return;
+})
+
+app.post('/saveRoute', (req: Request, res: Response) => {
+    const userId = req.body.userId as number;
+    const routeId = req.body.routeId as number;
+    res.json(saveRoute(userId, routeId));
+    return;
+})
+
+app.delete('/unsaveRoute', (req: Request, res: Response) => {
+    const userId = req.body.userId as number;
+    const routeId = req.body.routeId as number;
+    res.json(unsaveRoute(userId, routeId));
+    return;
+})
+
+app.use(errorHandler())
