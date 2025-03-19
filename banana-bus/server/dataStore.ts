@@ -6,6 +6,7 @@ let data: DataStore = {
     trips: [],
     bookings: [],
     routes: [],
+    stops: [],
 }
 
 export function getData() {

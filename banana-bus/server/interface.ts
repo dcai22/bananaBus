@@ -71,6 +71,17 @@ export interface DataStore {
     trips: Trip[],
     bookings: Booking[],
     routes: Route[],
+    stops: Stop[],
+}
+
+export class Stop {
+    stopId: number;
+    name: string;
+
+    constructor(stopId: number, name: string) {
+        this.stopId = stopId;
+        this.name = name;
+    }
 }
 
 export interface AuthUserId {
@@ -123,3 +134,19 @@ export class Booking {
         this.bookingTime = bookingTime.toISOString();
     }
 }
+
+export interface TripList {
+    departName: string,
+    arriveName: string,
+    trips: TripBox[],
+}
+
+export interface TripBox {
+    tripId: number
+    departureTime: Date,
+    arrivalTime: Date,
+    price: number,
+    curCapacity: number, 
+    maxCapacity: number,
+}
+
