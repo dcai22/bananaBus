@@ -2,6 +2,7 @@ import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { Redirect } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
 import Mapbox from "@rnmapbox/maps";
+import { Camera } from "@rnmapbox/maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapSearch from "@/components/MapSearch";
 import { FontAwesome } from "@expo/vector-icons";
@@ -17,7 +18,8 @@ export default function Index() {
         longitude: 101.7007533, // Default to Bus Terminal, KLIA 1
     });
 
-    const cameraRef = useRef<Mapbox.Camera>(null);
+    const cameraRef = useRef<Camera>(null);
+    const locationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const fetchLocation = async () => {
         try {
@@ -53,8 +55,41 @@ export default function Index() {
         }
     };
 
+    const pinpoint = async () => {
+        try {
+            await fetchLocation();
+            if (cameraRef.current) {
+                cameraRef.current.setCamera({
+                    centerCoordinate: [location.longitude, location.latitude],
+                    zoomLevel: 16,
+                    animationDuration: 1000,
+                });
+            }
+        } catch (error) {
+            console.error("Error pinpointing location:", error);
+            Alert.alert(
+                "Pinpoint failed!",
+                "Unable to get your current location",
+                [{ text: "OK" }]
+            );
+        }
+    };
+
     useEffect(() => {
+        // Initial location fetch
         fetchLocation();
+
+        // Update location every 10 seconds (10000 ms)
+        // You can change this value to your preferred interval
+        locationTimerRef.current = setInterval(fetchLocation, 2000);
+
+        // Clean up function to clear interval when component unmounts
+        return () => {
+            if (locationTimerRef.current) {
+                clearInterval(locationTimerRef.current);
+                locationTimerRef.current = null;
+            }
+        };
     }, []);
 
     return (
@@ -66,12 +101,12 @@ export default function Index() {
                 >
                     <Mapbox.Camera
                         ref={cameraRef}
-                        zoomLevel={14}
-                        centerCoordinate={[
-                            location.longitude,
-                            location.latitude,
-                        ]}
-                        animationDuration={300}
+                        // zoomLevel={14}
+                        // centerCoordinate={[
+                        //     location.longitude,
+                        //     location.latitude,
+                        // ]}
+                        // animationDuration={300}
                     />
 
                     {/* Location marker */}
@@ -87,10 +122,7 @@ export default function Index() {
             </View>
 
             {/* Location Update */}
-            <TouchableOpacity
-                style={styles.locationButton}
-                onPress={fetchLocation}
-            >
+            <TouchableOpacity style={styles.locationButton} onPress={pinpoint}>
                 <FontAwesome name="location-arrow" size={20} color="white" />
             </TouchableOpacity>
 
