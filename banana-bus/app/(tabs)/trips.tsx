@@ -94,8 +94,8 @@ export default function Trips() {
     }, []);
 
     const navigation = useNavigation();
-    const handlePress = (routeId: number) => {
-        navigation.navigate(`/tripsList/${routeId}`);
+    const handlePress = (route: Route) => {
+        navigation.navigate(`/tripsList/?routeId=${route.route.routeId}?departId=${route.originIndex}?arriveId=${route.destIndex}?date=${new Date().toISOString()}`);
     };
 
     return (
@@ -127,7 +127,7 @@ export default function Trips() {
                 <FlatList
                     data={watchlistRoutes}
                     renderItem={({ item }) => (
-                        <TouchableOpacity onPress={() => handlePress(item.route.routeId)}>
+                        <TouchableOpacity onPress={() => handlePress(item)}>
                             <View style={styles.tripItem}>
                                 <View style={styles.accent} />
                                 <View style={styles.tripContent}>
