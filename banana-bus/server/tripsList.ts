@@ -38,16 +38,10 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
     })
     for (let i= 1; i < 10; i++) {
       route.trips.push(i)
-      data.trips.push({
-        tripId: i,
-        vehicleId: 1,
-        routeId: 1,
-        stopTimes:[
-          new Date(lookUpDate.getTime() + i *30 * 60 * 1000).toISOString(),
-          new Date(lookUpDate.getTime() + (i + 1) * 30 * 60 * 1000).toISOString()
-        ],
-        bookings: []
-    })
+
+      const stopTime1 = new Date(lookUpDate.getTime() + i *30 * 60 * 1000);
+      const stopTime2 = new Date(lookUpDate.getTime() + (i + 1) * 30 * 60 * 1000);
+      data.trips.push(new Trip(i, 1, 1, [stopTime1, stopTime2]));
     } 
 
     const departStop = data.stops.find(s => s.stopId === departId)
