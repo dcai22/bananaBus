@@ -74,10 +74,16 @@ export interface DataStore {
     stops: Stop[],
 }
 
-export interface Stop {
-    stopId: number,
-    name: string,
+export class Stop {
+    stopId: number;
+    name: string;
+
+    constructor(stopId: number, name: string) {
+        this.stopId = stopId;
+        this.name = name;
+    }
 }
+
 export interface AuthUserId {
     userId: number,
     token: string,

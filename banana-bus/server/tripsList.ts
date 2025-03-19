@@ -1,6 +1,6 @@
 import HTTPError from "http-errors";
 import { getData } from "./dataStore";
-import { DataStore, Trip, TripBox, TripList } from "./interface";
+import { DataStore, Route, Stop, Trip, TripBox, TripList } from "./interface";
 import { isSameDay } from "date-fns";
 
 export function tripsList(routeId: number, departId: number, arriveId: number, date: string): TripList {
@@ -11,20 +11,10 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
       users: [],
       trips: [],
       bookings:[],
-      routes: [{
-        routeId: 1,
-        stops: [1, 2],
-        trips: [0]
-      }],
+      routes: [ new Route(1, [1, 2], [0]) ],
       stops: [
-        {
-          stopId: 1,
-          name: "airport"
-        },
-        {
-          stopId: 2,
-          name: "utama mall"
-        }
+        new Stop(1, "airport"),
+        new Stop(2, "utama mall"),
       ],
     }
     
