@@ -6,7 +6,7 @@ const request = require("supertest");
 const app = require("../app");
 
 beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [], routes: [] });
+    setData({ users: [], trips: [], bookings: [], routes: [], stops: [] });
 })
 
 describe('Register', () => {

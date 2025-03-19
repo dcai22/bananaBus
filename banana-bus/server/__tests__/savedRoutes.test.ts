@@ -8,7 +8,7 @@ const app = require("../app");
 const newDb = { users: [{ email: 'email', password: 'password', tokens: [], userId: 0, bookings: [] }], bookings: [] };
 
 beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [], routes: [] });
+    setData({ users: [], trips: [], bookings: [], routes: [], stops: [] });
 })
 
 
@@ -23,6 +23,7 @@ describe("GET /getSavedRoutes", () => {
             trips: [],
             bookings: [],
             routes: [],
+            stops: [],
         });
 
         const response = await request(app)
@@ -41,6 +42,7 @@ describe("GET /getSavedRoutes", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -59,6 +61,7 @@ describe("GET /getSavedRoutes", () => {
             trips: [],
             bookings: [],
             routes: [ route0, route1, route2 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -76,6 +79,7 @@ describe("GET /getSavedRoutes", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -99,6 +103,7 @@ describe("POST /saveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -118,6 +123,7 @@ describe("POST /saveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0, route1, route2 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -136,6 +142,7 @@ describe("POST /saveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -152,6 +159,7 @@ describe("POST /saveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -174,6 +182,7 @@ describe("DELETE /unsaveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -193,6 +202,7 @@ describe("DELETE /unsaveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0, route1, route2 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -211,6 +221,7 @@ describe("DELETE /unsaveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -227,6 +238,7 @@ describe("DELETE /unsaveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -243,6 +255,7 @@ describe("DELETE /unsaveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
