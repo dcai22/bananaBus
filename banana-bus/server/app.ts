@@ -6,6 +6,7 @@ import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
 import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
+import { RouteSection } from './interface';
 
 const app = express();
 
@@ -84,14 +85,16 @@ app.get('/getSavedRoutes', (req: Request, res: Response) => {
 app.post('/saveRoute', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
     const routeId = req.body.routeId as number;
-    res.json(saveRoute(userId, routeId));
+    const originId = req.body.originId as number;
+    const destId = req.body.destId as number;
+    res.json(saveRoute(userId, routeId, originId, destId));
     return;
 })
 
 app.delete('/unsaveRoute', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
-    const routeId = req.body.routeId as number;
-    res.json(unsaveRoute(userId, routeId));
+    const routeSection = req.body.routeSection as RouteSection;
+    res.json(unsaveRoute(userId, routeSection));
     return;
 })
 

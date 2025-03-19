@@ -1,6 +1,6 @@
 import express, { json, Request, Response } from 'express';
 import { getData, setData } from "../dataStore";
-import { Booking, Route, UserBuilder, Trip } from "../interface";
+import { Booking, Route, UserBuilder, Trip, RouteSection, Stop } from "../interface";
 
 const request = require("supertest");
 const app = require("../app");
@@ -13,17 +13,26 @@ beforeEach(() => {
 
 
 describe("GET /getSavedRoutes", () => {
-    const route0 = new Route(0, []);
-    const route1 = new Route(1, []);
-    const route2 = new Route(2, []);
+    const stop0 = new Stop(0, '1utama Shopping Mall');
+    const stop1 = new Stop(1, 'Kuala Lumpur Intl. Terminal 1');
+    const stop2 = new Stop(2, 'Kuala Lumpur Intl. Terminal 2');
+    const route0 = new Route(0, [0, 1]);
+    const route1 = new Route(1, [1, 2]);
+    const route2 = new Route(2, [0, 1, 2]);
+    const routeSection0 = new RouteSection(0, 0, 1);
+    const routeSection1 = new RouteSection(1, 1, 2);
+    const routeSection2 = new RouteSection(2, 0, 2);
 
-    test("no routes", async () => {
+    const routes = [route0, route1, route2];
+    const stops = [stop0, stop1, stop2];
+
+    test("no saved routes", async () => {
         setData({
             users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
             trips: [],
             bookings: [],
-            routes: [],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
@@ -36,14 +45,14 @@ describe("GET /getSavedRoutes", () => {
     });
 
     test("one saved route", async () => {
-        const expected = [ route0 ];
         setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ 0 ]).build() ],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0 ]).build() ],
             trips: [],
             bookings: [],
-            routes: [ route0 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
+        const expected = [ routeSection0.asDisplayRouteSection() ];
 
         const response = await request(app)
             .get("/getSavedRoutes")
@@ -55,14 +64,14 @@ describe("GET /getSavedRoutes", () => {
     });
 
     test("many saved routes", async () => {
-        const expected = [ route0, route1, route2 ];
         setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ 0, 1, 2 ]).build() ],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0, routeSection1, routeSection2 ]).build() ],
             trips: [],
             bookings: [],
-            routes: [ route0, route1, route2 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
+        const expected = [ routeSection0.asDisplayRouteSection(), routeSection1.asDisplayRouteSection(), routeSection2.asDisplayRouteSection() ];
 
         const response = await request(app)
             .get("/getSavedRoutes")
@@ -78,8 +87,8 @@ describe("GET /getSavedRoutes", () => {
             users: [],
             trips: [],
             bookings: [],
-            routes: [ route0 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
@@ -92,23 +101,32 @@ describe("GET /getSavedRoutes", () => {
 });
 
 describe("POST /saveRoute", () => {
-    const route0 = new Route(0, []);
-    const route1 = new Route(1, []);
-    const route2 = new Route(2, []);
+    const stop0 = new Stop(0, '1utama Shopping Mall');
+    const stop1 = new Stop(1, 'Kuala Lumpur Intl. Terminal 1');
+    const stop2 = new Stop(2, 'Kuala Lumpur Intl. Terminal 2');
+    const route0 = new Route(0, [0, 1]);
+    const route1 = new Route(1, [1, 2]);
+    const route2 = new Route(2, [0, 1, 2]);
+    const routeSection0 = new RouteSection(0, 0, 1);
+    const routeSection1 = new RouteSection(1, 1, 2);
+    const routeSection2 = new RouteSection(2, 0, 2);
+
+    const routes = [route0, route1, route2];
+    const stops = [stop0, stop1, stop2];
 
     test("simple save route", async () => {
-        const expected = [ 0 ];
+        const expected = [ routeSection0 ];
         setData({
             users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
             trips: [],
             bookings: [],
-            routes: [ route0 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
             .post("/saveRoute")
-            .send({ userId: 0, routeId: 0 })
+            .send({ userId: 0, routeId: 0, originId: 0, destId: 1 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
@@ -117,18 +135,18 @@ describe("POST /saveRoute", () => {
     });
 
     test("savedRoutes sorted after new route is saved", async () => {
-        const expected = [ 0, 1, 2 ];
+        const expected = [ routeSection0, routeSection1, routeSection2 ];
         setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ 0, 2 ]).build() ],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0, routeSection2 ]).build() ],
             trips: [],
             bookings: [],
-            routes: [ route0, route1, route2 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
             .post("/saveRoute")
-            .send({ userId: 0, routeId: 1 })
+            .send({ userId: 0, routeId: 1, originId: 1, destId: 2 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
@@ -141,13 +159,13 @@ describe("POST /saveRoute", () => {
             users: [],
             trips: [],
             bookings: [],
-            routes: [ route0 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
             .post("/saveRoute")
-            .send({ userId: 0, routeId: 0 })
+            .send({ userId: 0, routeId: 0, originId: 0, destId: 1 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(400);
@@ -159,12 +177,12 @@ describe("POST /saveRoute", () => {
             trips: [],
             bookings: [],
             routes: [ route0 ],
-            stops: [],
+            stops: stops,
         });
 
         const response = await request(app)
             .post("/saveRoute")
-            .send({ userId: 0, routeId: 1 })
+            .send({ userId: 0, routeId: 1, originId: 1, destId: 2 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(400);
@@ -172,22 +190,31 @@ describe("POST /saveRoute", () => {
 });
 
 describe("DELETE /unsaveRoute", () => {
-    const route0 = new Route(0, []);
-    const route1 = new Route(1, []);
-    const route2 = new Route(2, []);
+    const stop0 = new Stop(0, '1utama Shopping Mall');
+    const stop1 = new Stop(1, 'Kuala Lumpur Intl. Terminal 1');
+    const stop2 = new Stop(2, 'Kuala Lumpur Intl. Terminal 2');
+    const route0 = new Route(0, [0, 1]);
+    const route1 = new Route(1, [1, 2]);
+    const route2 = new Route(2, [0, 1, 2]);
+    const routeSection0 = new RouteSection(0, 0, 1);
+    const routeSection1 = new RouteSection(1, 1, 2);
+    const routeSection2 = new RouteSection(2, 0, 2);
+
+    const routes = [route0, route1, route2];
+    const stops = [stop0, stop1, stop2];
 
     test("simple unsave route", async () => {
         setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ 0 ]).build() ],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0 ]).build() ],
             trips: [],
             bookings: [],
-            routes: [ route0 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
             .delete("/unsaveRoute")
-            .send({ userId: 0, routeId: 0 })
+            .send({ userId: 0, routeSection: routeSection0 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
@@ -196,18 +223,18 @@ describe("DELETE /unsaveRoute", () => {
     });
 
     test("unsave route from larger array", async () => {
-        const expected = [ 0, 2 ];
+        const expected = [ routeSection0, routeSection2 ];
         setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ 0, 1, 2 ]).build() ],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0, routeSection1, routeSection2 ]).build() ],
             trips: [],
             bookings: [],
-            routes: [ route0, route1, route2 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
             .delete("/unsaveRoute")
-            .send({ userId: 0, routeId: 1 })
+            .send({ userId: 0, routeSection: routeSection1 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(200);
@@ -220,30 +247,13 @@ describe("DELETE /unsaveRoute", () => {
             users: [],
             trips: [],
             bookings: [],
-            routes: [ route0 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
             .delete("/unsaveRoute")
-            .send({ userId: 0, routeId: 0 })
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(400);
-    });
-
-    test("route does not exist", async () => {
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ 0 ]).build() ],
-            trips: [],
-            bookings: [],
-            routes: [ route0 ],
-            stops: [],
-        });
-
-        const response = await request(app)
-            .delete("/unsaveRoute")
-            .send({ userId: 0, routeId: 1 })
+            .send({ userId: 0, routeSection: routeSection0 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(400);
@@ -254,13 +264,13 @@ describe("DELETE /unsaveRoute", () => {
             users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
             trips: [],
             bookings: [],
-            routes: [ route0 ],
-            stops: [],
+            routes: routes,
+            stops: stops,
         });
 
         const response = await request(app)
             .delete("/unsaveRoute")
-            .send({ userId: 0, routeId: 0 })
+            .send({ userId: 0, routeSection: routeSection0 })
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
         expect(response.statusCode).toBe(400);
