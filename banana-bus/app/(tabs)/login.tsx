@@ -23,7 +23,7 @@ export default function LoginScreen() {
         console.log("Password:", password);
 
         try {
-            const response = await fetch("http://192.168.0.12:3000/login", {
+            const response = await fetch("https://banana-psi-lemon.vercel.app/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
