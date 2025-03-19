@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import React, { useState, useEffect } from "react";
 import { ScrollView } from "react-native-gesture-handler";
-import { useNavigation } from "expo-router";
+import { router } from "expo-router";
 import { format } from "date-fns";
 
 export default function Trips() {
@@ -93,9 +93,25 @@ export default function Trips() {
         getTrips();
     }, []);
 
-    const navigation = useNavigation();
     const handlePress = (route: Route) => {
-        navigation.navigate(`/tripsList/?routeId=${route.route.routeId}?departId=${route.originIndex}?arriveId=${route.destIndex}?date=${new Date().toISOString()}`);
+        // router.push({
+        //     pathname: '/tripsList',
+        //     params: {
+        //         routeId: route.route.routeId,
+        //         departId: route.originIndex,
+        //         arriveId: route.destIndex,
+        //         date: new Date().toISOString(),
+        //     }
+        // })
+        router.push({
+            pathname: '/tripsList',
+            params: {
+                routeId: 1,
+                departId: 1,
+                arriveId: 2,
+                date: new Date().toISOString(),
+            }
+        })
     };
 
     return (
