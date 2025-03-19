@@ -1,14 +1,59 @@
 import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigation } from "expo-router";
 import * as Device from 'expo-device';
 
-import { saveItem } from '../helper';
+import { saveItem, getItem } from '../helper';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
+
+    useEffect(() => {
+        const autoLogin = async () => {
+            if (Device.deviceType === Device.DeviceType.PHONE) {
+                const token = getItem('token');
+                if (token !== null) {
+                    try {
+                        const response = await fetch('http://localhost:3000/autologin', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                            }
+                        });
+        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log(`Auto-login successful, uid: ${data.userId}, token: ${data.token}`);
+                            navigation.navigate('index');
+                        }
+                    } catch {}
+                }
+            } else {
+                const token = localStorage.getItem('token');
+                if (token !== null) {
+                    try {
+                        const response = await fetch('http://localhost:3000/autologin', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                            }
+                        });
+        
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log(`Auto-login successful, uid: ${data.userId}, token: ${data.token}`);
+                            navigation.navigate('index');
+                        }
+                    } catch {}
+                }
+            }
+        }
+
+        autoLogin();
+    }, []);
+
 
     const handleLogin = async () => {
         console.log('Email:', email);
