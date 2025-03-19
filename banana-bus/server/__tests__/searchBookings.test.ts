@@ -1,6 +1,6 @@
 import express, { json, Request, Response } from 'express';
 import { setData } from "../dataStore";
-import { booking, trip, route } from "../interface";
+import { Booking, Route, UserBuilder, Trip } from "../interface";
 
 const request = require("supertest");
 const app = require("../app");
@@ -8,112 +8,33 @@ const app = require("../app");
 const newDb = { users: [{ email: 'email', password: 'password', tokens: [], userId: 0, bookings: [] }], bookings: [] };
 
 beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [], routes: [] });
+    setData({ users: [], trips: [], bookings: [], routes: [], stops: [] });
 })
 
 describe("GET /pastBookings", () => {
-    const booking00: booking = {
-        bookingId: 0,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking01: booking = {
-        bookingId: 1,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking02: booking = {
-        bookingId: 2,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(2).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking03: booking = {
-        bookingId: 3,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(3).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking04: booking = {
-        bookingId: 4,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(4).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking00: Booking = new Booking(0, 0, 0, 0, 1, new Date(0));
+    const booking01: Booking = new Booking(1, 0, 0, 0, 1, new Date(1));
+    const booking02: Booking = new Booking(2, 0, 0, 0, 1, new Date(2));
+    const booking03: Booking = new Booking(3, 0, 0, 0, 1, new Date(3));
+    const booking04: Booking = new Booking(4, 0, 0, 0, 1, new Date(4));
 
-    const booking10: booking = {
-        bookingId: 5,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking11: booking = {
-        bookingId: 6,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking10: Booking = new Booking(5, 1, 0, 0, 1, new Date(0));
+    const booking11: Booking = new Booking(6, 1, 0, 0, 1, new Date(1));
 
-    const upcomingBooking: booking = {
-        bookingId: 7,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    }
+    const upcomingBooking: Booking = new Booking(7, 0, 1, 0, 1, new Date(0));
 
-    const trip0: trip = {
-        tripId: 0,
-        vehicleId: 0,
-        routeId: 0,
-        bookings: [ 0, 1, 2, 3, 4, 5, 6 ],
-        stopTimes: [ new Date(0).toISOString(), new Date(1).toISOString() ],
-    };
-    const upcomingTrip: trip = {
-        tripId: 0,
-        vehicleId: 0,
-        routeId: 0,
-        bookings: [ 7 ],
-        stopTimes: [ new Date(3000, 0, 1).toISOString(), new Date(3000, 0, 2).toISOString() ],
-    }
+    const trip0: Trip = new Trip(0, 0, 0, [ new Date(0), new Date(1) ], [ 0, 1, 2, 3, 4, 5, 6 ]);
+    const upcomingTrip: Trip = new Trip(1, 0, 0, [ new Date(3000, 0, 1), new Date(3000, 0, 2) ], [ 7 ]);
 
-    const route0: route = {
-        routeId: 0,
-        stops: [ 0, 1 ],
-        trips: [ 0, 1 ],
-    };
+    const route0: Route = new Route(0, [ 0, 1 ], [ 0, 1 ]);
 
     test("No past bookings", async () => {
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: []
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
         const response = await request(app)
             .get("/pastBookings")
@@ -127,18 +48,11 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 2 past user bookings", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -153,18 +67,11 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 1", async () => {
         const expected = [ booking01 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -179,18 +86,11 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 1 past user booking", async () => {
         const expected = [ booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking10, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -205,18 +105,11 @@ describe("GET /pastBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 3", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -231,18 +124,11 @@ describe("GET /pastBookings", () => {
     test("5 total past bookings, 3 past user bookings", async () => {
         const expected = [ booking03, booking02, booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 2, 3 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 2, 3 ]).build() ],
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking10, booking02, booking03, booking11, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -256,108 +142,29 @@ describe("GET /pastBookings", () => {
 });
 
 describe("GET /upcomingBookings", () => {
-    const booking00: booking = {
-        bookingId: 0,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking01: booking = {
-        bookingId: 1,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking02: booking = {
-        bookingId: 2,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(2).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking03: booking = {
-        bookingId: 3,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(3).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking04: booking = {
-        bookingId: 4,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(4).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking00: Booking = new Booking(0, 0, 0, 0, 1, new Date(0));
+    const booking01: Booking = new Booking(1, 0, 0, 0, 1, new Date(1));
+    const booking02: Booking = new Booking(2, 0, 0, 0, 1, new Date(2));
+    const booking03: Booking = new Booking(3, 0, 0, 0, 1, new Date(3));
+    const booking04: Booking = new Booking(4, 0, 0, 0, 1, new Date(4));
 
-    const booking10: booking = {
-        bookingId: 5,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
-    const booking11: booking = {
-        bookingId: 6,
-        userId: 1,
-        tripId: 0,
-        bookingTime: new Date(1).toISOString(),
-        origin: 0,
-        dest: 1,
-    };
+    const booking10: Booking = new Booking(5, 1, 0, 0, 1, new Date(0));
+    const booking11: Booking = new Booking(6, 1, 0, 0, 1, new Date(1));
 
-    const pastBooking: booking = {
-        bookingId: 7,
-        userId: 0,
-        tripId: 0,
-        bookingTime: new Date(0).toISOString(),
-        origin: 0,
-        dest: 1,
-    }
+    const pastBooking: Booking = new Booking(7, 0, 1, 0, 1, new Date(0));
 
-    const trip0: trip = {
-        tripId: 0,
-        vehicleId: 0,
-        routeId: 0,
-        bookings: [ 0, 1, 2, 3, 4, 5, 6 ],
-        stopTimes: [ new Date(3000, 0, 1).toISOString(), new Date(3000, 0, 2).toISOString() ],
-    };
-    const pastTrip: trip = {
-        tripId: 0,
-        vehicleId: 0,
-        routeId: 0,
-        bookings: [ 7 ],
-        stopTimes: [ new Date(0).toISOString(), new Date(1).toISOString() ],
-    }
+    const trip0: Trip = new Trip(0, 0, 0, [ new Date(3000, 0, 1), new Date(3000, 0, 2) ], [ 0, 1, 2, 3, 4, 5, 6 ]);
+    const pastTrip: Trip = new Trip(1, 0, 0, [ new Date(0), new Date(1) ], [ 7 ]);
 
-    const route0: route = {
-        routeId: 0,
-        stops: [ 0, 1 ],
-        trips: [ 0, 1 ],
-    };
+    const route0: Route = new Route(0, [ 0, 1 ], [ 0, 1 ]);
 
     test("No past bookings", async () => {
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: []
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
         const response = await request(app)
             .get("/upcomingBookings")
@@ -371,18 +178,11 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 2 past user bookings", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -397,18 +197,11 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 1", async () => {
         const expected = [ booking01 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -423,18 +216,11 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 1 past user booking", async () => {
         const expected = [ booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking10, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -449,18 +235,11 @@ describe("GET /upcomingBookings", () => {
     test("2 total past bookings, 2 past user bookings, display 3", async () => {
         const expected = [ booking01, booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 1 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 1 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -475,18 +254,11 @@ describe("GET /upcomingBookings", () => {
     test("5 total past bookings, 3 past user bookings", async () => {
         const expected = [ booking03, booking02, booking00 ];
         setData({
-            users: [{
-                firstName: 'first',
-                lastName: 'last',
-                email: 'email',
-                password: 'password',
-                tokens: [],
-                userId: 0,
-                bookings: [ 0, 2, 3 ],
-            }],
+            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withBookings([ 0, 2, 3 ]).build() ],
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking10, booking02, booking03, booking11, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)

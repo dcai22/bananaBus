@@ -26,7 +26,9 @@ export default function TabLayout() {
                 },
                 headerShown: false,
             }}
-        >   <Tabs.Screen
+            backBehavior="history"
+        >
+            <Tabs.Screen
                 name="login"
                 options={{
                     href: null,
@@ -74,6 +76,18 @@ export default function TabLayout() {
                     tabBarIcon: ({ color }) => (
                         <FontAwesome size={24} name="user" color={color} />
                     ),
+                }}
+            />
+            <Tabs.Screen
+                name="tripsList"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="booking"
+                options={{
+                    href: null,
                 }}
             />
         </Tabs>

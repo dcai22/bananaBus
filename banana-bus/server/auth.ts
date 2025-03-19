@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { authUserId, dataStore, error } from "./interface";
+import { AuthUserId, DataStore, Error, UserBuilder } from "./interface";
 import { getData, setData } from "./dataStore";
 import { getHash, compareHash } from "./helper";
 import crypto from "crypto";
@@ -22,15 +22,15 @@ export function authRegister(email: string, password: string, firstName: string,
     const token = crypto.randomBytes(64).toString('hex')
     const hashedToken = getHash(token);
 
-    data.users.push({
-        firstName,
-        lastName,
-        email,
-        password: hashedPassword,
-        tokens: [hashedToken],
-        userId,
-        bookings: [],
-    });
+    data.users.push(new UserBuilder()
+        .withFirstName(firstName)
+        .withLastName(lastName)
+        .withEmail(email)
+        .withPassword(hashedPassword)
+        .withTokens([ hashedToken ])
+        .withUserId(userId)
+        .build()
+    );
 
 
     setData(data);
