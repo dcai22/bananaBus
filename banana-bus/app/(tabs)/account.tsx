@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from 'expo-router';
+import * as Device from 'expo-device';
+import { getItem } from '../helper';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -10,9 +12,30 @@ export default function Account() {
     const [isAdmin, setIsAdmin] = useState(false);
 
     const navigation = useNavigation();
+
     useEffect(() => {
         // TODO Fetch user name from API
-        setUserName('KK Leong');
+        const getAccountName = async () => {
+            let token = null;
+            if (Device.deviceType === Device.DeviceType.PHONE) {
+                token = getItem('token');
+            } else {
+                token = localStorage.getItem('token');
+            }
+            try {
+                const response = await fetch('http://localhost:3000/getAccountName', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserName(data);
+                }
+            } catch {
+                console.log('Failed to fetch user name');
+            }
+        }
+        getAccountName();
         // TODO Fetch weather data from API
         setTemperature(30);
         setWindSpeed(10);
