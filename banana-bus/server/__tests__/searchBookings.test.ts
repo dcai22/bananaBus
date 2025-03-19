@@ -8,7 +8,7 @@ const app = require("../app");
 const newDb = { users: [{ email: 'email', password: 'password', tokens: [], userId: 0, bookings: [] }], bookings: [] };
 
 beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [], routes: [] });
+    setData({ users: [], trips: [], bookings: [], routes: [], stops: [] });
 })
 
 describe("GET /pastBookings", () => {
@@ -34,6 +34,7 @@ describe("GET /pastBookings", () => {
             trips: [ trip0, upcomingTrip ],
             bookings: [ upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
         const response = await request(app)
             .get("/pastBookings")
@@ -51,6 +52,7 @@ describe("GET /pastBookings", () => {
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -69,6 +71,7 @@ describe("GET /pastBookings", () => {
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -87,6 +90,7 @@ describe("GET /pastBookings", () => {
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking10, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -105,6 +109,7 @@ describe("GET /pastBookings", () => {
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking01, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -123,6 +128,7 @@ describe("GET /pastBookings", () => {
             trips: [ trip0, upcomingTrip ],
             bookings: [ booking00, booking10, booking02, booking03, booking11, upcomingBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -158,6 +164,7 @@ describe("GET /upcomingBookings", () => {
             trips: [ trip0, pastTrip ],
             bookings: [ pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
         const response = await request(app)
             .get("/upcomingBookings")
@@ -175,6 +182,7 @@ describe("GET /upcomingBookings", () => {
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -193,6 +201,7 @@ describe("GET /upcomingBookings", () => {
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -211,6 +220,7 @@ describe("GET /upcomingBookings", () => {
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking10, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -229,6 +239,7 @@ describe("GET /upcomingBookings", () => {
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking01, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)
@@ -247,6 +258,7 @@ describe("GET /upcomingBookings", () => {
             trips: [ trip0, pastTrip ],
             bookings: [ booking00, booking10, booking02, booking03, booking11, pastBooking ],
             routes: [ route0 ],
+            stops: [],
         });
 
         const response = await request(app)

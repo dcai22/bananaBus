@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { AuthUserId, DataStore, Error } from "./interface";
+import { AuthUserId, DataStore, Error, UserBuilder } from "./interface";
 import { getData, setData } from "./dataStore";
 import { getHash, compareHash } from "./helper";
 import crypto from "crypto";
@@ -22,15 +22,15 @@ export function authRegister(email: string, password: string, firstName: string,
     const token = crypto.randomBytes(64).toString('hex')
     const hashedToken = getHash(token);
 
-    data.users.push({
-        firstName,
-        lastName,
-        email,
-        password: hashedPassword,
-        tokens: [hashedToken],
-        userId,
-        bookings: [],
-    });
+    data.users.push(new UserBuilder()
+        .withFirstName(firstName)
+        .withLastName(lastName)
+        .withEmail(email)
+        .withPassword(hashedPassword)
+        .withTokens([ hashedToken ])
+        .withUserId(userId)
+        .build()
+    );
 
 
     setData(data);
@@ -63,17 +63,18 @@ export function authLogin(email: string, password: string) {
 
 export function authAutoLogin(token: string) {
     const data = getData();
+    const strippedToken = token.replace('Bearer ', '');
     for (const user of data.users) {
         for (const userToken of user.tokens) {
-            if (compareHash(token, userToken)) {
+            if (compareHash(strippedToken, userToken)) {
                 return {
                     userId: user.userId,
-                    token: token
+                    token: strippedToken
                 }
             }
         }
     }
-    throw HTTPError(400, 'invalid token');
+    throw HTTPError(403, 'invalid token');
 }
 
 export function authLogout(userId: number, token: string) {
