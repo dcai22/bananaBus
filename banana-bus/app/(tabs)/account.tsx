@@ -18,7 +18,7 @@ export default function Account() {
         const getAccountName = async () => {
             let token = null;
             if (Device.deviceType === Device.DeviceType.PHONE) {
-                token = getItem('token');
+                token = await getItem('token');
             } else {
                 token = localStorage.getItem('token');
             }
