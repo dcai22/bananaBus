@@ -18,7 +18,7 @@ export default function tripsList() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get("http://localhost:3000/tripsList", {
+        axios.get("https://banana-psi-lemon.vercel.app/tripsList", {
             params: {
                 routeId,
                 departId,
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     },
     header: {
         backgroundColor: "white",
-        height: "20%",
+        height: "22%",
         padding: 20,
         boxShadow: "0px 0px 5px grey"
     },
