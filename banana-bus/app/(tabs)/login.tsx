@@ -13,7 +13,7 @@ export default function LoginScreen() {
     useEffect(() => {
         const autoLogin = async () => {
             if (Device.deviceType === Device.DeviceType.PHONE) {
-                const token = getItem('token');
+                const token =  await getItem('token');
                 if (token !== null) {
                     try {
                         const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {

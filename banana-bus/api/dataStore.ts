@@ -15,6 +15,6 @@ export function getData() {
 
 export function setData(newData: DataStore) {
     data = newData;
-    const dataOut = JSON.stringify(newData, null, 2);
-    fs.writeFileSync('./data.json', dataOut, { flag: 'w' }); // for testing
+    // const dataOut = JSON.stringify(newData, null, 2);
+    // fs.writeFileSync('./data.json', dataOut, { flag: 'w' }); // for testing
 }
