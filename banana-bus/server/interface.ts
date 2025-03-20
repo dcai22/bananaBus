@@ -1,3 +1,7 @@
+import { getData } from "./dataStore";
+import { getRouteById, getStopById, getTripById } from "./helper";
+import HTTPError from "http-errors";
+
 export interface Error {
     error: string
 }
@@ -10,7 +14,7 @@ interface User {
     tokens: string[];
     userId: number;
     bookings: number[];
-    savedRoutes: number[];
+    savedRoutes: RouteSection[];
 }
 
 class User implements User {
@@ -27,7 +31,7 @@ export class UserBuilder implements Partial<User> {
     tokens: string[] = [];
     userId?: number;
     bookings: number[] = [];
-    savedRoutes: number[] = [];
+    savedRoutes: RouteSection[] = [];
 
     withFirstName(firstName: string) {
         return Object.assign(this, { firstName: firstName });
@@ -57,7 +61,7 @@ export class UserBuilder implements Partial<User> {
         return Object.assign(this, { bookings:  bookings });
     }
 
-    withSavedRoutes(savedRoutes: number[]) {
+    withSavedRoutes(savedRoutes: RouteSection[]) {
         return Object.assign(this, { savedRoutes: savedRoutes });
     }
 
@@ -101,6 +105,47 @@ export class Route {
     }
 }
 
+export class RouteSection {
+    routeId: number;
+    originId: number;
+    destId: number;
+
+    constructor(routeId: number, originId: number, destId: number) {
+        this.routeId = routeId;
+        this.originId = originId;
+        this.destId = destId;
+    }
+
+    equals(other: RouteSection) {
+        return this.routeId === other.routeId && this.originId === other.originId && this.destId === other.destId;
+    }
+
+    isValid() {
+        const route = getRouteById(this.routeId);
+        const originIndex = route.stops.indexOf(this.originId);
+        const destIndex = route.stops.indexOf(this.destId);
+        if (0 <= originIndex && originIndex < destIndex) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    asDisplayRouteSection() {
+        const route = getRouteById(this.routeId);
+        const origin = getStopById(this.originId);
+        const dest = getStopById(this.destId);
+
+        return {
+            route: route,
+            originIndex: route.stops.indexOf(this.originId),
+            originName: origin.name,
+            destIndex: route.stops.indexOf(this.destId),
+            destName: dest.name,
+        };
+    }
+}
+
 export class Trip {
     tripId: number;
     vehicleId: number;
@@ -132,6 +177,24 @@ export class Booking {
         this.origin = origin;
         this.dest = dest;
         this.bookingTime = bookingTime.toISOString();
+    }
+
+    asDisplayBooking() {
+        const trip = getTripById(this.tripId);
+        const route = getRouteById(trip.routeId);
+
+        const originName = getStopById(this.origin).name;
+        const destName = getStopById(this.dest).name;
+        const departureTime = trip.stopTimes[route.stops.indexOf(this.origin)];
+
+        return {
+            bookingId: this.bookingId,
+            userId: this.userId,
+            tripId: this.tripId,
+            originName: originName,
+            destName: destName,
+            departureTime: departureTime,
+        };
     }
 }
 

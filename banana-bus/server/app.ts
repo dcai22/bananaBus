@@ -6,6 +6,8 @@ import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
 import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
+import { RouteSection } from './interface';
+import { getAccountName } from './account';
 
 const app = express();
 
@@ -36,14 +38,14 @@ app.post('/register', (req: Request, res: Response) => {
 })
 
 app.post('/autologin', (req: Request, res: Response) => {
-    const token = req.body.token as string;
+    const token = req.headers.authorization as string;
     res.json(authAutoLogin(token));
     return;
 })
 
 app.post('/logout', (req: Request, res: Response) => {
+    const token = req.header('token') as string;
     const userId = req.body.userId as number;
-    const token = req.body.token as string;
     res.json(authLogout(userId, token));
     return;
 })
@@ -84,14 +86,22 @@ app.get('/getSavedRoutes', (req: Request, res: Response) => {
 app.post('/saveRoute', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
     const routeId = req.body.routeId as number;
-    res.json(saveRoute(userId, routeId));
+    const originId = req.body.originId as number;
+    const destId = req.body.destId as number;
+    res.json(saveRoute(userId, routeId, originId, destId));
     return;
 })
 
 app.delete('/unsaveRoute', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
-    const routeId = req.body.routeId as number;
-    res.json(unsaveRoute(userId, routeId));
+    const routeSection = req.body.routeSection as RouteSection;
+    res.json(unsaveRoute(userId, routeSection));
+    return;
+})
+
+app.get('/getAccountName', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    res.json(getAccountName(token));
     return;
 })
 

@@ -14,17 +14,20 @@ export default function RegisterScreen() {
     const navigation = useNavigation();
 
     const handleRegister = async () => {
+        // TODO remove debug msg
         console.log('Email:', email);
         console.log('Password:', password);
         if (password !== confirmPassword) {
-            console.log('Passwords do not match');
+            Alert.alert('Error', 'Paswords don\'t match!');
+            setConfirmPassword('');
+            setPassword('');
             return;
         }
 
         // Register user
 
         try {
-            const response = await fetch('http://localhost:3000/register', {
+            const response = await fetch('https://banana-psi-lemon.vercel.app/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

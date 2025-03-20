@@ -72,7 +72,7 @@ export function searchBookings(userId: number, timeFrame: string, numBookings: n
                 }
             })
             .slice(0, numBookings);
-        return { userBookings: userBookings };
+        return { userBookings: userBookings.map((booking) => { return booking.asDisplayBooking() }) };
     }
 
     // userId does not exist

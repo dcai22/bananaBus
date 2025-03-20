@@ -63,17 +63,18 @@ export function authLogin(email: string, password: string) {
 
 export function authAutoLogin(token: string) {
     const data = getData();
+    const strippedToken = token.replace('Bearer ', '');
     for (const user of data.users) {
         for (const userToken of user.tokens) {
-            if (compareHash(token, userToken)) {
+            if (compareHash(strippedToken, userToken)) {
                 return {
                     userId: user.userId,
-                    token: token
+                    token: strippedToken
                 }
             }
         }
     }
-    throw HTTPError(400, 'invalid token');
+    throw HTTPError(403, 'invalid token');
 }
 
 export function authLogout(userId: number, token: string) {
