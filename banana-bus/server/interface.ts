@@ -205,7 +205,7 @@ export interface TripList {
 }
 
 export interface TripBox {
-    tripId: number
+    tripId: number,
     departureTime: Date,
     arrivalTime: Date,
     price: number,

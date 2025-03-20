@@ -20,20 +20,20 @@ function timeTillDepart(departureTime: Date) {
 } 
 
 // (to be reused in booking page/ past trips)
-export default function TripListBox(trip: TripBox) {
+export default function TripListBox({ trip, disabled = true}: { trip: TripBox; disabled?: boolean }) {
     const nowToDepart = timeTillDepart(trip.departureTime)
 
     const departed = nowToDepart.endsWith("ago")
 
     function handlePress() {
-        if (!departed) {
+        if (!departed && !disabled) {
             router.push({
                 pathname: '/booking',
                 params: { routeId: 1, departId: 1, arriveId: 2, tripId: `${trip.tripId}`},
             })
         } else {
             // make a pop up or something
-            console.log("already departed")
+            console.log("already departed/ disable")
         }
     }
 
@@ -54,7 +54,7 @@ export default function TripListBox(trip: TripBox) {
                         </View>
                     </View>
                     <View style = {styles.rightInfoContainer}>
-                        <Text style = {styles.price}>{trip.price}RM</Text>
+                        <Text style = {styles.price}>RM {trip.price}</Text>
                         <Text style = {styles.arriveTime}>{format(trip.arrivalTime, "HH:mm")}</Text>
                         <View style = {styles.capacityContainer}>
                             {/* calc disabled space */}
