@@ -56,6 +56,7 @@ export default function LoginScreen() {
 
 
     const handleLogin = async () => {
+        // TODO remove debug msg
         console.log("Email:", email);
         console.log("Password:", password);
 
