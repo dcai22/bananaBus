@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import HTTPError from "http-errors";
 import { getData } from "./dataStore";
+import { routeToScreen } from "expo-router/build/useScreens";
 
 export function getHash(text: string) {
     const salt = bcrypt.genSaltSync(10);
@@ -53,4 +54,14 @@ export function getRouteById(routeId: number) {
         }
     }
     throw HTTPError(400, 'route not found');
+}
+
+export function getStopById(stopId: number) {
+    const data = getData();
+    for (const stop of data.stops) {
+        if (stop.stopId === stopId) {
+            return stop;
+        }
+    }
+    throw HTTPError(400, 'stop not found');
 }
