@@ -24,6 +24,18 @@ export function isValidToken(token: string) {
     return false;
 }
 
+export function findUserByToken(token: string) {
+    const data = getData();
+    for (const user of data.users) {
+        for (const userToken of user.tokens) {
+            if (compareHash(token, userToken)) {
+                return user;
+            }
+        }
+    }
+    return;
+}
+
 export function getTripById(tripId: number) {
     const data = getData();
     for (const trip of data.trips) {

@@ -17,8 +17,8 @@ export default function TabLayout() {
                     margin: 0,
                     padding: 0,
                     borderRadius: 0,
-                    alignItems: 'center',
-                    flexDirection: 'row',
+                    alignItems: "center",
+                    flexDirection: "row",
                 },
                 tabBarLabelPosition: "below-icon",
                 tabBarLabelStyle: {
@@ -32,14 +32,14 @@ export default function TabLayout() {
                 name="login"
                 options={{
                     href: null,
-                    tabBarStyle: {display: 'none'},
+                    tabBarStyle: { display: "none" },
                 }}
             />
             <Tabs.Screen
                 name="register"
                 options={{
                     href: null,
-                    tabBarStyle: {display: 'none'},
+                    tabBarStyle: { display: "none" },
                 }}
             />
             <Tabs.Screen
@@ -56,7 +56,7 @@ export default function TabLayout() {
                 options={{
                     title: "Saved Trips",
                     tabBarIcon: ({ color }) => (
-                        <FontAwesome size={24} name="th" color={color} />
+                        <FontAwesome size={24} name="list" color={color} />
                     ),
                 }}
             />
@@ -95,7 +95,7 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-    icons : {
-        color: 'black',
-    }
+    icons: {
+        color: "black",
+    },
 });

@@ -7,6 +7,7 @@ import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { RouteSection } from './interface';
+import { getAccountName } from './account';
 
 const app = express();
 
@@ -95,6 +96,12 @@ app.delete('/unsaveRoute', (req: Request, res: Response) => {
     const userId = req.body.userId as number;
     const routeSection = req.body.routeSection as RouteSection;
     res.json(unsaveRoute(userId, routeSection));
+    return;
+})
+
+app.get('/getAccountName', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    res.json(getAccountName(token));
     return;
 })
 
