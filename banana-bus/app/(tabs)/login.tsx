@@ -16,7 +16,7 @@ export default function LoginScreen() {
                 const token = await getItem('token');
                 if (token !== null) {
                     try {
-                        const response = await fetch('http://localhost:3000/autologin', {
+                        const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -34,7 +34,7 @@ export default function LoginScreen() {
                 const token = localStorage.getItem('token');
                 if (token !== null) {
                     try {
-                        const response = await fetch('http://localhost:3000/autologin', {
+                        const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
