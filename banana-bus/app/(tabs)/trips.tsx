@@ -40,8 +40,8 @@ export default function Trips() {
                 tripId: 0,
                 originName: '1utama Shopping Mall',
                 destName: 'Kuala Lumpur Intl. T1',
-                bookingTime: new Date().toISOString(),
-                departureTime: new Date().toISOString(),
+                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
+                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
             },
             {
                 bookingId: 1,
@@ -49,8 +49,8 @@ export default function Trips() {
                 tripId: 5,
                 originName: 'Kuala Lumpur Intl. T2',
                 destName: '1utama Shopping Mall',
-                bookingTime: new Date().toISOString(),
-                departureTime: new Date().toISOString(),
+                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
+                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
             },
             {
                 bookingId: 2,
@@ -58,8 +58,8 @@ export default function Trips() {
                 tripId: 5,
                 originName: 'Kuala Lumpur Intl. T2',
                 destName: '1utama Shopping Mall',
-                bookingTime: new Date().toISOString(),
-                departureTime: new Date().toISOString(),
+                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
+                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
             },
             {
                 bookingId: 3,
@@ -67,8 +67,8 @@ export default function Trips() {
                 tripId: 5,
                 originName: 'Kuala Lumpur Intl. T2',
                 destName: '1utama Shopping Mall',
-                bookingTime: new Date().toISOString(),
-                departureTime: new Date().toISOString(),
+                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
+                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
             },
         ];
     };
