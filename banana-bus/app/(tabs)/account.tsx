@@ -29,7 +29,7 @@ export default function Account() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    setUserName(data);
+                    setUserName(data.firstName);
                 }
             } catch {
                 console.log('Failed to fetch user name');
