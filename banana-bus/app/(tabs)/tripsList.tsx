@@ -5,7 +5,7 @@ import { View, Text, StyleSheet} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
-import { TripBox } from "@/server/interface";
+import { TripBox } from "@/api/interface";
 
 export default function tripsList() {
     const { routeId, departId, arriveId, date } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string, date: string}>()

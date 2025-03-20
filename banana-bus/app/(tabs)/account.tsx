@@ -23,7 +23,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch('http://localhost:3000/getAccountName', {
+                const response = await fetch('https://banana-psi-lemon.vercel.app/getAccountName', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
