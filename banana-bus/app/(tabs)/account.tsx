@@ -18,12 +18,12 @@ export default function Account() {
         const getAccountName = async () => {
             let token = null;
             if (Device.deviceType === Device.DeviceType.PHONE) {
-                token = getItem('token');
+                token = await getItem('token');
             } else {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch('http://localhost:3000/getAccountName', {
+                const response = await fetch('https://banana-psi-lemon.vercel.app/getAccountName', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
