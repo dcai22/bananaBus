@@ -2,12 +2,11 @@ import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image} from "react-native";
-import { format, set } from "date-fns"
+import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { TripBox } from "@/server/interface";
-import { setItemAsync } from "expo-secure-store";
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -196,8 +195,8 @@ export default function booking() {
                                 {/* checking card type. could be function*/}
                                 { defaultCard.type === "Mastercard" &&
                                     <Image 
-                                        source={{uri: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg"}}
-                                        style={{flex: 1}}
+                                        source={require("../../assets/images/mastercard.png")}
+                                        style={styles.typeImage}
                                     />
                                 }
                             </View> 
@@ -241,7 +240,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
     },
     goBackContainer: {
-        height: "20%",
+        height: "100%",
         flexDirection: "row",
     },
     goBackArrow: {
@@ -370,8 +369,10 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 10,
         right: 10,
+    },
+    typeImage: {
         width:25, 
-        height: 20
+        height: 20,
     },
     cardInfoContainer: {
         paddingLeft: 7, justifyContent: "flex-end"
