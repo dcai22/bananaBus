@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import React, { useState, useEffect } from "react";
-import { ScrollView, GestureHandlerRootView } from "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { router } from "expo-router";
 import { format } from "date-fns";
-import TripListBox from "@/components/TripListBox";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 export default function Trips() {
     interface Trip {
@@ -195,7 +195,9 @@ export default function Trips() {
                                     <View style={styles.accent} />
                                     <View style={styles.tripContent}>
                                         <Text>{format(new Date(item.bookingTime), "hh:mm a, do MMMM yyyy")}</Text>
-                                        <Text style={styles.route}>{item.originName} → {item.destName}</Text>
+                                        <Text style={styles.route}>
+                                            {item.originName} <FontAwesome name="arrow-right" style={styles.arrow}/> {item.destName}
+                                        </Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -213,7 +215,9 @@ export default function Trips() {
                                 <View style={styles.tripItem}>
                                     <View style={styles.accent} />
                                     <View style={styles.tripContent}>
-                                        <Text style={styles.route}>{item.originName} → {item.destName}</Text>
+                                        <Text style={styles.route}>
+                                            {item.originName} <FontAwesome name="arrow-right" style={styles.arrow}/> {item.destName}
+                                        </Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
@@ -293,5 +297,8 @@ const styles = StyleSheet.create({
     upcomingList: {
         flex: 1,
         height: "60%",
+    },
+    arrow: {
+        fontSize: 18,
     },
 });
