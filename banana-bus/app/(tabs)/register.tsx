@@ -50,7 +50,7 @@ export default function RegisterScreen() {
                 navigation.navigate('index');
             } else {
                 const errorData = await response.json();
-                Alert.alert('Error', errorData.message || 'Registration failed');
+                Alert.alert('Error', errorData.error || 'Registration failed');
             }
         } catch (error) {
             Alert.alert('Error', 'An error occurred. Please try again.');

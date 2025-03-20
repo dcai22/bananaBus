@@ -88,7 +88,7 @@ export default function LoginScreen() {
                 navigation.navigate("index");
             } else {
                 const errorData = await response.json();
-                Alert.alert("Error", errorData.message || "Login failed");
+                Alert.alert("Error", errorData.error || "Login failed");
             }
         } catch (error) {
             Alert.alert("Error", "An error occurred. Please try again.");
