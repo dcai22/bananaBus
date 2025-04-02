@@ -19,11 +19,12 @@ export default function Index() {
     });
 
     const cameraRef = useRef<Camera>(null);
-    const locationTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const locationWatcherRef = useRef<ExpoLocation.LocationSubscription | null>(
+        null
+    );
 
-    const fetchLocation = async () => {
+    const requestLocationPermission = async () => {
         try {
-            // Set location permission
             const { status } =
                 await ExpoLocation.requestForegroundPermissionsAsync();
 
@@ -33,23 +34,39 @@ export default function Index() {
                     "Please allow location access to use this feature",
                     [{ text: "OK" }]
                 );
-                return;
+                return false;
             }
-
-            // Get current location
-            const currentLocation =
-                await ExpoLocation.getCurrentPositionAsync();
-
-            const newLocation = {
-                latitude: currentLocation.coords.latitude,
-                longitude: currentLocation.coords.longitude,
-            };
-            setLocation(newLocation);
+            return true;
         } catch (error) {
-            console.error("Error getting location:", error);
+            console.error("Error requesting location permission:", error);
+            return false;
+        }
+    };
+
+    const startLocationTracking = async () => {
+        try {
+            const hasPermission = await requestLocationPermission();
+            if (!hasPermission) return;
+
+            locationWatcherRef.current = await ExpoLocation.watchPositionAsync(
+                {
+                    accuracy: ExpoLocation.Accuracy.High,
+                    distanceInterval: 10,
+                    timeInterval: 1000,
+                },
+                (newLocation) => {
+                    console.log("Location updated:", newLocation.coords);
+                    setLocation({
+                        latitude: newLocation.coords.latitude,
+                        longitude: newLocation.coords.longitude,
+                    });
+                }
+            );
+        } catch (error) {
+            console.error("Error watching location:", error);
             Alert.alert(
                 "Something went wrong!",
-                "Unable to get your current location",
+                "Unable to track your location",
                 [{ text: "OK" }]
             );
         }
@@ -57,11 +74,27 @@ export default function Index() {
 
     const pinpoint = async () => {
         try {
-            await fetchLocation();
+            const hasPermission = await requestLocationPermission();
+            if (!hasPermission) return;
+
+            const currentLocation = await ExpoLocation.getCurrentPositionAsync({
+                accuracy: ExpoLocation.Accuracy.High,
+            });
+
+            const newLocation = {
+                latitude: currentLocation.coords.latitude,
+                longitude: currentLocation.coords.longitude,
+            };
+
+            setLocation(newLocation);
+
             if (cameraRef.current) {
                 cameraRef.current.setCamera({
-                    centerCoordinate: [location.longitude, location.latitude],
-                    zoomLevel: 16,
+                    centerCoordinate: [
+                        newLocation.longitude,
+                        newLocation.latitude,
+                    ],
+                    zoomLevel: 15,
                     animationDuration: 1000,
                 });
             }
@@ -76,21 +109,28 @@ export default function Index() {
     };
 
     useEffect(() => {
-        // Initial location fetch
-        fetchLocation();
+        console.log("Starting location tracking");
+        startLocationTracking();
 
-        // Update location every 10 seconds (10000 ms)
-        // You can change this value to your preferred interval
-        locationTimerRef.current = setInterval(fetchLocation, 2000);
-
-        // Clean up function to clear interval when component unmounts
         return () => {
-            if (locationTimerRef.current) {
-                clearInterval(locationTimerRef.current);
-                locationTimerRef.current = null;
+            if (locationWatcherRef.current) {
+                locationWatcherRef.current.remove();
+                locationWatcherRef.current = null;
+                console.log("Location tracking stopped");
             }
         };
     }, []);
+
+    // TODO: Change this so it doesnt autoupdate when location updates, only when pinpoint
+    useEffect(() => {
+        if (cameraRef.current && location) {
+            cameraRef.current.setCamera({
+                centerCoordinate: [location.longitude, location.latitude],
+                zoomLevel: 15,
+                animationDuration: 1000,
+            });
+        }
+    }, [location]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -101,12 +141,13 @@ export default function Index() {
                 >
                     <Mapbox.Camera
                         ref={cameraRef}
-                        // zoomLevel={14}
-                        // centerCoordinate={[
-                        //     location.longitude,
-                        //     location.latitude,
-                        // ]}
-                        // animationDuration={300}
+                        defaultSettings={{
+                            centerCoordinate: [
+                                location.longitude,
+                                location.latitude,
+                            ],
+                            zoomLevel: 14,
+                        }}
                     />
 
                     {/* Location marker */}

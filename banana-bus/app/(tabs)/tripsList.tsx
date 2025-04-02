@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router } from "expo-router";
-import { View, Text, StyleSheet} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
@@ -18,7 +18,7 @@ export default function tripsList() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get("http://localhost:3000/tripsList", {
+        axios.get("https://banana-psi-lemon.vercel.app/tripsList", {
             params: {
                 routeId,
                 departId,
@@ -71,12 +71,12 @@ export default function tripsList() {
                     </View>
                 </View>
             </View>
-            <View style={styles.tripListContainer}>   
+            <ScrollView style={styles.tripListContainer}>   
             <Text style = {styles.tripListDate}>{format(date, "E, do LLL y")}</Text>
                 <View>
-                    {trips.map((t, index )=> <TripListBox key={index} {...t}/>)}
+                    {trips.map((t, index )=> <TripListBox key={index} trip={t} disabled={false}/>)}
                 </View>
-            </View>
+            </ScrollView>
         </View>
     );
 }
@@ -85,11 +85,10 @@ const styles = StyleSheet.create({
     screen: {
         height: "100%",
         backgroundColor: "lightblue",
-        overflowY: "scroll",
     },
     header: {
         backgroundColor: "white",
-        height: "20%",
+        height: "22%",
         padding: 20,
         boxShadow: "0px 0px 5px grey"
     },
@@ -130,8 +129,7 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
     },
     tripListContainer: {
-        height: "80%",
-        margin: 20,
+        padding: 20,
     },
     tripListDate: {
         fontWeight: "bold",

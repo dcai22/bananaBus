@@ -13,7 +13,7 @@ export default function LoginScreen() {
     useEffect(() => {
         const autoLogin = async () => {
             if (Device.deviceType === Device.DeviceType.PHONE) {
-                const token =  await getItem('token');
+                const token = await getItem('token');
                 if (token !== null) {
                     try {
                         const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {
@@ -56,6 +56,7 @@ export default function LoginScreen() {
 
 
     const handleLogin = async () => {
+        // TODO remove debug msg
         console.log("Email:", email);
         console.log("Password:", password);
 
@@ -87,7 +88,7 @@ export default function LoginScreen() {
                 navigation.navigate("index");
             } else {
                 const errorData = await response.json();
-                Alert.alert("Error", errorData.message || "Login failed");
+                Alert.alert("Error", errorData.error || "Login failed");
             }
         } catch (error) {
             Alert.alert("Error", "An error occurred. Please try again.");
