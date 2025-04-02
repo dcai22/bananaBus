@@ -73,3 +73,16 @@ describe('Login', () => {
         expect(response.status).toBe(400);
     })
 })
+
+describe('Logout', () => {
+    test('successful logout', async () => {
+        const { userId, token } = authRegister('email@email', 'password', 'first', 'last');
+        const response = await request(app)
+            .post('/logout')
+            .send({
+                userId,
+                token,
+            });
+        expect(response.status).toBe(200);
+    })
+})
