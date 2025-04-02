@@ -3,7 +3,7 @@ import { setData } from "../dataStore";
 import { authRegister, authLogin } from "../auth";
 
 const request = require("supertest");
-const app = require("../app");
+const app = require("../index");
 
 beforeEach(() => {
     setData({ users: [], trips: [], bookings: [], routes: [], stops: [] });

@@ -3,7 +3,7 @@ import { setData } from "../dataStore";
 import { Booking, Route, UserBuilder, Trip, Stop } from "../interface";
 
 const request = require("supertest");
-const app = require("../app");
+const app = require("../index");
 
 const newDb = { users: [{ email: 'email', password: 'password', tokens: [], userId: 0, bookings: [] }], bookings: [] };
 
