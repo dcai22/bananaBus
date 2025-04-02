@@ -73,3 +73,34 @@ describe('Login', () => {
         expect(response.status).toBe(400);
     })
 })
+
+describe('Delete', () => {
+    test('successful delete', async () => {
+        const token = authRegister('email@email', 'password', 'first', 'last').token;
+        const response = await request(app)
+            .delete('/delete')
+            .send({
+                userId: 0,
+                token
+            });
+        expect(response.status).toBe(200);
+
+        const response1 = await request(app)
+            .post('/login')
+            .send({
+                email: 'email@email',
+                password: 'password',
+            });
+        expect(response1.status).toBe(400);
+    })
+
+    test('user not found', async () => {
+        const response = await request(app)
+            .delete('/delete')
+            .send({
+                userId: 0,
+                token: 'token',
+            });
+        expect(response.status).toBe(400);
+    })
+})

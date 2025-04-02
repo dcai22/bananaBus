@@ -2,7 +2,7 @@ import express, { json, Request, Response } from 'express';
 import cors from 'cors';
 import errorHandler from "middleware-http-errors"
 
-import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
+import { authLogin, authRegister, authAutoLogin, authLogout, authDelete } from './auth';
 import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
@@ -47,6 +47,13 @@ app.post('/logout', (req: Request, res: Response) => {
     const token = req.header('token') as string;
     const userId = req.body.userId as number;
     res.json(authLogout(userId, token));
+    return;
+})
+
+app.delete('/delete', (req: Request, res: Response) => {
+    const token = req.body.token as string;
+    const userId = req.body.userId as number;
+    res.json(authDelete(userId, token));
     return;
 })
 

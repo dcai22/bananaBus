@@ -91,3 +91,20 @@ export function authLogout(userId: number, token: string) {
         }
     }
 }
+
+export function authDelete(userId: number, token: string) {
+    const data = getData();
+    for (const userIndex in data.users) {
+        if (data.users[userIndex].userId === userId) {
+            for (const index in data.users[userIndex].tokens) {
+                if (compareHash(token, data.users[userIndex].tokens[index])) {
+                    data.users.splice(parseInt(userIndex), 1);
+                    setData(data);
+                    return {};
+                }
+            }
+        }
+    }
+
+    throw HTTPError(400, 'user not found');
+}
