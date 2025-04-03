@@ -80,6 +80,15 @@ export default function Settings() {
         setModalVisible(false);
     };
 
+    const handleDeleteAccount = () => {
+        // TODO DELETE ACCOUNT LOGIC
+        // Most likely send an email to account to confirm
+        // sendEmail()
+        // Log user out
+        handleLogout();
+        setModalVisible(false);
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.headerBox}>
@@ -96,6 +105,9 @@ export default function Settings() {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.option} onPress={() => openModal("logout")}>
                     <Text style={styles.optionText}>Logout</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.option, styles.deleteOption]} onPress={() => openModal("delete")}>
+                    <Text style={[styles.optionText, styles.deleteOptionText]}>Delete Account</Text>
                 </TouchableOpacity>
             </View>
 
@@ -169,7 +181,21 @@ export default function Settings() {
                                 </View>
                             </>
                         )}
-                        {modalType !== "logout" && (
+                        {modalType === "delete" && (
+                            <>
+                                <Text style={styles.modalHeader}>Are you sure yu want to delete your account?</Text>
+                                <Text style={styles.modalInfo}>This action is permanent.</Text>
+                                <View style={styles.modalButtons}>
+                                    <TouchableOpacity style={styles.modalButton} onPress={handleDeleteAccount}>
+                                        <Text style={styles.modalButtonText}>Yes</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={handleCancel}>
+                                        <Text style={styles.modalButtonText}>No</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )}
+                        {(modalType !== "logout" && modalType !== "delete") && (
                             <View style={styles.modalButtons}>
                                 <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
                                     <Text style={styles.modalButtonText}>Save</Text>
@@ -241,7 +267,6 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         borderRadius: 10,
         padding: 20,
-        alignItems: "center",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
@@ -249,9 +274,13 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     modalHeader: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: "bold",
-        marginBottom: 15,
+        marginBottom: 16,
+    },
+    modalInfo: {
+        fontSize: 12,
+        marginBottom: 16,
     },
     input: {
         width: "100%",
@@ -278,6 +307,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#FF3B30",
     },
     modalButtonText: {
+        color: "white",
+        fontWeight: "bold",
+    },
+    deleteOption: {
+        backgroundColor: "#FF3B30",
+    },
+    deleteOptionText: {
         color: "white",
         fontWeight: "bold",
     },
