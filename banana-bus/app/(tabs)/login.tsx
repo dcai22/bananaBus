@@ -4,6 +4,7 @@ import { Link, useNavigation } from "expo-router";
 import * as Device from "expo-device";
 
 import { saveItem, getItem } from '../helper';
+import { set } from 'date-fns';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -77,14 +78,16 @@ export default function LoginScreen() {
                 if (Device.deviceType === Device.DeviceType.PHONE) {
                     // This only works on mobile
                     console.log("mobile");
-                    saveItem("uid", data.userId.toString());
+                    saveItem("userId", data.userId.toString());
                     saveItem("token", data.token);
                 } else {
                     // Save to local storage on web for testing purposes
                     console.log("web");
-                    localStorage.setItem("uid", data.userId.toString());
+                    localStorage.setItem("userId", data.userId.toString());
                     localStorage.setItem("token", data.token);
                 }
+                setEmail("");
+                setPassword("");
                 navigation.navigate("index");
             } else {
                 const errorData = await response.json();
