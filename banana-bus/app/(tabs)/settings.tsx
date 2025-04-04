@@ -189,13 +189,42 @@ export default function Settings() {
         navigation.navigate("login");
     };
 
-    const handleDeleteAccount = () => {
-        // TODO DELETE ACCOUNT LOGIC
-        // Most likely send an email to account to confirm
+    const handleDeleteAccount = async () => {
+        // TODO Send most likely send an email to account to confirm
         // sendEmail()
-        // Log user out
-        handleLogout();
+        const token = await getItem('token');
+        const userId = await getItem('userId');
+        if (token === null || userId === null) {
+            alert("Error fetching user data, returning to login screen.");
+            setModalVisible(false);
+            navigation.navigate("login");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://banana-psi-lemon.vercel.app/deleteAccount", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ userId }),
+            });
+            if (response.ok) {
+                console.log("Account deleted successfully");
+                alert("Your account has been deleted.");
+            } else {
+                const errorData = await response.json();
+                alert("Error deleting account:" + errorData.error);
+            }
+        } catch (error) {
+            console.error("Error deleting account:", error);
+        }
+
+        saveItem('token', '');
+        saveItem('userId', '');
         setModalVisible(false);
+        navigation.navigate("login");
     };
 
     return (
@@ -292,7 +321,7 @@ export default function Settings() {
                         )}
                         {modalType === "delete" && (
                             <>
-                                <Text style={styles.modalHeader}>Are you sure yu want to delete your account?</Text>
+                                <Text style={styles.modalHeader}>Are you sure you want to delete your account?</Text>
                                 <Text style={styles.modalInfo}>This action is permanent.</Text>
                                 <View style={styles.modalButtons}>
                                     <TouchableOpacity style={styles.modalButton} onPress={handleDeleteAccount}>
