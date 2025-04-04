@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "react-native";
 import { useNavigation } from "expo-router";
-import { getItem } from "../helper";
-import { setItem } from "expo-secure-store";
+import { getItem, saveItem } from "../helper";
 
 interface UserDetails {
-    surname: string;
+    lastName: string;
     firstName: string;
     email: string;
 }
@@ -14,7 +13,7 @@ export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState("");
     const [formData, setFormData] = useState({
-        surname: "",
+        lastName: "",
         firstName: "",
         email: "",
         oldPassword: "",
@@ -23,17 +22,40 @@ export default function Settings() {
     });
     const navigation = useNavigation();
 
-    const fetchUserDetails = async (): Promise<UserDetails> => {
-        // TODO Replace this with actual API call to fetch user details
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    surname: "Leong",
-                    firstName: "KK",
-                    email: "KK@gmail.com",
-                });
-            }, 500);
-        });
+    const fetchUserDetails = async () => {
+        const token = await getItem('token');
+        if (!token) {
+            alert("Error fetching user data, returning to login screen.");
+            setModalVisible(false);
+            saveItem('token', '');
+            navigation.navigate("login");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://banana-psi-lemon.vercel.app/getAccountDetails", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                return {
+                    lastName: data.lastName,
+                    firstName: data.firstName,
+                    email: data.email,
+                }
+            } else {
+                const errorData = await response.json();
+                alert("Error fetching user details:" + errorData.error);
+                setModalVisible(false);
+            }
+        }  catch (error) {
+            console.error("Error fetching user details:", error);
+            setModalVisible(false);
+        }
     };
 
     const openModal = async (type: string) => {
@@ -47,7 +69,7 @@ export default function Settings() {
             }));
         } else {
             setFormData({
-                surname: "",
+                lastName: "",
                 firstName: "",
                 email: "",
                 oldPassword: "",
@@ -59,17 +81,68 @@ export default function Settings() {
         setModalVisible(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        const token = await getItem('token');
+        if (!token) {
+            alert("Error fetching user data, returning to login screen.");
+            setModalVisible(false);
+            saveItem('token', '');
+            navigation.navigate("login");
+            return;
+        }
+
         if (modalType === "details") {
-            alert(`Details updated:\nSurname: ${formData.surname}\nFirst Name: ${formData.firstName}\nEmail: ${formData.email}`);
-            // TODO BACKEND API CALL TO UPDATE DETAILS
+            try {
+                const response = await fetch("https://banana-psi-lemon.vercel.app/updateAccountDetails", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        lastName: formData.lastName,
+                        firstName: formData.firstName,
+                        email: formData.email,
+                    }),
+                });
+                if (response.ok) {
+                    alert(`Details updated:\nLast Name: ${formData.lastName}\nFirst Name: ${formData.firstName}\nEmail: ${formData.email}`);
+                } else {
+                    const errorData = await response.json();
+                    alert("Error updating details:" + errorData.error);
+                }
+            } catch(error) {
+                console.error("Error updating user details:", error);
+                alert("Error updating details, please try again.");
+            }
         } else if (modalType === "password") {
             if (formData.newPassword !== formData.confirmPassword) {
                 alert("New password and confirm password do not match!");
                 return;
             }
-            // TODO BACKEND API CALL TO UPDATE PASSWORD
-            alert(`Password updated successfully!`);
+            try {
+                const response = await fetch("https://banana-psi-lemon.vercel.app/updateAccountPassword", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        oldPassword: formData.oldPassword,
+                        newPassword: formData.newPassword,
+                    }),
+                });
+                
+                if (response.ok) {
+                    alert("Password updated successfully!");
+                } else {
+                    const errorData = await response.json();
+                    alert("Error updating password:" + errorData.error);
+                }
+            } catch (error) {
+                console.error("Error updating password:", error);
+                alert("Error updating password, please try again.");
+            }
         }
         setModalVisible(false);
     };
@@ -81,6 +154,7 @@ export default function Settings() {
     const handleLogout = async () => {
         const token = await getItem('token');
         const userId = await getItem('userId');
+        console.log(`Token: ${token}, UserId: ${userId}`);
         if (token === null || userId === null) {
             alert("Error fetching user data, returning to login screen.");
             setModalVisible(false);
@@ -101,13 +175,16 @@ export default function Settings() {
                 console.log("Logout successful");
                 alert("You have been logged out.");
                 
+            } else {
+                const errorData = await response.json();
+                alert("Error logging out:" + errorData.error);
             }
         } catch (error) {
             console.error("Logout failed:", error);
             alert("Error fetching data, returning to login screen.");
         }
-        setItem('token', '');
-        setItem('userId', '');
+        saveItem('token', '');
+        saveItem('userId', '');
         setModalVisible(false);
         navigation.navigate("login");
     };
@@ -144,9 +221,9 @@ export default function Settings() {
                                 <Text style={styles.modalHeader}>Change Details</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder="Surname"
-                                    value={formData.surname}
-                                    onChangeText={(text) => setFormData({ ...formData, surname: text })}
+                                    placeholder="Last Name"
+                                    value={formData.lastName}
+                                    onChangeText={(text) => setFormData({ ...formData, lastName: text })}
                                 />
                                 <TextInput
                                     style={styles.input}

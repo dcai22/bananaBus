@@ -40,7 +40,7 @@ export default function RegisterScreen() {
                 console.log(`Registration successful, uid: ${data.userId}, token: ${data.token}`);
                 if (Device.deviceType === Device.DeviceType.PHONE) {
                     // This only works on mobile
-                    saveItem('userId', data.userId);
+                    saveItem('userId', data.userId.toString());
                     saveItem('token', data.token);
                 } else {
                     // Save to local storage on web for testing purposes
