@@ -1,7 +1,7 @@
 import HTTPError from "http-errors";
 import { AuthUserId, DataStore, Error, UserBuilder } from "./interface";
 import { getData, setData } from "./dataStore";
-import { getHash, compareHash } from "./helper";
+import { getHash, compareHash, findUserByToken } from "./helper";
 import crypto from "crypto";
 
 export function authRegister(email: string, password: string, firstName: string, lastName: string) {
@@ -79,6 +79,17 @@ export function authAutoLogin(token: string) {
 
 export function authLogout(userId: number, token: string) {
     const data = getData();
+    const userById = data.users.find(user => user.userId === userId);
+    const userBytoken = findUserByToken(token);
+    if (userBytoken === undefined) {
+        throw HTTPError(403, 'invalid token');
+    }
+    if (userById === undefined) {
+        throw HTTPError(403, 'invalid userId');
+    }
+    if (userById.userId !== userBytoken.userId) {
+        throw HTTPError(403, 'invalid data');
+    }
     const strippedToken = token.replace('Bearer ', '');
     for (const user of data.users) {
         if (user.userId === userId) {

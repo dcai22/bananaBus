@@ -85,29 +85,29 @@ export default function Settings() {
             alert("Error fetching user data, returning to login screen.");
             setModalVisible(false);
             navigation.navigate("login");
+            return;
         }
 
         try {
             const response = await fetch("https://banana-psi-lemon.vercel.app/logout", {
                 method: "POST",
                 headers: {
-                    'Content-Type': "application/json",
+                    "Content-Type": "application/json",
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({ userId }),
             });
             if (response.ok) {
-                const data = await response.json();
-                console.log(`Logout successful, uid: ${data.userId}, token: ${data.token}`);
-                setItem('token', '');
-                setItem('userId', '');
+                console.log("Logout successful");
                 alert("You have been logged out.");
                 
             }
         } catch (error) {
             console.error("Logout failed:", error);
-            alert("Error in validation, returning to login screen.");
+            alert("Error fetching data, returning to login screen.");
         }
+        setItem('token', '');
+        setItem('userId', '');
         setModalVisible(false);
         navigation.navigate("login");
     };
