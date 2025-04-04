@@ -91,10 +91,10 @@ describe('Delete', () => {
     test('successful delete', async () => {
         const token = authRegister('email@email', 'password', 'first', 'last').token;
         const response = await request(app)
-            .delete('/delete')
+            .delete('/deleteAccount')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 userId: 0,
-                token
             });
         expect(response.status).toBe(200);
 
@@ -109,10 +109,10 @@ describe('Delete', () => {
 
     test('user not found', async () => {
         const response = await request(app)
-            .delete('/delete')
+            .delete('/deleteAccount')
+            .set('Authorization', `Bearer tokenthatdoesnotexist`)
             .send({
                 userId: 0,
-                token: 'token',
             });
         expect(response.status).toBe(400);
     })

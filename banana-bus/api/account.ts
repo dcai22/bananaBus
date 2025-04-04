@@ -77,3 +77,31 @@ export function updateUserPassword(token: string, oldPassword: string, newPasswo
     setData(data);
     return {};
 }
+
+export function deleteAccount(userId: number, token: string) {
+    const data = getData();
+    const strippedToken = token.replace('Bearer ', '');
+
+    let userIndex = -1;
+        for (const index in data.users) {
+            if (data.users[index].userId === userId) {
+                userIndex = parseInt(index);
+                break;
+            }
+        }
+    if (userIndex === -1) {
+        throw HTTPError(400, 'invalid userId ' + userId);
+    }
+
+    const userBytoken = findUserByToken(strippedToken);
+    if (userBytoken === undefined) {
+        throw HTTPError(403, 'invalid token');
+    }
+    if (data.users[userIndex].userId !== userBytoken.userId) {
+        throw HTTPError(403, 'invalid data');
+    }
+
+    data.users.splice(userIndex, 1);
+    setData(data);
+    return {};
+}

@@ -2,12 +2,12 @@ import express, { json, Request, Response } from 'express';
 import cors from 'cors';
 import errorHandler from "middleware-http-errors"
 
-import { authLogin, authRegister, authAutoLogin, authLogout, authDelete } from './auth';
+import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
 import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { RouteSection } from './interface';
-import { getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
+import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
 
 const app = express();
 
@@ -50,10 +50,10 @@ app.post('/logout', (req: Request, res: Response) => {
     return;
 })
 
-app.delete('/delete', (req: Request, res: Response) => {
+app.delete('/deleteAccount', (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
-    const userId = req.body.userId as number;
-    res.json(authDelete(userId, token));
+    const userId = parseInt(req.body.userId);
+    res.json(deleteAccount(userId, token));
     return;
 })
 
