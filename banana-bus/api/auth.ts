@@ -79,10 +79,11 @@ export function authAutoLogin(token: string) {
 
 export function authLogout(userId: number, token: string) {
     const data = getData();
+    const strippedToken = token.replace('Bearer ', '');
     for (const user of data.users) {
         if (user.userId === userId) {
             for (const index in user.tokens) {
-                if (compareHash(token, user.tokens[index])) {
+                if (compareHash(strippedToken, user.tokens[index])) {
                     user.tokens.splice(parseInt(index), 1);
                     setData(data);
                     return {};

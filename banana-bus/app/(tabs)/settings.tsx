@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "react-native";
+import { useNavigation } from "expo-router";
+import { getItem } from "../helper";
+import { setItem } from "expo-secure-store";
 
 interface UserDetails {
     surname: string;
@@ -18,6 +21,7 @@ export default function Settings() {
         newPassword: "",
         confirmPassword: "",
     });
+    const navigation = useNavigation();
 
     const fetchUserDetails = async (): Promise<UserDetails> => {
         // TODO Replace this with actual API call to fetch user details
@@ -74,10 +78,38 @@ export default function Settings() {
         setModalVisible(false);
     };
 
-    const handleLogout = () => {
-        // TODO LOGOUT LOGIC
-        alert("You have been logged out.");
+    const handleLogout = async () => {
+        const token = await getItem('token');
+        const userId = await getItem('userId');
+        if (token === null || userId === null) {
+            alert("Error fetching user data, returning to login screen.");
+            setModalVisible(false);
+            navigation.navigate("login");
+        }
+
+        try {
+            const response = await fetch("https://banana-psi-lemon.vercel.app/logout", {
+                method: "POST",
+                headers: {
+                    'Content-Type': "application/json",
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ userId }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`Logout successful, uid: ${data.userId}, token: ${data.token}`);
+                setItem('token', '');
+                setItem('userId', '');
+                alert("You have been logged out.");
+                
+            }
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("Error in validation, returning to login screen.");
+        }
         setModalVisible(false);
+        navigation.navigate("login");
     };
 
     return (

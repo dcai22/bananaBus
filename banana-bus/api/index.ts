@@ -44,7 +44,7 @@ app.post('/autologin', (req: Request, res: Response) => {
 })
 
 app.post('/logout', (req: Request, res: Response) => {
-    const token = req.body.token as string;
+    const token = req.headers.authorization as string;
     const userId = req.body.userId as number;
     res.json(authLogout(userId, token));
     return;
