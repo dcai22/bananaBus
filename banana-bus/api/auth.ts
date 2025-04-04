@@ -79,18 +79,24 @@ export function authAutoLogin(token: string) {
 
 export function authLogout(userId: number, token: string) {
     const data = getData();
-    const userById = data.users.find(user => user.userId === userId);
-    const userBytoken = findUserByToken(token);
+    let userIndex = -1;
+    for (const index in data.users) {
+        if (data.users[index].userId === userId) {
+            userIndex = parseInt(index);
+            break;
+        }
+    }
+    if (userIndex === -1) {
+        throw HTTPError(403, 'invalid userId ' + userId);
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const userBytoken = findUserByToken(strippedToken);
     if (userBytoken === undefined) {
         throw HTTPError(403, 'invalid token');
     }
-    if (userById === undefined) {
-        throw HTTPError(403, 'invalid userId');
-    }
-    if (userById.userId !== userBytoken.userId) {
+    if (data.users[userIndex].userId !== userBytoken.userId) {
         throw HTTPError(403, 'invalid data');
     }
-    const strippedToken = token.replace('Bearer ', '');
     for (const user of data.users) {
         if (user.userId === userId) {
             for (const index in user.tokens) {

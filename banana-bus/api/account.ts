@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { compareHash, findUserByToken } from "./helper";
+import { compareHash, findUserByToken, getHash } from "./helper";
 import { getData, setData } from "./dataStore";
 
 export function getAccountName(token: string) {
@@ -70,8 +70,10 @@ export function updateUserPassword(token: string, oldPassword: string, newPasswo
     if (!compareHash(oldPassword, data.users[userIndex].password)) {
         throw HTTPError(400, 'incorrect password');
     }
+
+    const newHashedPassword = getHash(newPassword);
     
-    data.users[userIndex].password = newPassword;
+    data.users[userIndex].password = newHashedPassword;
     setData(data);
     return {};
 }

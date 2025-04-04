@@ -7,7 +7,7 @@ import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { RouteSection } from './interface';
-import { getAccountName } from './account';
+import { getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
 
 const app = express();
 
@@ -45,7 +45,7 @@ app.post('/autologin', (req: Request, res: Response) => {
 
 app.post('/logout', (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
-    const userId = req.body.userId as number;
+    const userId = parseInt(req.body.userId)
     res.json(authLogout(userId, token));
     return;
 })
@@ -102,6 +102,29 @@ app.delete('/unsaveRoute', (req: Request, res: Response) => {
 app.get('/getAccountName', (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
     res.json(getAccountName(token));
+    return;
+})
+
+app.get('/getAccountDetails', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    res.json(getUserDetails(token));
+    return;
+})
+
+app.post('/updateAccountDetails', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    const firstName = req.body.firstName as string;
+    const lastName = req.body.lastName as string;
+    const email = req.body.email as string;
+    res.json(updateUserDetails(token, firstName, lastName, email));
+    return;
+})
+
+app.post('/updateAccountPassword', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    const oldPassword = req.body.oldPassword as string;
+    const newPassword = req.body.newPassword as string;
+    res.json(updateUserPassword(token, oldPassword, newPassword));
     return;
 })
 

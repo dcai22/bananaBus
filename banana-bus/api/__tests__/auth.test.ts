@@ -79,10 +79,10 @@ describe('Logout', () => {
         const { userId, token } = authRegister('email@email', 'password', 'first', 'last');
         const response = await request(app)
             .post('/logout')
+            .set('Authorization', `Bearer ${token}`)
             .send({
                 userId,
-                token,
             });
         expect(response.status).toBe(200);
-    })
+    });
 })
