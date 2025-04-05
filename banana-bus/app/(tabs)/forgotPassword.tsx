@@ -6,8 +6,20 @@ import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
 
 export default function ForgotPasswordScreen() {
-    const [email, setEmail] = useState("");
+    const [pass, setPass] = useState("");
+    const [confirmPass, setConfirmPass] = useState("");
     const navigation = useNavigation();
+
+    const handleReset = async () => {
+        // TODO remove debug msg
+        if (pass !== confirmPass) {
+            Alert.alert("Error", "Passwords don't match!");
+            setConfirmPass("");
+            return;
+        }
+        alert("Password reset. Login with new password!");
+        navigation.navigate("login");
+    }
 
     return (
         <ImageBackground
@@ -18,27 +30,41 @@ export default function ForgotPasswordScreen() {
         >
             <View style={styles.overlay} />
             <View style={styles.container}>
+                <TouchableOpacity
+                    style={styles.goBack} onPress={() => {
+                        navigation.goBack();
+                    }}
+                >
+                    <Text style={styles.goBack}>← go back</Text>
+                </TouchableOpacity>
                 <View style={styles.title}>
-                    <Text style={styles.title}>Forgot Password</Text>
+                    <Text style={styles.title}>Enter new password</Text>
                 </View>
                 <View style={styles.form}>
                     <TextInput
                         style={styles.input}
-                        placeholder="email"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
+                        placeholder="new password"
+                        value={pass}
+                        onChangeText={setPass}
+                        secureTextEntry
+                        autoCapitalize='none'
                     />
-                    
+                    <TextInput
+                        style={styles.input}
+                        placeholder="confirm new password"
+                        value={confirmPass}
+                        onChangeText={setConfirmPass}
+                        secureTextEntry
+                        autoCapitalize='none'
+                    />
                     <TouchableOpacity
                         style={[styles.button, styles.loginButton]}
+                        onPress={handleReset}
                     >
                         <Text style={[styles.buttonText, styles.loginText]}>
-                            Send Reset Link
+                            Change password
                         </Text>
                     </TouchableOpacity>
-
                 </View>
             </View>
         </ImageBackground>
@@ -116,5 +142,12 @@ const styles = StyleSheet.create({
         alignSelf: "flex-end",
         color: "#c5e1ec",
         fontSize: 12
+    },
+    goBack: {
+        alignSelf: 'flex-start',
+        color: '#fff',
+        fontSize: 20,
+        paddingHorizontal: 20,
+        opacity: 0.9,
     },
 });
