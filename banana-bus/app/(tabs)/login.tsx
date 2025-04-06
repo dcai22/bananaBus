@@ -4,7 +4,7 @@ import { useNavigation } from "expo-router";
 import * as Device from "expo-device";
 
 import { saveItem, getItem } from '../helper';
-import { set } from 'date-fns';
+import { YesButton, NoButton } from '@/components/Buttons';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -19,9 +19,9 @@ export default function LoginScreen() {
     }
 
     const closeModal = () => {
-        setModalVisible(false);
         setModalType("sendCode");
         setEmail("");
+        setModalVisible(false);
     }
 
     const sendResetMail = async () => {
@@ -33,7 +33,8 @@ export default function LoginScreen() {
 
     const checkEmailCode = async () => {
         // TODO Check if email code is correct
-        alert("Email code is correct. Set new password!");
+        alert("Email code is correct. Set your new password!");
+        closeModal();
         navigation.navigate("forgotPassword");
     }
 
@@ -157,34 +158,18 @@ export default function LoginScreen() {
                         onPress={openModal}>
                         Forgot password?
                     </Text>
-                    <TouchableOpacity
-                        onPress={handleLogin}
-                        style={[styles.button, styles.loginButton]}
-                    >
-                        <Text style={[styles.buttonText, styles.loginText]}>
-                            Login →
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => {
-                            setEmail("");
-                            setPassword("");
-                            navigation.navigate("register");
-                        }}
-                        style={[styles.button, styles.registerButton]}
-                    >
-                        <Text style={[styles.buttonText, styles.registerText]}>
-                            Register
-                        </Text>
-                    </TouchableOpacity>
+                    <YesButton onPress={handleLogin} text="Login →" />
+                    <NoButton onPress={() => {
+                        setEmail("");
+                        setPassword("");
+                        navigation.navigate("register");
+                    }} text="Register" />
                 </View>
                 <Modal
                     animationType="slide"
                     transparent={true}
                     visible={modalVisible}
-                    onRequestClose={() => {
-                        setModalVisible(!modalVisible);
-                    }}
+                    onRequestClose={closeModal}
                 >
                     <View style={styles.modalOverlay}>
                         <View style={styles.modalContent}>
@@ -199,20 +184,8 @@ export default function LoginScreen() {
                                         keyboardType="email-address"
                                         autoCapitalize="none"
                                     />
-                                    <TouchableOpacity
-                                        onPress={sendResetMail}
-                                        style={[styles.button, styles.loginButton]}
-                                    >
-                                        <Text style={[styles.buttonText, styles.loginText]}>
-                                            Send confirmation email
-                                        </Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[styles.button, styles.registerButton]}
-                                        onPress={closeModal}
-                                    >
-                                        <Text style={[styles.buttonText, styles.registerText]}>Close</Text>
-                                    </TouchableOpacity>
+                                    <YesButton onPress={sendResetMail} text="Send confirmation email" />
+                                    <NoButton onPress={closeModal} text="Close" />
                                 </>
                             )}
                             {modalType === "enterCode" && (
@@ -225,20 +198,8 @@ export default function LoginScreen() {
                                         onChangeText={setEmailCode}
                                         autoCapitalize="none"
                                     />
-                                    <TouchableOpacity
-                                        onPress={checkEmailCode}
-                                        style={[styles.button, styles.loginButton]}
-                                    >
-                                        <Text style={[styles.buttonText, styles.loginText]}>
-                                            Confirm
-                                        </Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[styles.button, styles.registerButton]}
-                                        onPress={closeModal}
-                                    >
-                                        <Text style={[styles.buttonText, styles.registerText]}>Cancel</Text>
-                                    </TouchableOpacity>
+                                    <YesButton onPress={checkEmailCode} text="Confirm" />
+                                    <NoButton onPress={closeModal} text="Cancel" />
                                 </>
                             )}
                         </View>
@@ -291,30 +252,6 @@ const styles = StyleSheet.create({
         borderColor: "#ccc",
         borderRadius: 8,
         backgroundColor: "#fff",
-    },
-    button: {
-        width: "100%",
-        padding: 12,
-        marginVertical: 8,
-        borderRadius: 8,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    loginButton: {
-        backgroundColor: "#ccff00",
-    },
-    registerButton: {
-        backgroundColor: "#2A8AE4",
-    },
-    buttonText: {
-        fontWeight: "bold",
-        fontSize: 15,
-    },
-    loginText: {
-        color: "#2A8AE4",
-    },
-    registerText: {
-        color: "#fff",
     },
     forgotPassword: {
         marginVertical: 6,

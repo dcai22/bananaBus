@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "react-native";
 import { useNavigation } from "expo-router";
 import { getItem, saveItem } from "../helper";
+import { YesButton, NoButton } from "@/components/Buttons";
 
 interface UserDetails {
     lastName: string;
@@ -310,12 +311,8 @@ export default function Settings() {
                             <>
                                 <Text style={styles.modalHeader}>Are you sure you want to logout?</Text>
                                 <View style={styles.modalButtons}>
-                                    <TouchableOpacity style={styles.modalButton} onPress={handleLogout}>
-                                        <Text style={styles.modalButtonText}>Yes</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={handleCancel}>
-                                        <Text style={styles.modalButtonText}>No</Text>
-                                    </TouchableOpacity>
+                                    <NoButton text="Yes" onPress={handleLogout} style={styles.modalButton}/>
+                                    <YesButton text="No" onPress={handleCancel} style={styles.modalButton} />
                                 </View>
                             </>
                         )}
@@ -324,23 +321,15 @@ export default function Settings() {
                                 <Text style={styles.modalHeader}>Are you sure you want to delete your account?</Text>
                                 <Text style={styles.modalInfo}>This action is permanent.</Text>
                                 <View style={styles.modalButtons}>
-                                    <TouchableOpacity style={styles.modalButton} onPress={handleDeleteAccount}>
-                                        <Text style={styles.modalButtonText}>Yes</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={handleCancel}>
-                                        <Text style={styles.modalButtonText}>No</Text>
-                                    </TouchableOpacity>
+                                    <NoButton text="Yes" onPress={handleDeleteAccount} style={styles.modalButton}/>
+                                    <YesButton text="No" onPress={handleCancel} style={styles.modalButton} />
                                 </View>
                             </>
                         )}
                         {(modalType !== "logout" && modalType !== "delete") && (
                             <View style={styles.modalButtons}>
-                                <TouchableOpacity style={styles.modalButton} onPress={handleSave}>
-                                    <Text style={styles.modalButtonText}>Save</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={handleCancel}>
-                                    <Text style={styles.modalButtonText}>Cancel</Text>
-                                </TouchableOpacity>
+                                <NoButton text="Cancel" onPress={handleCancel} style={styles.modalButton} />
+                                <YesButton text="Save" onPress={handleSave} style={styles.modalButton}/>
                             </View>
                         )}
                     </View>
@@ -435,18 +424,7 @@ const styles = StyleSheet.create({
     },
     modalButton: {
         flex: 1,
-        backgroundColor: "#2196F3",
-        padding: 10,
-        borderRadius: 5,
-        alignItems: "center",
         marginHorizontal: 5,
-    },
-    cancelButton: {
-        backgroundColor: "#FF3B30",
-    },
-    modalButtonText: {
-        color: "white",
-        fontWeight: "bold",
     },
     deleteOption: {
         backgroundColor: "#FF3B30",
