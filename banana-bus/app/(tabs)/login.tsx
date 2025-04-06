@@ -1,6 +1,6 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 import * as Device from "expo-device";
 
 import { saveItem, getItem } from '../helper';
@@ -9,7 +9,33 @@ import { set } from 'date-fns';
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState("sendCode");
+    const [emailCode, setEmailCode] = useState("");
     const navigation = useNavigation();
+
+    const openModal = () => {
+        setModalVisible(true);
+    }
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setModalType("sendCode");
+        setEmail("");
+    }
+
+    const sendResetMail = async () => {
+        // TODO send code to email
+        // Send confirmation email
+        setModalType("enterCode");
+        alert("Confirmation email sent. Check your email!");
+    }
+
+    const checkEmailCode = async () => {
+        // TODO Check if email code is correct
+        alert("Email code is correct. Set new password!");
+        navigation.navigate("forgotPassword");
+    }
 
     useEffect(() => {
         const autoLogin = async () => {
@@ -126,6 +152,11 @@ export default function LoginScreen() {
                         onChangeText={setPassword}
                         secureTextEntry
                     />
+                    <Text
+                        style={styles.forgotPassword}
+                        onPress={openModal}>
+                        Forgot password?
+                    </Text>
                     <TouchableOpacity
                         onPress={handleLogin}
                         style={[styles.button, styles.loginButton]}
@@ -147,6 +178,73 @@ export default function LoginScreen() {
                         </Text>
                     </TouchableOpacity>
                 </View>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {
+                        setModalVisible(!modalVisible);
+                    }}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            {modalType === "sendCode" && (
+                                <>
+                                    <Text style={styles.modalHeader}>Enter your email</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="email"
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                    />
+                                    <TouchableOpacity
+                                        onPress={sendResetMail}
+                                        style={[styles.button, styles.loginButton]}
+                                    >
+                                        <Text style={[styles.buttonText, styles.loginText]}>
+                                            Send confirmation email
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.button, styles.registerButton]}
+                                        onPress={closeModal}
+                                    >
+                                        <Text style={[styles.buttonText, styles.registerText]}>Close</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+                            {modalType === "enterCode" && (
+                                <>
+                                    <Text style={styles.modalHeader}>Enter the code sent to your email</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="code"
+                                        value={emailCode}
+                                        onChangeText={setEmailCode}
+                                        autoCapitalize="none"
+                                    />
+                                    <TouchableOpacity
+                                        onPress={checkEmailCode}
+                                        style={[styles.button, styles.loginButton]}
+                                    >
+                                        <Text style={[styles.buttonText, styles.loginText]}>
+                                            Confirm
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.button, styles.registerButton]}
+                                        onPress={closeModal}
+                                    >
+                                        <Text style={[styles.buttonText, styles.registerText]}>Cancel</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+                        </View>
+                    </View>
+                    
+                </Modal>
             </View>
         </ImageBackground>
     );
@@ -219,7 +317,32 @@ const styles = StyleSheet.create({
         color: "#fff",
     },
     forgotPassword: {
-        color: "#007bff",
-        marginTop: 10,
+        marginVertical: 6,
+        alignSelf: "flex-end",
+        color: "#c5e1ec",
+        fontSize: 12
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+    modalContent: {
+        width: "80%",
+        backgroundColor: "white",
+        borderRadius: 10,
+        padding: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        alignItems: "center",
+    },
+    modalHeader: {
+        fontSize: 22,
+        fontWeight: "bold",
+        marginBottom: 16,
     },
 });

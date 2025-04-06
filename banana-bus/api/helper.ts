@@ -65,3 +65,15 @@ export function getStopById(stopId: number) {
     }
     throw HTTPError(400, 'stop not found');
 }
+
+export function findUserByResetToken(token: string) {
+    const data = getData();
+    for (const user of data.users) {
+        for (const userToken of user.resetTokens) {
+            if (compareHash(token, userToken.token)) {
+                return user;
+            }
+        }
+    }
+    return;
+}

@@ -2,7 +2,7 @@ import express, { json, Request, Response } from 'express';
 import cors from 'cors';
 import errorHandler from "middleware-http-errors"
 
-import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
+import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode } from './auth';
 import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
@@ -34,6 +34,26 @@ app.post('/register', (req: Request, res: Response) => {
     const firstName = req.body.firstName as string;
     const lastName = req.body.lastName as string;
     res.json(authRegister(email, password, firstName, lastName));
+    return;
+})
+
+app.post('/resetPasswordEmail', (req: Request, res: Response) => {
+    const email = req.body.email as string;
+    res.json(authPasswordResetEmail(email));
+    return;
+})
+
+app.post('/resetPasswordVerifyCode', (req: Request, res: Response) => {
+    const token = req.query.token as string;
+    const code = req.body.code as string;
+    res.json(authPasswordVerifyCode(token, code));
+    return;
+})
+
+app.post('/resetPassword', (req: Request, res: Response) => {
+    const token = req.query.token as string;
+    const newPassword = req.body.newPassword as string;
+    res.json(authPasswordReset(token, newPassword));
     return;
 })
 
