@@ -1,7 +1,8 @@
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigation } from "expo-router";
+import { Link } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
+import { NoButton, YesButton } from '@/components/Buttons';
 
 export default function Payment() {
     const [cards, setCards] = useState([
@@ -9,6 +10,8 @@ export default function Payment() {
         { id: 2, type: 'MasterCard', last4: '1234', isDefault: false },
         { id: 3, type: 'MasterCard', last4: '1234', isDefault: false },
     ]);
+	const [modalVisible, setModalVisible] = useState(false);
+	const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
     useEffect(() => {
         // TODO Fetch payment datas
@@ -16,14 +19,31 @@ export default function Payment() {
     }, []);
 
     const handleEditCard = (cardId: number) => {
-        console.log('Edit card:', cardId);
-        // TODO navigate to edit card screen
+        setSelectedCard(cardId);
+		setModalVisible(true);
     };
 
     const handleAddCard = () => {
         console.log('Add new card');
         // TODO navigate to add card
     };
+
+	const handleRemoveCard = async () => {
+		console.log('Remove card:', selectedCard);
+		// TODO remove card from database
+		closeModal();
+	}
+
+	const handleMakeDefault = async () => {
+		console.log('Make card default:', selectedCard);
+		// TODO make card default in database
+		closeModal();
+	}
+
+	const closeModal = () => {
+		setModalVisible(false);
+		setSelectedCard(null);
+	}
 
     return (
 		<View style={styles.container}>
@@ -56,6 +76,21 @@ export default function Payment() {
 					<Text style={styles.addCardText}>Add payment method</Text>
 				</TouchableOpacity>
 			</View>
+			<Modal
+                visible={modalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={closeModal}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Card Options</Text>
+						<NoButton onPress={handleRemoveCard} text="Remove Card" />
+						<NoButton onPress={handleMakeDefault} text="Make Default" />
+						<YesButton onPress={closeModal} text="Cancel"/>
+                    </View>
+                </View>
+            </Modal>
 		</View>
     );
 };
@@ -139,4 +174,22 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		fontWeight: 'bold',
 	},
+	modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 12,
+    },
 });
