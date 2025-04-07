@@ -1,7 +1,8 @@
 import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { useNavigation } from "expo-router";
+import { useNavigation, useLocalSearchParams } from "expo-router";
 import * as Device from "expo-device";
+import { router } from "expo-router";
 
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
@@ -11,6 +12,7 @@ export default function LoginScreen() {
     const [password, setPassword] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState("sendCode");
+    const [recoveryEmail, setRecoveryEmail] = useState("");
     const [emailCode, setEmailCode] = useState("");
     const navigation = useNavigation();
 
@@ -26,16 +28,62 @@ export default function LoginScreen() {
 
     const sendResetMail = async () => {
         // TODO send code to email
+        if (recoveryEmail === "") {
+            alert("Please enter your email!");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://banana-psi-lemon.vercel.app/resetPasswordEmail", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: recoveryEmail }),
+            });
+
+            if (response.ok) {
+                console.log("Confirmation email sent successfully.");
+                const data = await response.json();
+                console.log("Token saved: ", data.token);
+                console.log("Message: ", data.message)
+                saveItem("resetToken", data.token);
+            } else {
+                const errorData = await response.json();
+                Alert.alert("Error", errorData.error || "Failed to send confirmation email");
+            }
+        } catch (error) {
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
         // Send confirmation email
         setModalType("enterCode");
         alert("Confirmation email sent. Check your email!");
     }
 
     const checkEmailCode = async () => {
-        // TODO Check if email code is correct
-        alert("Email code is correct. Set your new password!");
-        closeModal();
-        navigation.navigate("forgotPassword");
+        const paramToken = await getItem('resetToken');
+        try {
+            const response = await fetch("https://banana-psi-lemon.vercel.app/resetPasswordVerifyCode" + `?token=${paramToken}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ code: emailCode }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert("Email code is correct. Set your new password!");
+                closeModal();
+                saveItem("resetToken", data.token);
+                navigation.navigate("forgotPassword");
+            } else {
+                const errorData = await response.json();
+                Alert.alert("Error", errorData.error || "Invalid confirmation code");
+            }
+        } catch {
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
     }
 
     useEffect(() => {
@@ -179,8 +227,8 @@ export default function LoginScreen() {
                                     <TextInput
                                         style={styles.input}
                                         placeholder="email"
-                                        value={email}
-                                        onChangeText={setEmail}
+                                        value={recoveryEmail}
+                                        onChangeText={setRecoveryEmail}
                                         keyboardType="email-address"
                                         autoCapitalize="none"
                                     />

@@ -1,7 +1,6 @@
 import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigation } from "expo-router";
-import * as Device from "expo-device";
+import { Link, useNavigation, useLocalSearchParams } from "expo-router";
 
 import { saveItem, getItem } from '../helper';
 
@@ -17,8 +16,26 @@ export default function ForgotPasswordScreen() {
             setConfirmPass("");
             return;
         }
-        alert("Password reset. Login with new password!");
-        navigation.navigate("login");
+
+        const paramToken = await getItem("resetToken");
+
+        try {
+            const response = await fetch("https://banana-psi-lemon.vercel.app/resetPassword" + `?token=${paramToken}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ newPassword: pass }),
+            });
+
+            if (response.ok) {
+                alert("Password reset. Login with new password!");
+                navigation.navigate("login");
+            } else {
+                const errorData = await response.json();
+                console.error("Error resetting password:", errorData);
+            }
+        } catch {}
     }
 
     return (
