@@ -37,9 +37,9 @@ app.post('/register', (req: Request, res: Response) => {
     return;
 })
 
-app.post('/resetPasswordEmail', (req: Request, res: Response) => {
+app.post('/resetPasswordEmail', async (req: Request, res: Response) => {
     const email = req.body.email as string;
-    res.json(authPasswordResetEmail(email));
+    res.json(await authPasswordResetEmail(email));
     return;
 })
 

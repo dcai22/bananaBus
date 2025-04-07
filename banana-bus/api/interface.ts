@@ -12,7 +12,7 @@ interface User {
     email: string;
     password: string;
     tokens: string[];
-    resetTokens: resetToken[];
+    resetToken: resetToken;
     userId: number;
     bookings: number[];
     savedRoutes: RouteSection[];
@@ -30,7 +30,11 @@ export class UserBuilder implements Partial<User> {
     email?: string;
     password?: string;
     tokens: string[] = [];
-    resetTokens: resetToken[] = [];
+    resetToken: resetToken = {
+        token: '',
+        code: '',
+        expiry: new Date(),
+    };
     userId?: number;
     bookings: number[] = [];
     savedRoutes: RouteSection[] = [];

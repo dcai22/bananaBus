@@ -110,7 +110,7 @@ export function authLogout(userId: number, token: string) {
     }
 }
 
-export function authPasswordResetEmail(email: string) {
+export async function authPasswordResetEmail(email: string) {
 
     const data = getData();
     let isvalid = false;
@@ -125,7 +125,7 @@ export function authPasswordResetEmail(email: string) {
 
     if (!isvalid) {
         return {
-            message: 'Email not found',
+            message: 'Email not found ' + email,
             token
         }
     }
@@ -134,11 +134,11 @@ export function authPasswordResetEmail(email: string) {
         if (user.email === email) {
             const hashedCode = getHash(code);
             const hashedToken = getHash(token);
-            user.resetTokens.push({
+            user.resetToken = {
                 token: hashedToken,
                 code: hashedCode,
                 expiry: new Date(Date.now() + 15 * 60 * 1000)
-            });
+            };
             setData(data);
         }
     }
@@ -153,6 +153,19 @@ export function authPasswordResetEmail(email: string) {
             pass: 'djexbJqVg88mr4u38u'
         }
     });
+
+    await new Promise((resolve, reject) => {
+        transporter.verify(function(error: Error, success: any) {
+            if (error) {
+                console.log(error);
+                reject(error);
+            } else {
+                console.log('Server is ready to take our messages');
+                resolve(success);
+            }
+        });
+    });
+
     const mailOptions = {
         from: 'Banana Bus 2025',
         to: email,
@@ -160,13 +173,18 @@ export function authPasswordResetEmail(email: string) {
         text: `This is your one time passcode: ${code}. It will expire in 15 minutes.`
     }
 
-    transporter.sendMail(mailOptions, function(error: Error, info: any) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info.response);
-        }
-    });
+    await new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, function(error: Error, info: any) {
+            if (error) {
+                console.log(error);
+                reject(error);
+            }
+            else {
+                console.log('Email sent: ' + info.response);
+                resolve(info);
+            }
+        })
+    })
     return {
         message: 'Email sent',
         token
@@ -175,37 +193,41 @@ export function authPasswordResetEmail(email: string) {
 
 // checks the token in the query of the url is correct, ensures that this person is actually trying to reset their password
 export function authPasswordVerifyCode(token: string, code: string) {
-    const user = findUserByResetToken(token);
-    if (!user) {
-        throw HTTPError(400, 'invalid token');
-    }
-    for (const userToken of user.resetTokens) {
-        if (compareHash(token, userToken.token)) {
-            if (userToken.expiry < new Date()) {
+    const data = getData();
+
+    for (const user of data.users) {
+        if (compareHash(token, user.resetToken.token)) {
+            if (user.resetToken.expiry < new Date()) {
                 throw HTTPError(400, 'token expired');
             }
-            if (!compareHash(code, userToken.code)) {
+            if (!compareHash(code, user.resetToken.code)) {
                 throw HTTPError(400, 'incorrect code');
             }
-            return true;
+        }
+        const newToken = crypto.randomBytes(64).toString('hex');
+        const hashedToken = getHash(newToken);
+        const newCode = user.resetToken.code;
+        user.resetToken.token = hashedToken
+        user.resetToken.code = newCode;
+        user.resetToken.expiry = new Date(Date.now() + 15 * 60 * 1000);
+        setData(data);
+        return {
+            token: newToken,
         }
     }
     throw HTTPError(400, 'invalid token');
 }
 
 export function authPasswordReset(token: string, password: string) {
-    const user = findUserByResetToken(token);
-    if (!user) {
-        throw HTTPError(400, 'invalid token');
-    }
-    for (const userToken of user.resetTokens) {
-        if (compareHash(token, userToken.token)) {
-            if (userToken.expiry < new Date()) {
+    const data = getData();
+    for (const user of data.users) {
+        if (compareHash(token, user.resetToken.token)) {
+            if (user.resetToken.expiry < new Date()) {
                 throw HTTPError(400, 'token expired');
             }
             const hashedPassword = getHash(password);
             user.password = hashedPassword;
-            setData(getData());
+            setData(data);
             return true;
         }
     }
