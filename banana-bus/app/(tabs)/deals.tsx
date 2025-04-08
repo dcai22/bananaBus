@@ -19,7 +19,7 @@ export default function Deals() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get("https://banana-bus-nine.vercel.app/getDeals", {})
+        axios.get("https://banana-psi-lemon.vercel.app/getDeals", {})
         .then((res) => {
             setPromos(res.data)
         })
