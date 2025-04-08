@@ -1,6 +1,6 @@
-import { Text, View, StyleSheet, TextInput, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, Modal, FlatList } from 'react-native';
 import React, { useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { NoButton } from '@/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -8,6 +8,14 @@ export default function Payment() {
     const [enquiryType, setEnquiryType] = useState('');
     const [customHeading, setCustomHeading] = useState('');
     const [enquiryText, setEnquiryText] = useState('');
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const enquiryOptions = [
+        { label: 'Billing Issue', value: 'billing' },
+        { label: 'Technical Support', value: 'technical' },
+        { label: 'General Inquiry', value: 'general' },
+        { label: 'Other', value: 'other' },
+    ];
 
     const handleSend = async () => {
         // TODO make an API call to send the email
@@ -34,6 +42,22 @@ export default function Payment() {
         Alert.alert('Success', `Your enquiry has been sent! Ticket Number: ${ticketNumber}`);
     };
 
+    const openModal = () => {
+        setModalVisible(true);
+    }
+    
+    const closeModal = () => {
+        setModalVisible(false);
+    }
+
+    useFocusEffect(
+        React.useCallback(() => {
+            setEnquiryType('');
+            setCustomHeading('');
+            setEnquiryText('');
+        }, [])
+    );
+
     return (
         <View style={styles.container}>
             <View style={styles.headerBox}>
@@ -41,19 +65,14 @@ export default function Payment() {
                 <FontAwesome name="life-ring" style={[styles.header, styles.headerIcon]}/>
             </View>
             <View style={styles.section}>
-                <View style={styles.picker}>
-                    <Picker
-                        selectedValue={enquiryType}
-                        onValueChange={(itemValue) => setEnquiryType(itemValue)}
-                    >
-                        <Picker.Item label="Select Enquiry Type" value=""/>
-                        <Picker.Item label="Billing" value="billing"/>
-                        <Picker.Item label="Technical Support" value="tech"/>
-                        <Picker.Item label="General Enquiry" value="general"/>
-                        <Picker.Item label="Other" value="other"/>
-                    </Picker>
-                </View>
-                
+                <TouchableOpacity
+                    style={styles.dropdown}
+                    onPress={openModal}
+                >
+                    <Text style={styles.dropdownText}>
+                        {enquiryType ? enquiryOptions.find(option => option.value === enquiryType)?.label : 'Select enquiry type'}
+                    </Text>
+                </TouchableOpacity>
                 {enquiryType === 'other' && (
                     <TextInput
                         style={styles.input}
@@ -71,6 +90,32 @@ export default function Payment() {
                 />
                 <NoButton text="Send" onPress={handleSend} />
             </View>
+            <Modal
+                visible={modalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={closeModal}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <FlatList
+                            data={enquiryOptions}
+                            keyExtractor={(item) => item.value}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={styles.modalItem}
+                                    onPress={() => {
+                                        setEnquiryType(item.value);
+                                        closeModal();
+                                    }}
+                                >
+                                    <Text style={styles.modalItemText}>{item.label}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -127,5 +172,41 @@ const styles = StyleSheet.create({
     textArea: {
         height: 100,
         textAlignVertical: 'top',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        width: '80%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+    },
+    modalItem: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+        width: '100%',
+    },
+    modalItemText: {
+        fontSize: 16,
+        color: '#000',
+    },
+    dropdown: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 10,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    dropdownText: {
+        fontSize: 16,
+        color: '#000',
     },
 });
