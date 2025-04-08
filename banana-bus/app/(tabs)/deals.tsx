@@ -1,71 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions, Image, TouchableOpacity, ActivityIndicator } from "react-native";
-import Modal from 'react-native-modal'
-import AnimatedDotsCarousel from "react-native-animated-dots-carousel";
-import { format } from "date-fns"
-import { FontAwesome } from "@expo/vector-icons";
-
-interface Promotion {
-    title: string,
-    description: string,
-    location: string,
-    img: string,
-    validFrom: string,
-    validTo: string
-}
+import { View, Text, StyleSheet, FlatList, Dimensions} from "react-native";
+import AnimatedDotsCarousel, { DecreasingDot, DotConfig } from "react-native-animated-dots-carousel";
+import PromoPage from "@/components/promoComponents/PromoPage";
+import PromoModal from "@/components/promoComponents/PromoModal";
+import { Promotion } from "@/api/interface";
 
 const { width } = Dimensions.get("window")
-// TODO: move Promo components to components folder
 // TODO: backend (using copied pasted data)
-// TODO: create stylesheet
-
-function PromoCard({promo, onPress}: {promo: Promotion, onPress: () => void}) {
-    const [ isImgLoading, setIsImgLoading ] = useState(true)
-    const from = format(new Date(promo.validFrom), "d LLL y");
-    const to  = format(new Date(promo.validTo), "d LLL y");
-    
-    return(
-        <TouchableOpacity style={{ width: "45%", aspectRatio: 0.65, backgroundColor: "white", borderRadius: 10, boxShadow: "0px 0px 5px grey"}}
-          onPress={onPress}
-        >
-            <View style = {{flex: 1, padding: 10, justifyContent: "center", "alignContent": "center"}}>
-              {isImgLoading &&
-                 <ActivityIndicator size="large" color="#007AFF" style={{flex: 1}}/>
-              }
-              <Image
-                source={{uri: promo.img}}
-                style={{width: "100%", resizeMode: "center", flex: 1}}
-                onLoad={() => setIsImgLoading(true)}
-                onLoadEnd={() => setIsImgLoading(false)}
-              />
-            </View>
-              
-            <View style={{padding: 10, borderTopColor: "black", borderTopWidth: 2}}>
-                <View style={{flexDirection: "row"}}>
-                    <FontAwesome name="calendar" style={{padding: 3}}/>
-                    <Text style={{fontSize: 11, paddingTop:2, textAlign: "center"}}>{from} - {to}</Text>
-                </View>
-                <Text style={{fontSize: 15, fontWeight: "bold"}} numberOfLines={1}>
-                    {promo.title}
-                </Text>
-            </View>
-        </TouchableOpacity>
-    )
-}
-
-function PromoPage({pageData, onPress}: {pageData:Promotion[], onPress: (promo: Promotion) => void}) {
-  return(
-    <View style={{width}}>
-        <FlatList
-            data={pageData}
-            renderItem={({item}) => <PromoCard promo={item} onPress={() => onPress(item)}/>}
-            numColumns={2}
-            contentContainerStyle={{flex: 1, justifyContent: "space-evenly"}}
-            columnWrapperStyle={{justifyContent: "space-evenly"}} 
-        />
-    </View>
-  )  
-}
 
 export default function Deals() {
     const [currentPage, setCurrentPage] = useState(0);
@@ -81,9 +22,9 @@ export default function Deals() {
     return (
         <View style={styles.screen}>
             <View style={styles.header}>
-                <Text style={{fontSize: 30, fontWeight: "bold", color: "#009cff"}}>Deals for you</Text>
+                <Text style={styles.headerText}>Deals for you</Text>
             </View>
-            <View style={{flex: 1}}>
+            <View style={styles.promoPages}>
                 <FlatList
                     data={pageDataArray}
                     renderItem={({item}) => 
@@ -100,80 +41,25 @@ export default function Deals() {
                     showsHorizontalScrollIndicator={false}
                     onMomentumScrollEnd={(event) => {
                         const index = Math.round(event.nativeEvent.contentOffset.x / width);
-                        console.log(index)
                         setCurrentPage(index);
                     }}
                 />
-                {/* modal for more info on event. maybe change to component*/}
-                <Modal
-                    isVisible={modalVisible}
-                    onBackButtonPress={() => setModalVisible(false)}
-                    onBackdropPress={() => setModalVisible(false)}
-                >   
-                    {selectedPromo &&
-                        <View style={{padding: 20, backgroundColor: "white", borderRadius: 10}}>
-                            <Image
-                                source={{uri: selectedPromo.img}}
-                                style={{width: "100%", aspectRatio: 1, resizeMode: "center"}}
-                            />
-                            <Text style={{ fontSize: 18, fontWeight: "bold", paddingVertical: 10 }}>
-                                {selectedPromo.title}
-                            </Text>
-                            <View style={{flexDirection:"row"}}>
-                                <Text style={{fontWeight: "bold"}}>Location: </Text>
-                                <Text>{selectedPromo.location}</Text>
-                            </View>
-
-                            <Text style={{fontWeight: "bold", marginTop: 10}}>Description</Text>
-                            <Text>{selectedPromo.description}</Text>
-                            <View style={{flexDirection: "row", justifyContent: "flex-end", marginTop: 8}}>
-                                <TouchableOpacity 
-                                    onPress={() => setModalVisible(false)}
-                                    style={{backgroundColor: "#009cff", padding: 5, borderRadius: 3}}
-                                >
-                                        <Text style={{ color: "white", fontWeight: "bold"}}>Close</Text>
-                                </TouchableOpacity>
-
-                            </View>
-                        </View>
-                    }
-                </Modal>  
+                <PromoModal promo={selectedPromo} visible={modalVisible} setVisible={setModalVisible}/>
             </View>
-          
-          {/* page dots */}
-          <View style={{flexDirection: "row", height: 30, width, justifyContent: "center", paddingVertical: 5}}>
-            <AnimatedDotsCarousel
-                length={numPages}
-                currentIndex={currentPage}
-                maxIndicators={2}
-                activeIndicatorConfig={{
-                    color: "#007AFF",
-                    margin: 3,
-                    opacity: 1,
-                    size: 8,
-                }}
-                inactiveIndicatorConfig={{
-                    color: 'white',
-                    margin: 3,
-                    opacity: 0.5,
-                    size: 8,
-                }}
-                decreasingDots={[
-                    {
-                        config: { color: 'white', margin: 3, opacity: 0.5, size: 6 },
-                        quantity: 1,
-                    },
-                    {
-                        config: { color: 'white', margin: 3, opacity: 0.5, size: 4 },
-                        quantity: 1,
-                    },
-                ]}
-            /> 
-          </View>
+            {/* Pagination Dots */}
+            <View style={styles.pageDotsContainer}>
+                <AnimatedDotsCarousel
+                    length={numPages}
+                    currentIndex={currentPage}
+                    maxIndicators={2}
+                    activeIndicatorConfig={pageIndicatorConfig.active}
+                    inactiveIndicatorConfig={pageIndicatorConfig.inactive}
+                    decreasingDots={pageIndicatorConfig.decreasingDots}
+                /> 
+            </View>
       </View>
   );
 }
-
 
 const styles = StyleSheet.create({
     screen: {
@@ -187,9 +73,49 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         justifyContent: "center",
         boxShadow: "0px 0px 5px grey"
+    },
+    headerText: {
+        fontSize: 30,
+        fontWeight: "bold",
+        color: "#009cff"
+    },
+    promoPages: {
+        flex: 1
+    },
+    pageDotsContainer: {
+      flexDirection: "row",
+      height: 30,
+      width,
+      justifyContent:"center",
+      paddingVertical: 5
     }
 });
 
+// Config/Style for Pagination Dots
+const pageIndicatorConfig: {active: DotConfig, inactive: DotConfig, decreasingDots: DecreasingDot[]} = {
+    active: {
+        color: "#007AFF",
+        margin: 3,
+        opacity: 1,
+        size: 8,
+    },
+    inactive: {
+        color: 'white',
+        margin: 3,
+        opacity: 0.5,
+        size: 8,
+    },
+    decreasingDots: [
+        {
+            config: { color: 'white', margin: 3, opacity: 0.5, size: 6 },
+            quantity: 1,
+        },
+        {
+            config: { color: 'white', margin: 3, opacity: 0.5, size: 4 },
+            quantity: 1,
+        }
+    ]
+}
 // copied and pasted some data from scraper
 const promos = [
     {
