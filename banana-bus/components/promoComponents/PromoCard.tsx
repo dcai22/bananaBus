@@ -20,9 +20,9 @@ export default function PromoCard({promo, onPress}: PromotionCard) {
           style={styles.promoCard}
           onPress={onPress}
         >
-            <View style = {{flex: 1, padding: 10, justifyContent: "center", "alignContent": "center"}}>
+            <View style = {styles.imgContainer}>
               {isImgLoading &&
-                 <ActivityIndicator size="large" color="#007AFF" style={{flex: 1}}/>
+                 <ActivityIndicator size="large" color="#007AFF" style={styles.activityIndicator}/>
               }
               <Image
                 source={{uri: promo.img}}
@@ -57,6 +57,9 @@ const styles = StyleSheet.create({
         padding: 10,
         justifyContent: "center",
         alignContent: "center"
+    },
+    activityIndicator: {
+        flex: 1,
     },
     img: {
         width: "100%",

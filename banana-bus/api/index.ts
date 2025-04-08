@@ -8,6 +8,7 @@ import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { RouteSection } from './interface';
 import { getAccountName } from './account';
+import { getDeals } from './getDeals';
 
 const app = express();
 
@@ -103,6 +104,15 @@ app.get('/getAccountName', (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
     res.json(getAccountName(token));
     return;
+})
+
+app.get('/getDeals', async (req: Request, res: Response, next) => {
+    try {
+        const deals = await getDeals()
+        res.json(deals);
+    } catch (err) {
+        next(err)
+    }
 })
 
 app.use(errorHandler())
