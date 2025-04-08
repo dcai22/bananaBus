@@ -1,5 +1,6 @@
 import { getData } from "./dataStore";
 import { getRouteById, getStopById, getTripById } from "./helper";
+import { ObjectId } from "mongodb";
 import HTTPError from "http-errors";
 
 export interface Error {
@@ -7,13 +8,13 @@ export interface Error {
 }
 
 interface User {
+    _id: ObjectId;
     firstName: string,
     lastName: string,
     email: string;
     password: string;
     tokens: string[];
     resetToken: resetToken;
-    userId: number;
     bookings: number[];
     savedRoutes: RouteSection[];
 }
@@ -35,7 +36,7 @@ export class UserBuilder implements Partial<User> {
         code: '',
         expiry: new Date(),
     };
-    userId?: number;
+    _id?: ObjectId;
     bookings: number[] = [];
     savedRoutes: RouteSection[] = [];
 
@@ -59,8 +60,8 @@ export class UserBuilder implements Partial<User> {
         return Object.assign(this, { tokens: tokens });
     }
 
-    withUserId(userId: number) {
-        return Object.assign(this, { userId: userId });
+    withUserId(_id: ObjectId) {
+        return Object.assign(this, { _id: _id });
     }
 
     withBookings(bookings: number[]) {
@@ -91,38 +92,38 @@ export interface resetToken {
 }
 
 export class Stop {
-    stopId: number;
+    _id: ObjectId;
     name: string;
 
-    constructor(stopId: number, name: string) {
-        this.stopId = stopId;
+    constructor(_id: ObjectId, name: string) {
+        this._id = _id;
         this.name = name;
     }
 }
 
 export interface AuthUserId {
-    userId: number,
+    userId: ObjectId,
     token: string,
 }
 
 export class Route {
-    routeId: number;
-    stops: number[];
-    trips: number[];
+    _id: ObjectId;
+    stops: ObjectId[];
+    trips: ObjectId[];
 
-    constructor(routeId: number, stops: number[], trips: number[] = []) {
-        this.routeId = routeId;
+    constructor(_id: ObjectId, stops: ObjectId[], trips: ObjectId[] = []) {
+        this._id = _id;
         this.stops = stops;
         this.trips = trips;
     }
 }
 
 export class RouteSection {
-    routeId: number;
-    originId: number;
-    destId: number;
+    routeId: ObjectId;
+    originId: ObjectId;
+    destId: ObjectId;
 
-    constructor(routeId: number, originId: number, destId: number) {
+    constructor(routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
         this.routeId = routeId;
         this.originId = originId;
         this.destId = destId;
@@ -132,8 +133,8 @@ export class RouteSection {
         return this.routeId === other.routeId && this.originId === other.originId && this.destId === other.destId;
     }
 
-    isValid() {
-        const route = getRouteById(this.routeId);
+    async isValid() {
+        const route = await getRouteById(this.routeId);
         const originIndex = route.stops.indexOf(this.originId);
         const destIndex = route.stops.indexOf(this.destId);
         if (0 <= originIndex && originIndex < destIndex) {
@@ -143,10 +144,10 @@ export class RouteSection {
         }
     }
 
-    asDisplayRouteSection() {
-        const route = getRouteById(this.routeId);
-        const origin = getStopById(this.originId);
-        const dest = getStopById(this.destId);
+    async asDisplayRouteSection() {
+        const route = await getRouteById(this.routeId);
+        const origin = await getStopById(this.originId);
+        const dest = await getStopById(this.destId);
 
         return {
             route: route,
@@ -159,14 +160,14 @@ export class RouteSection {
 }
 
 export class Trip {
-    tripId: number;
-    vehicleId: number;
-    routeId: number;
+    _id: ObjectId;
+    vehicleId: ObjectId;
+    routeId: ObjectId;
     stopTimes: string[];					// array of ISO String
     bookings: number[];
 
-    constructor(tripId: number, vehicleId: number, routeId: number, stopTimes: Date[], bookings: number[] = []) {
-        this.tripId = tripId;
+    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: number[] = []) {
+        this._id = _id;
         this.vehicleId = vehicleId;
         this.routeId = routeId;
         this.stopTimes = stopTimes.map((date: Date) => date.toISOString());
@@ -175,32 +176,32 @@ export class Trip {
 }
 
 export class Booking {
-    bookingId: number;
-    userId: number;
-    tripId: number;
-    origin: number;
-    dest: number;
+    _id: ObjectId;
+    userId: ObjectId;
+    tripId: ObjectId;
+    originId: ObjectId;
+    destId: ObjectId;
     bookingTime: string;					// ISO String
 
-    constructor(bookingId: number, userId: number, tripId: number, origin: number, dest: number, bookingTime: Date = new Date()) {
-        this.bookingId = bookingId;
+    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, bookingTime: Date = new Date()) {
+        this._id = _id;
         this.userId = userId;
         this.tripId = tripId;
-        this.origin = origin;
-        this.dest = dest;
+        this.originId = originId;
+        this.destId = destId;
         this.bookingTime = bookingTime.toISOString();
     }
 
-    asDisplayBooking() {
-        const trip = getTripById(this.tripId);
-        const route = getRouteById(trip.routeId);
+    async asDisplayBooking() {
+        const trip = await getTripById(this.tripId);
+        const route = await getRouteById(trip.routeId);
 
-        const originName = getStopById(this.origin).name;
-        const destName = getStopById(this.dest).name;
-        const departureTime = trip.stopTimes[route.stops.indexOf(this.origin)];
+        const originName = await getStopById(this.originId).name;
+        const destName = await getStopById(this.destId).name;
+        const departureTime = trip.stopTimes[route.stops.indexOf(this.originId)];
 
         return {
-            bookingId: this.bookingId,
+            _id: this._id,
             userId: this.userId,
             tripId: this.tripId,
             originName: originName,
@@ -217,7 +218,7 @@ export interface TripList {
 }
 
 export interface TripBox {
-    tripId: number,
+    tripId: ObjectId,
     departureTime: Date,
     arrivalTime: Date,
     price: number,
