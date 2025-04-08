@@ -224,4 +224,12 @@ export interface TripBox {
     curCapacity: number, 
     maxCapacity: number,
 }
+export interface Promotion {
+    title: string,
+    description: string,
+    location: string,
+    img: string,
+    validFrom: string,
+    validTo: string
+}
 

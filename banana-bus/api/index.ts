@@ -6,8 +6,9 @@ import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEm
 import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
-import { RouteSection } from './interface';
 import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
+import { getDeals } from './getDeals';
+import { RouteSection } from './interface';
 
 const app = express();
 
@@ -153,6 +154,15 @@ app.post('/updateAccountPassword', (req: Request, res: Response) => {
     const newPassword = req.body.newPassword as string;
     res.json(updateUserPassword(token, oldPassword, newPassword));
     return;
+})
+
+app.get('/getDeals', async (req: Request, res: Response, next) => {
+    try {
+        const deals = await getDeals()
+        res.json(deals);
+    } catch (err) {
+        next(err)
+    }
 })
 
 app.use(errorHandler())
