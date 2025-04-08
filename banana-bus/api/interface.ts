@@ -223,6 +223,10 @@ export interface TripBox {
     price: number,
     curCapacity: number, 
     maxCapacity: number,
+    curLuggageCapacity: number,
+    maxLuggageCapacity: number,
+    luggagePrice: number,
+    disability: boolean, 
 }
 export interface Promotion {
     title: string,

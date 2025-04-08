@@ -29,7 +29,7 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
         if (!departed && !disabled) {
             router.push({
                 pathname: '/booking',
-                params: { routeId: 1, departId: 1, arriveId: 2, tripId: `${trip.tripId}`},
+                params: { tripId: `${trip.tripId}`},
             })
         } else {
             // make a pop up or something
@@ -37,6 +37,13 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
         }
     }
 
+    const isCapacityFull = trip.curCapacity === trip.maxCapacity
+
+    // Used to determine luggage icon colours
+    const isLuggageFull = trip.curLuggageCapacity === trip.maxLuggageCapacity
+    const isLuggageLessThanThird = trip.curLuggageCapacity <= (trip.maxLuggageCapacity / 3) 
+    const isLuggageEmpty = trip.curLuggageCapacity === 0
+    
     return(
         <TouchableOpacity onPress={handlePress}>
             <View style = {styles.tripListContainer}>
@@ -57,15 +64,43 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
                         <Text style = {styles.price}>RM {trip.price}</Text>
                         <Text style = {styles.arriveTime}>{format(trip.arrivalTime, "HH:mm")}</Text>
                         <View style = {styles.capacityContainer}>
-                            {/* calc disabled space */}
-                            <FontAwesome name="wheelchair" style = {styles.wheelchair}></FontAwesome>
+                            <FontAwesome name="wheelchair" 
+                                style = {[
+                                    styles.wheelchair,
+                                    trip.disability && styles.wheelchairAvailable
+                                ]}
+                            />
                             <View style = {styles.luggageContainer}>
-                                {/* calc luggage space */}
-                                <FontAwesome name="suitcase" style = {styles.luggage1}></FontAwesome>
-                                <FontAwesome name="suitcase" style = {styles.luggage2}></FontAwesome>
-                                <FontAwesome name="suitcase" style = {styles.luggage3}></FontAwesome>
+                                <FontAwesome name="suitcase" 
+                                    style = {[
+                                        styles.luggage,
+                                        isLuggageFull && styles.full,
+                                        isLuggageEmpty && styles.luggageGrey
+                                    ]}
+                                />
+                                <FontAwesome name="suitcase" 
+                                    style = {[
+                                        styles.luggage,
+                                        isLuggageFull && styles.full,
+                                        isLuggageLessThanThird && styles.luggageGrey
+                                    ]}
+                                />
+                                <FontAwesome name="suitcase" 
+                                    style = {[
+                                        styles.luggage,
+                                        styles.luggageGrey,
+                                        isLuggageFull && styles.full,
+                                    ]}
+                                 />
                             </View>
-                            <Text style = {styles.personCapacity}>{trip.curCapacity}/{trip.maxCapacity}</Text>
+                            <Text 
+                                style = {[
+                                    styles.personCapacity,
+                                    isCapacityFull && styles.full
+                                ]}
+                            >
+                                {trip.curCapacity}/{trip.maxCapacity}
+                            </Text>
                         </View>
                     </View>
                 </View>
@@ -146,25 +181,25 @@ const styles = StyleSheet.create({
         fontSize: 10,
         margin: 2,
         paddingRight: 2,
+        color: "red"
+    },
+    wheelchairAvailable: {
+        color: "green"
     },
     luggageContainer: {
         flexDirection: "row",
         padding: 2,
     },
-    luggage1: {
+    luggage: {
         fontSize: 10,
         margin: 1,
         color: "black"
     },
-    luggage2: {
-        fontSize: 10,
-        margin: 1,
-        color: "black"
+    luggageGrey: {
+        color: "grey"
     },
-    luggage3: {
-        fontSize: 10,
-        margin: 1,
-        color: "black"
+    full: {
+        color: "red"
     },
     personCapacity: {
         fontWeight: "200",

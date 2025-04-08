@@ -6,7 +6,8 @@ import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { TripBox } from "@/server/interface";
+import { TripBox } from "@/api/interface";
+import { LoadingPage } from "@/components/LoadingPage";
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -20,14 +21,18 @@ const trip: TripBox = {
     price: 20,
     curCapacity: 14, 
     maxCapacity: 20,
+    curLuggageCapacity: 5,
+    maxLuggageCapacity: 10,
+    luggagePrice: 10,
+    disability: true, 
 }
 
 export default function booking() {
-    const { routeId, departId, arriveId, tripId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string, tripId: string}>()
+    const { tripId } = useLocalSearchParams<{tripId: string}>()
     const [ numPassenger, setNumPassenger ] = useState<number>(0)
     const [ numLuggage, setNumLuggage ] = useState<number>(0)
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState("");
     const [error, setError] = useState("")
     const [departName, setDepartName] = useState("airport");
     const [arriveName, setArriveName] = useState("utama mall");
@@ -39,9 +44,6 @@ export default function booking() {
         setLoading(true)
         axios.get("http://localhost:3000/booking", {
             params: {
-                routeId,
-                departId,
-                arriveId,
                 tripId,
             }
         }).then((res) => {
@@ -55,18 +57,26 @@ export default function booking() {
         }).finally(() => {
             setLoading(false)
         })
-    }, [])
+    }, []) */
 
-    if(!trip){
+    function CheckoutHeader() {
         return(
-            <Text>unknown Trip</Text>
+            <View style= {styles.header}>
+                <View style={styles.goBackContainer}>
+                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}/>
+                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
+                </View>
+                <Text style ={styles.headerText}>Secure Checkout</Text>
+            </View>
         )
     }
 
-    // make nicer
     if (loading) {
         return(
-            <Text>Loading.... asdsadasd</Text>
+            <View style={styles.screen}>
+                <CheckoutHeader/>
+                <LoadingPage/>
+            </View>
         )
     }
 
@@ -75,10 +85,7 @@ export default function booking() {
         return(
             <Text>{error}</Text>
         )
-    } */
-
-
-    
+    }    
 
     const maxTickets = trip.maxCapacity - trip.curCapacity
 
@@ -90,9 +97,10 @@ export default function booking() {
         setNumPassenger(num => (num > 0 ? num - 1 : num))
     }
 
-    // TODO: do the same when luggage is added to DataStore
+    const maxLuggage = trip.maxLuggageCapacity - trip.curLuggageCapacity
+
     function handleLuggageIncrease() {
-        setNumLuggage(num => num + 1)
+        setNumLuggage(num => (num < maxLuggage ? num + 1 : num))
     }
 
     function handleLuggageDecrease() {
@@ -100,7 +108,7 @@ export default function booking() {
     }
 
     function totalPrice() {
-        return (numPassenger * trip.price)
+        return (numPassenger * trip.price) + (numLuggage * trip.luggagePrice)
     }
 
     // TODO: API calls to backend or navigate to new routes
@@ -119,14 +127,7 @@ export default function booking() {
 
     return(
         <View style={styles.screen}>
-            <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}/>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-                <Text style ={styles.headerText}>Secure Checkout</Text>
-            </View>
-
+            <CheckoutHeader/>
             <ScrollView style={styles.checkoutInfo}>
                 <View style={styles.tripDetails}>
                     <View style={styles.dateContainer}>

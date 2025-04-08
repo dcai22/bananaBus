@@ -8,14 +8,14 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
 
     // sample data used to test frontend
     const data: DataStore = {
-      users: [],
-      trips: [],
-      bookings:[],
-      routes: [ new Route(1, [1, 2], [0]) ],
-      stops: [
-        new Stop(1, "airport"),
-        new Stop(2, "utama mall"),
-      ],
+        users: [],
+        trips: [],
+        bookings:[],
+        routes: [ new Route(1, [1, 2], [0]) ],
+        stops: [
+            new Stop(1, "airport"),
+            new Stop(2, "utama mall"),
+        ],
     }
     
 
@@ -27,21 +27,21 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
     
     // adding sample trips for testing frontend
     data.trips.push({
-      tripId: 0,
-      vehicleId: 1,
-      routeId: 1,
-      stopTimes:[
-        new Date(lookUpDate.getTime()).toISOString(),
-        new Date(lookUpDate.getTime() + 30 * 60 * 1000).toISOString()
-      ],
-      bookings: []
+        tripId: 0,
+        vehicleId: 1,
+        routeId: 1,
+        stopTimes:[
+            new Date(lookUpDate.getTime()).toISOString(),
+            new Date(lookUpDate.getTime() + 30 * 60 * 1000).toISOString()
+        ],
+        bookings: []
     })
     for (let i= 1; i < 10; i++) {
-      route.trips.push(i)
+        route.trips.push(i)
 
-      const stopTime1 = new Date(lookUpDate.getTime() + i *30 * 60 * 1000);
-      const stopTime2 = new Date(lookUpDate.getTime() + (i + 1) * 30 * 60 * 1000);
-      data.trips.push(new Trip(i, 1, 1, [stopTime1, stopTime2]));
+        const stopTime1 = new Date(lookUpDate.getTime() + i *30 * 60 * 1000);
+        const stopTime2 = new Date(lookUpDate.getTime() + (i + 1) * 30 * 60 * 1000);
+        data.trips.push(new Trip(i, 1, 1, [stopTime1, stopTime2]));
     } 
 
     const departStop = data.stops.find(s => s.stopId === departId)
@@ -64,18 +64,22 @@ export function tripsList(routeId: number, departId: number, arriveId: number, d
      
     // convert dataStore info to tripBox(info needed by frontend)
     const tripBoxes: TripBox[] = trips.map((t: Trip) => ({
-      tripId: t.tripId,
-      departureTime: new Date(t.stopTimes[departIndex]),
-      arrivalTime: new Date(t.stopTimes[arriveIndex]),
-      // to be calculated using functions and vehicle info
-      price: 20,
-      curCapacity: 14,
-      maxCapacity: 20,
+        tripId: t.tripId,
+        departureTime: new Date(t.stopTimes[departIndex]),
+        arrivalTime: new Date(t.stopTimes[arriveIndex]),
+        // to be calculated using functions and vehicle info
+        price: 20,
+        curCapacity: 14,
+        maxCapacity: 20,
+        curLuggageCapacity: 5,
+        maxLuggageCapacity: 10,
+        luggagePrice: 20,
+        disability: true, 
     }))
 
     return {
-      departName,
-      arriveName,
-      trips: tripBoxes,
+        departName,
+        arriveName,
+        trips: tripBoxes,
     }
 }
