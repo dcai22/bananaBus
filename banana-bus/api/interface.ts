@@ -1,7 +1,6 @@
 import { getData } from "./dataStore";
 import { getRouteById, getStopById, getTripById } from "./helper";
 import { ObjectId } from "mongodb";
-import HTTPError from "http-errors";
 
 export interface Error {
     error: string
@@ -130,7 +129,7 @@ export class RouteSection {
     }
 
     equals(other: RouteSection) {
-        return this.routeId === other.routeId && this.originId === other.originId && this.destId === other.destId;
+        return this.routeId.equals(other.routeId) && this.originId.equals(other.originId) && this.destId.equals(other.destId);
     }
 
     async isValid() {
