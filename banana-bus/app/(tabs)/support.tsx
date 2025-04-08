@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, Modal, FlatList, Keyboard } from 'react-native';
 import React, { useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { NoButton } from '@/components/Buttons';
@@ -39,6 +39,10 @@ export default function Payment() {
         console.log(`Heading: ${heading}`);
         console.log(`Body: ${body}`);
 
+        setEnquiryType('');
+        setCustomHeading('');
+        setEnquiryText('');
+        Keyboard.dismiss();
         Alert.alert('Success', `Your enquiry has been sent! Ticket Number: ${ticketNumber}`);
     };
 
