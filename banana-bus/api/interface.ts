@@ -93,10 +93,14 @@ export interface resetToken {
 export class Stop {
     _id: ObjectId;
     name: string;
+    lat: number;
+    lng: number;
 
-    constructor(_id: ObjectId, name: string) {
+    constructor(_id: ObjectId, name: string, lat: number, lng: number) {
         this._id = _id;
         this.name = name;
+        this.lat = lat;
+        this.lng = lng;
     }
 }
 
