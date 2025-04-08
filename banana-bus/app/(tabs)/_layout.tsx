@@ -96,6 +96,13 @@ export default function TabLayout() {
                     href: null,
                 }}
             />
+            <Tabs.Screen
+                name="newPayment"
+                options={{
+                    href: null,
+                    tabBarStyle: { display: "none" },
+                }}
+            />
         </Tabs>
     );
 }
