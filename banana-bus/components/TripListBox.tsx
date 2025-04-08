@@ -71,7 +71,7 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
                 </View>
             </View>
         </TouchableOpacity>
-    )       
+    )
 }
 
 const styles = StyleSheet.create({

@@ -43,6 +43,13 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="forgotPassword"
+                options={{
+                    href: null,
+                    tabBarStyle: { display: "none" },
+                }}
+            />
+            <Tabs.Screen
                 name="payment"
                 options={{
                     href: null,
@@ -92,6 +99,12 @@ export default function TabLayout() {
             />
             <Tabs.Screen
                 name="booking"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="settings"
                 options={{
                     href: null,
                 }}

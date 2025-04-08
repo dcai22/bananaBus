@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackgr
 import React, { useState } from 'react';
 import { useNavigation } from 'expo-router';
 import * as Device from 'expo-device';
-
+import { YesButton, NoButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
 
 export default function RegisterScreen() {
@@ -40,11 +40,11 @@ export default function RegisterScreen() {
                 console.log(`Registration successful, uid: ${data.userId}, token: ${data.token}`);
                 if (Device.deviceType === Device.DeviceType.PHONE) {
                     // This only works on mobile
-                    saveItem('uid', data.userId);
+                    saveItem('userId', data.userId.toString());
                     saveItem('token', data.token);
                 } else {
                     // Save to local storage on web for testing purposes
-                    localStorage.setItem('uid', data.userId);
+                    localStorage.setItem('userId', data.userId);
                     localStorage.setItem('token', data.token);
                 }
                 navigation.navigate('index');
@@ -112,9 +112,10 @@ export default function RegisterScreen() {
                         onChangeText={setConfirmPassword}
                         secureTextEntry
                     />
-                    <TouchableOpacity onPress={handleRegister} style={styles.button}>
-                        <Text style={styles.buttonText}>Register</Text>
-                    </TouchableOpacity>
+                    <YesButton
+                        text="Register"
+                        onPress={handleRegister}
+                    />
                 </View>
             </View>
         </ImageBackground>
