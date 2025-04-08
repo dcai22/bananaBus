@@ -232,7 +232,6 @@ export default function Settings() {
         <View style={styles.container}>
             <View style={styles.headerBox}>
                 <Text style={styles.header}>Settings</Text>
-                {/* TODO change this icon */}
                 <Text style={styles.header}>⚙️</Text>
             </View>
             <View style={styles.section}>
