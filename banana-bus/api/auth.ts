@@ -3,41 +3,77 @@ import { AuthUserId, DataStore, Error, UserBuilder } from "./interface";
 import { getData, setData } from "./dataStore";
 import { getHash, compareHash, findUserByToken, findUserByResetToken } from "./helper";
 import crypto from "crypto";
+import { collections } from "./mongoUtil";
 
-export function authRegister(email: string, password: string, firstName: string, lastName: string) {
-    const data = getData();
-
-    for (const index in data.users) {
-        if (email === data.users[index].email) {
-            throw HTTPError(400, 'email address already in use');
-        }
+export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    
+    const checkUser = await collections.users.findOne({ email: email });
+    if (checkUser) {
+        throw HTTPError(400, 'email address already in use');
     }
 
     const hashedPassword = getHash(password);
-    
-    let userId = 0;
-    if (data.users.length !== 0) {
-        userId = data.users[data.users.length - 1].userId + 1;
-    }
     const token = crypto.randomBytes(64).toString('hex')
     const hashedToken = getHash(token);
 
-    data.users.push(new UserBuilder()
-        .withFirstName(firstName)
-        .withLastName(lastName)
-        .withEmail(email)
-        .withPassword(hashedPassword)
-        .withTokens([ hashedToken ])
-        .withUserId(userId)
-        .build()
-    );
 
+    const newUser = {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: hashedPassword,
+        tokens: [ hashedToken ],
+        resetToken: {
+            token: '',
+            code: '',
+            expiry: new Date(),
+        },
+        bookings: [],
+        savedRoutes: []
+    }
 
-    setData(data);
+    const userId = await collections.users.insertOne(newUser);
     return {
-        userId,
-        token
+        userId: userId,
+        token: token
     };
+
+    // const data = getData();
+
+    // for (const index in data.users) {
+    //     if (email === data.users[index].email) {
+    //         throw HTTPError(400, 'email address already in use');
+    //     }
+    // }
+
+    // const hashedPassword = getHash(password);
+    
+    // let userId = 0;
+    // if (data.users.length !== 0) {
+    //     userId = data.users[data.users.length - 1].userId + 1;
+    // }
+    // const token = crypto.randomBytes(64).toString('hex')
+    // const hashedToken = getHash(token);
+
+    // data.users.push(new UserBuilder()
+    //     .withFirstName(firstName)
+    //     .withLastName(lastName)
+    //     .withEmail(email)
+    //     .withPassword(hashedPassword)
+    //     .withTokens([ hashedToken ])
+    //     .withUserId(userId)
+    //     .build()
+    // );
+
+
+    // setData(data);
+    // return {
+    //     userId,
+    //     token
+    // };
 }
 
 export function authLogin(email: string, password: string) {

@@ -29,12 +29,16 @@ app.post('/login', (req: Request, res: Response) => {
     return;
 })
 
-app.post('/register', (req: Request, res: Response) => {
-    const email = req.body.email as string;
-    const password = req.body.password as string;
-    const firstName = req.body.firstName as string;
-    const lastName = req.body.lastName as string;
-    res.json(authRegister(email, password, firstName, lastName));
+app.post('/register', async (req: Request, res: Response, next) => {
+    try {
+        const email = req.body.email as string;
+        const password = req.body.password as string;
+        const firstName = req.body.firstName as string;
+        const lastName = req.body.lastName as string;
+        res.json(await authRegister(email, password, firstName, lastName));
+    } catch(error) {
+        next(error)
+    }
     return;
 })
 
