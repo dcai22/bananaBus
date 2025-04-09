@@ -1,5 +1,4 @@
 import HTTPError from "http-errors";
-import { getData, setData } from "./dataStore";
 import { getRouteById, getStopById } from "./helper";
 import { Route, RouteSection, User } from "./interface";
 import { collections } from "./mongoUtil";

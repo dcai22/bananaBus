@@ -1,4 +1,3 @@
-import { getData } from "./dataStore";
 import { getRouteById, getStopById, getTripById } from "./helper";
 import { ObjectId } from "mongodb";
 

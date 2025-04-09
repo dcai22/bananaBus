@@ -1,6 +1,5 @@
 import HTTPError from "http-errors";
 import { AuthUserId, DataStore, Error, UserBuilder } from "./interface";
-import { getData, setData } from "./dataStore";
 import { getHash, compareHash, findUserByToken, findUserByResetToken } from "./helper";
 import crypto from "crypto";
 import { collections } from "./mongoUtil";
@@ -38,7 +37,7 @@ export async function authRegister(email: string, password: string, firstName: s
 
     const userId = await collections.users.insertOne(newUser);
     return {
-        userId: userId,
+        userId: userId.insertedId,
         token: token
     };
 }
