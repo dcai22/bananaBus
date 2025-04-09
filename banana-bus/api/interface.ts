@@ -184,15 +184,17 @@ export class Booking {
     tripId: ObjectId;
     originId: ObjectId;
     destId: ObjectId;
+    numTickets: number = 1;
     bookingTime: string;					// ISO String
 
-    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, bookingTime: Date = new Date()) {
+    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number) {
         this._id = _id;
         this.userId = userId;
         this.tripId = tripId;
         this.originId = originId;
         this.destId = destId;
-        this.bookingTime = bookingTime.toISOString();
+        if (typeof numTickets !== "undefined") this.numTickets = numTickets;
+        this.bookingTime = new Date().toISOString();
     }
 
     async asDisplayBooking() {

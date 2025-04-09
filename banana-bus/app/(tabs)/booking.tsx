@@ -1,12 +1,14 @@
 import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router } from "expo-router";
-import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image} from "react-native";
+import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { TripBox } from "@/server/interface";
+import { ObjectId } from "mongodb";
+import { getItem } from "../helper";
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -112,8 +114,33 @@ export default function booking() {
 
     }
     
-    function handleCheckout() {
+    async function handleCheckout() {
+        // TODO: handle payment
 
+        const userId = new ObjectId(await getItem("userId") as string);
+
+        try {
+            const res = await fetch('https://banana-psi-lemon.vercel.app/createBooking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, tripId, departId, arriveId, numTickets: numPassenger }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+
+                console.log(`Created booking with id ${data.insertedId}`);
+
+                router.back();
+            } else {
+                const errorData = await res.json();
+                Alert.alert('Error', errorData.error || 'Booking failed');
+            }
+        } catch (err) {
+            Alert.alert('Error', 'An error occurred. Please try again.');
+        }
     }
 
 
