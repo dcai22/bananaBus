@@ -1,12 +1,12 @@
 import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams, router } from "expo-router";
-import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image} from "react-native";
+import { useLocalSearchParams, router, useNavigation } from "expo-router";
+import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { TripBox } from "@/api/interface";
+import { TripBox } from "@/server/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 
 // TODO: fix up stack/tabs so router back works properly
@@ -28,7 +28,7 @@ const trip: TripBox = {
 }
 
 export default function booking() {
-    const { tripId } = useLocalSearchParams<{tripId: string}>()
+    const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
     const [ numPassenger, setNumPassenger ] = useState<number>(0)
     const [ numLuggage, setNumLuggage ] = useState<number>(0)
 
@@ -37,6 +37,8 @@ export default function booking() {
     const [departName, setDepartName] = useState("airport");
     const [arriveName, setArriveName] = useState("utama mall");
     const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"})
+    
+    const navigation = useNavigation();
     // const [trip, setTrip] = useState<TripBox>();
 
     // TODO: backend to retrieve trip and card details
@@ -120,8 +122,31 @@ export default function booking() {
 
     }
     
-    function handleCheckout() {
+    async function handleCheckout() {
+        // TODO: handle payment
 
+        try {
+            const res = await fetch('https://banana-psi-lemon.vercel.app/createBooking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, tripId, departId, arriveId, numTickets: numPassenger }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+
+                console.log(`Created booking with id ${data.insertedId}`);
+
+                navigation.navigate("index");
+            } else {
+                const errorData = await res.json();
+                Alert.alert('Error', errorData.error || 'Booking failed');
+            }
+        } catch (err) {
+            Alert.alert('Error', 'An error occurred. Please try again.');
+        }
     }
 
 

@@ -9,6 +9,8 @@ import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
 import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
+import { ObjectId } from 'mongodb';
+import { collections } from './mongoUtil';
 
 const app = express();
 
@@ -22,137 +24,204 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Hello world');
 })
 
-app.post('/login', (req: Request, res: Response) => {
-    const email = req.body.email as string;
-    const password = req.body.password as string;
-    res.json(authLogin(email, password));
-    return;
-})
-
-app.post('/register', (req: Request, res: Response) => {
-    const email = req.body.email as string;
-    const password = req.body.password as string;
-    const firstName = req.body.firstName as string;
-    const lastName = req.body.lastName as string;
-    res.json(authRegister(email, password, firstName, lastName));
-    return;
-})
-
-app.post('/resetPasswordEmail', async (req: Request, res: Response) => {
-    const email = req.body.email as string;
-    res.json(await authPasswordResetEmail(email));
-    return;
-})
-
-app.post('/resetPasswordVerifyCode', (req: Request, res: Response) => {
-    const token = req.query.token as string;
-    const code = req.body.code as string;
-    res.json(authPasswordVerifyCode(token, code));
-    return;
-})
-
-app.post('/resetPassword', (req: Request, res: Response) => {
-    const token = req.query.token as string;
-    const newPassword = req.body.newPassword as string;
-    res.json(authPasswordReset(token, newPassword));
-    return;
-})
-
-app.post('/autologin', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    res.json(authAutoLogin(token));
-    return;
-})
-
-app.post('/logout', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const userId = parseInt(req.body.userId)
-    res.json(authLogout(userId, token));
-    return;
-})
-
-app.delete('/deleteAccount', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const userId = parseInt(req.body.userId);
-    res.json(deleteAccount(userId, token));
-    return;
-})
-
-app.get('/pastBookings', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    const numBookings = req.body.numBookings as number;
-    res.json(searchBookings(userId, 'past', numBookings));
-    return;
-})
-
-app.get('/upcomingBookings', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    const numBookings = req.body.numBookings as number;
-    res.json(searchBookings(userId, 'upcoming', numBookings));
-    return;
-})
-
-app.get('/tripsList', (req: Request, res: Response, next) => {
+app.post('/login', async (req: Request, res: Response, next) => {
     try {
-        const routeId = parseInt(req.query.routeId as string);
-        const departId = parseInt(req.query.departId as string); 
-        const arriveId = parseInt(req.query.arriveId as string);
+        const email = req.body.email as string;
+        const password = req.body.password as string;
+        res.json(await authLogin(email, password));
+    } catch(error) {
+        next(error);
+    }
+    return;
+})
+
+app.post('/register', async (req: Request, res: Response, next) => {
+    try {
+        const email = req.body.email as string;
+        const password = req.body.password as string;
+        const firstName = req.body.firstName as string;
+        const lastName = req.body.lastName as string;
+        res.json(await authRegister(email, password, firstName, lastName));
+    } catch(error) {
+        next(error);
+    }
+    return;
+})
+
+app.post('/resetPasswordEmail', async (req: Request, res: Response, next) => {
+    try {
+        const email = req.body.email as string;
+        res.json(await authPasswordResetEmail(email));
+    } catch (error) {
+        next(error);
+    }
+    return;
+})
+
+app.post('/resetPasswordVerifyCode', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.query.token as string;
+        const code = req.body.code as string;
+        res.json(await authPasswordVerifyCode(token, code));
+    } catch (error) {
+        next(error);
+    }
+    return;
+})
+
+app.post('/resetPassword', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.query.token as string;
+        const newPassword = req.body.newPassword as string;
+        res.json(await authPasswordReset(token, newPassword));
+    } catch (error) {
+        next(error);
+    }
+    return;
+})
+
+app.post('/autologin', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await authAutoLogin(token));
+    } catch (error) {
+        next(error);
+    }
+    return;
+})
+
+app.post('/logout', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.body.token as string;
+        const userId = req.body.userId as ObjectId;
+        res.json(await authLogout(userId, token));
+    } catch (error) {
+        next(error);
+    }
+    return;
+})
+
+app.delete('/deleteAccount', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const userId = req.body.userId as ObjectId;
+        res.json(await deleteAccount(userId, token));
+    } catch (error) {
+        next(error);
+    }
+    return;
+})
+
+app.get('/pastBookings', async (req: Request, res: Response, next) => {
+    try {
+        const userId = req.body.userId as ObjectId;
+        const numBookings = req.body.numBookings as number;
+        const bookings = await searchBookings(userId, 'past', numBookings);
+        res.json(bookings);
+    } catch (err) {
+        next(err);
+    }
+
+    return;
+})
+
+app.get('/upcomingBookings', async (req: Request, res: Response, next) => {
+    try {
+        const userId = req.body.userId as ObjectId;
+        const numBookings = req.body.numBookings as number;
+        const bookings = await searchBookings(userId, 'upcoming', numBookings);
+        res.json(bookings);
+    } catch (err) {
+        next(err);
+    }
+    return;
+})
+
+app.get('/tripsList', async (req: Request, res: Response, next) => {
+    try {
+        const routeId = new ObjectId(req.query.routeId as string);
+        const departId = new ObjectId(req.query.departId as string); 
+        const arriveId = new ObjectId(req.query.arriveId as string);
         const date = req.query.date as string;
     
-        res.json(tripsList(routeId, departId, arriveId, date));
+        res.json(await tripsList(routeId, departId, arriveId, date));
     } catch (err) {
-        next(err)
+        next(err);
     }
 })
 
-app.get('/getSavedRoutes', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    res.json(getSavedRoutes(userId));
-    return;
+app.get('/getSavedRoutes', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+    try {
+        res.json(await getSavedRoutes(userId));
+    } catch (err) {
+        next(err);
+    }
 })
 
-app.post('/saveRoute', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    const routeId = req.body.routeId as number;
-    const originId = req.body.originId as number;
-    const destId = req.body.destId as number;
-    res.json(saveRoute(userId, routeId, originId, destId));
-    return;
+app.post('/saveRoute', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+    const routeId = req.body.routeId as ObjectId;
+    const originId = req.body.originId as ObjectId;
+    const destId = req.body.destId as ObjectId;
+    try {
+        res.json(await saveRoute(userId, routeId, originId, destId));
+    } catch (err) {
+        next(err);
+    }
 })
 
-app.delete('/unsaveRoute', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
+app.delete('/unsaveRoute', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
     const routeSection = req.body.routeSection as RouteSection;
-    res.json(unsaveRoute(userId, routeSection));
+    try {
+        res.json(await unsaveRoute(userId, routeSection));
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.get('/getAccountName', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await getAccountName(token));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.get('/getAccountName', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    res.json(getAccountName(token));
+app.get('/getAccountDetails', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await getUserDetails(token));
+    } catch (error) {
+        next(error);
+    }
+})
+
+app.post('/updateAccountDetails', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const firstName = req.body.firstName as string;
+        const lastName = req.body.lastName as string;
+        const email = req.body.email as string;
+        res.json(await updateUserDetails(token, firstName, lastName, email));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.get('/getAccountDetails', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    res.json(getUserDetails(token));
-    return;
-})
-
-app.post('/updateAccountDetails', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const firstName = req.body.firstName as string;
-    const lastName = req.body.lastName as string;
-    const email = req.body.email as string;
-    res.json(updateUserDetails(token, firstName, lastName, email));
-    return;
-})
-
-app.post('/updateAccountPassword', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const oldPassword = req.body.oldPassword as string;
-    const newPassword = req.body.newPassword as string;
-    res.json(updateUserPassword(token, oldPassword, newPassword));
+app.post('/updateAccountPassword', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const oldPassword = req.body.oldPassword as string;
+        const newPassword = req.body.newPassword as string;
+        res.json(await updateUserPassword(token, oldPassword, newPassword));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
@@ -161,7 +230,28 @@ app.get('/getDeals', async (req: Request, res: Response, next) => {
         const deals = await getDeals()
         res.json(deals);
     } catch (err) {
-        next(err)
+        next(err);
+    }
+})
+
+app.post('/createBooking', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+    const tripId = req.body.tripId as ObjectId;
+    const originId = req.body.originId as ObjectId;
+    const destId = req.body.destId as ObjectId;
+    const numTickets = req.body.numTickets as number;
+
+    try {
+        const dbRes = await collections.bookings?.insertOne({
+            userId,
+            tripId,
+            originId,
+            destId,
+            numTickets,
+        });
+        res.json({ insertedId: dbRes?.insertedId });
+    } catch (err) {
+        next(err);
     }
 })
 
