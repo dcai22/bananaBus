@@ -9,6 +9,8 @@ import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
 import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
+import { ObjectId } from 'mongodb';
+import { collections } from './mongoUtil';
 
 const app = express();
 
@@ -168,5 +170,26 @@ app.get('/getDeals', async (req: Request, res: Response, next) => {
         next(err)
     }
 })
+
+app.post('/createBooking', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+    const tripId = req.body.tripId as ObjectId;
+    const originId = req.body.originId as ObjectId;
+    const destId = req.body.destId as ObjectId;
+    const numTickets = req.body.numTickets as number;
+
+    try {
+        const dbRes = await collections.bookings?.insertOne({
+            userId,
+            tripId,
+            originId,
+            destId,
+            numTickets,
+        });
+        res.json({ insertedId: dbRes?.insertedId });
+    } catch (err) {
+        next(err);
+    }
+});
 
 app.use(errorHandler())

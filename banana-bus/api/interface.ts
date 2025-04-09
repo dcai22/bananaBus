@@ -184,23 +184,25 @@ export class Booking {
     tripId: ObjectId;
     originId: ObjectId;
     destId: ObjectId;
+    numTickets: number = 1;
     bookingTime: string;					// ISO String
 
-    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, bookingTime: Date = new Date()) {
+    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number) {
         this._id = _id;
         this.userId = userId;
         this.tripId = tripId;
         this.originId = originId;
         this.destId = destId;
-        this.bookingTime = bookingTime.toISOString();
+        if (typeof numTickets !== "undefined") this.numTickets = numTickets;
+        this.bookingTime = new Date().toISOString();
     }
 
     async asDisplayBooking() {
         const trip = await getTripById(this.tripId);
         const route = await getRouteById(trip.routeId);
 
-        const originName = await getStopById(this.originId).name;
-        const destName = await getStopById(this.destId).name;
+        const originName = (await getStopById(this.originId)).name;
+        const destName = (await getStopById(this.destId)).name;
         const departureTime = trip.stopTimes[route.stops.indexOf(this.originId)];
 
         return {

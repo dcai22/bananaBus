@@ -35,7 +35,7 @@ export async function authRegister(email: string, password: string, firstName: s
         savedRoutes: []
     }
 
-    const userId = await collections.users.insertOne(newUser);
+    const userId = (await collections.users.insertOne(newUser)).insertedId;
     return {
         userId: userId,
         token: token
