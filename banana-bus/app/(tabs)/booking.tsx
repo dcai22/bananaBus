@@ -1,6 +1,6 @@
 import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, router, useNavigation } from "expo-router";
 import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
@@ -34,6 +34,8 @@ export default function booking() {
     const [departName, setDepartName] = useState("airport");
     const [arriveName, setArriveName] = useState("utama mall");
     const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"})
+    
+    const navigation = useNavigation();
     // const [trip, setTrip] = useState<TripBox>();
 
     // TODO: backend to retrieve trip and card details
@@ -133,7 +135,7 @@ export default function booking() {
 
                 console.log(`Created booking with id ${data.insertedId}`);
 
-                router.back();
+                navigation.navigate("index");
             } else {
                 const errorData = await res.json();
                 Alert.alert('Error', errorData.error || 'Booking failed');
