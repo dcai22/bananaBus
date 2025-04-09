@@ -1,6 +1,8 @@
 import * as mongoDB from "mongodb";
-let connectionString = "mongodb+srv://COMP3900_banana:MoOdnJX5rmjYAFDC@bananabus.f4d4u.mongodb.net/?retryWrites=true&w=majority&appName=bananabus";
-let dbName = "banana";
+import dotenv from "dotenv";
+
+dotenv.config();
+let dbName = "app";
 
 export const collections: {
     users?: mongoDB.Collection;
@@ -10,14 +12,30 @@ export const collections: {
     stops?: mongoDB.Collection;
 } = {};
 
+let mongoClient: mongoDB.MongoClient | null = null;
+let database: mongoDB.Db | null = null;
+
 export async function connectToDatabase() {
-    const client = new mongoDB.MongoClient(connectionString);
-    await client.connect();
-    const db = client.db(dbName);
-    collections.users = db.collection("users");
-    collections.trips = db.collection("trips");
-    collections.bookings = db.collection("bookings");
-    collections.routes = db.collection("routes");
-    collections.stops = db.collection("stops");
-    console.log("Connected to MongoDB");
-}
+    if (!process.env.MONGODB_URI) {
+        throw new Error("MONGODB_URI is not defined in the environment variables");
+    }
+    try {
+        if (mongoClient && database) {
+            console.log("Already connected to MongoDB");
+        } else {
+            mongoClient = new mongoDB.MongoClient(process.env.MONGODB_URI);
+            await mongoClient.connect();
+            database = mongoClient.db(dbName);
+            console.log("New connection to MongoDB established");
+        }
+        collections.users = database.collection("users");
+        collections.trips = database.collection("trips");
+        collections.bookings = database.collection("bookings");
+        collections.routes = database.collection("routes");
+        collections.stops = database.collection("stops");
+        console.log("Connected to MongoDB");
+    } catch (error) {
+        console.error("Error connecting to MongoDB", error);
+        throw new Error("Failed to connect to MongoDB");
+    }
+} 

@@ -1,4 +1,3 @@
-import { getData } from "./dataStore";
 import { getRouteById, getStopById, getTripById } from "./helper";
 import { ObjectId } from "mongodb";
 
@@ -16,6 +15,7 @@ export interface User {
     resetToken: resetToken;
     bookings: ObjectId[];
     savedRoutes: RouteSection[];
+    isManager: boolean;
 }
 
 export class User implements User {
@@ -38,6 +38,7 @@ export class UserBuilder implements Partial<User> {
     _id?: ObjectId;
     bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
+    isManager: boolean = false;
 
     withFirstName(firstName: string) {
         return Object.assign(this, { firstName: firstName });

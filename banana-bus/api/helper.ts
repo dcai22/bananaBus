@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import HTTPError from "http-errors";
-import { getData } from "./dataStore";
-import { collections } from "./mongoUtil";
+import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { Route, Stop, Trip } from "./interface";
 

@@ -1,12 +1,14 @@
 import HTTPError from "http-errors";
 import { AuthUserId, DataStore, Error, UserBuilder } from "./interface";
-import { getData, setData } from "./dataStore";
 import { getHash, compareHash, findUserByToken, findUserByResetToken } from "./helper";
 import crypto from "crypto";
 import { collections } from "./mongoUtil";
 import { ObjectId } from "mongodb";
+import { connectToDatabase } from "./mongoUtil";
 
 export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
+    await connectToDatabase();
+
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
@@ -33,17 +35,20 @@ export async function authRegister(email: string, password: string, firstName: s
             expiry: new Date(),
         },
         bookings: [],
-        savedRoutes: []
+        savedRoutes: [],
+        isManager: false,
     }
 
     const userId = await collections.users.insertOne(newUser);
     return {
-        userId: userId,
+        userId: userId.insertedId,
         token: token
     };
 }
 
 export async function authLogin(email: string, password: string) {
+    await connectToDatabase();
+
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
@@ -69,6 +74,8 @@ export async function authLogin(email: string, password: string) {
 }
 
 export async function authAutoLogin(token: string) {
+    await connectToDatabase();
+
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
@@ -84,6 +91,8 @@ export async function authAutoLogin(token: string) {
 }
 
 export async function authLogout(userId: ObjectId, token: string) {
+    await connectToDatabase();
+
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
@@ -110,6 +119,8 @@ export async function authLogout(userId: ObjectId, token: string) {
 }
 
 export async function authPasswordResetEmail(email: string) {
+    await connectToDatabase();
+
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
@@ -179,6 +190,8 @@ export async function authPasswordResetEmail(email: string) {
 
 // checks the token in the query of the url is correct, ensures that this person is actually trying to reset their password
 export async function authPasswordVerifyCode(token: string, code: string) {
+    await connectToDatabase();
+
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
@@ -203,6 +216,8 @@ export async function authPasswordVerifyCode(token: string, code: string) {
 }
 
 export async function authPasswordReset(token: string, password: string) {
+    await connectToDatabase();
+
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }

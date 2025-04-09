@@ -19,7 +19,7 @@ export default function tripsList() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get("https://banana-psi-lemon.vercel.app/tripsList", {
+        axios.get("https://banana-bus.vercel.app/tripsList", {
             params: {
                 routeId,
                 departId,

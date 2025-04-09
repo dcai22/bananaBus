@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { collections } from "./mongoUtil";
+import { collections, connectToDatabase } from "./mongoUtil";
 import { getRouteById, getTripById } from "./helper";
 import { Booking } from "./interface";
 import { ObjectId } from "mongodb";
@@ -9,6 +9,8 @@ import { ObjectId } from "mongodb";
 // upcoming bookings are yet to depart from their origin,
 // and so on.
 export async function searchBookings(userId: ObjectId, timeFrame: string, numBookings: number) {
+    await connectToDatabase();
+
     let bookings = await collections.bookings?.find<Booking>({ userId: userId }).toArray();
     if (!bookings) {
         throw HTTPError(400, 'user not found');

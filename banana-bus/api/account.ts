@@ -1,6 +1,5 @@
 import HTTPError from "http-errors";
 import { compareHash, findUserByToken, getHash } from "./helper";
-import { getData, setData } from "./dataStore";
 import { collections } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 

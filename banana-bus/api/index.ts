@@ -10,6 +10,7 @@ import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updat
 import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
+import { addManager, removeManager } from './manager';
 import { collections } from './mongoUtil';
 
 const app = express();
@@ -92,7 +93,7 @@ app.post('/autologin', async (req: Request, res: Response, next) => {
 
 app.post('/logout', async (req: Request, res: Response, next) => {
     try {
-        const token = req.body.token as string;
+        const token = req.headers.authorization as string;
         const userId = req.body.userId as ObjectId;
         res.json(await authLogout(userId, token));
     } catch (error) {
@@ -250,6 +251,60 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
             numTickets,
         });
         res.json({ insertedId: dbRes?.insertedId });
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.post('/manager/createRoute', async (req: Request, res: Response, next) => {
+    const stops = req.body.stops as ObjectId[];
+
+    try {
+        const dbRes = await collections.routes?.insertOne({
+            stops,
+            trips: [],
+        });
+        res.json({ insertedId: dbRes?.insertedId });
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => {
+    const routeId = req.body.routeId as ObjectId;
+
+    try {
+        await collections.routes?.deleteOne({ routeId: routeId });
+        res.json({});
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.get('/manager/allStops', async (req: Request, res: Response, next) => {
+    try {
+        const dbRes = collections.stops?.find().toArray();
+        res.json(dbRes);
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.put('/manager/add', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+
+    try {
+        res.json(await addManager(userId));
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.put('/manager/remove', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+
+    try {
+        res.json(await removeManager(userId));
     } catch (err) {
         next(err);
     }
