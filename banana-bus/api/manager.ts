@@ -1,9 +1,11 @@
 import HTTPError from "http-errors";
 import { ObjectId } from "mongodb";
-import { collections } from "./mongoUtil";
+import { collections, connectToDatabase } from "./mongoUtil";
 import { User } from "./interface";
 
 export async function addManager(userId: ObjectId) {
+    await connectToDatabase();
+    
     const user = await collections.users?.findOne<User>({ userId: userId });
     if (!user) {
         throw HTTPError(400, 'user not found');
@@ -17,6 +19,8 @@ export async function addManager(userId: ObjectId) {
 }
 
 export async function removeManager(userId: ObjectId) {
+    await connectToDatabase();
+
     const user = await collections.users?.findOne<User>({ userId: userId });
     if (!user) {
         throw HTTPError(400, 'user not found');

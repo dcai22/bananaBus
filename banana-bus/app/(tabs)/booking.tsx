@@ -122,7 +122,7 @@ export default function booking() {
         const userId = new ObjectId(await getItem("userId") as string);
 
         try {
-            const res = await fetch('https://banana-psi-lemon.vercel.app/createBooking', {
+            const res = await fetch('https://banana-bus.vercel.app/createBooking', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { collections } from "./mongoUtil";
+import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { isSameDay } from "date-fns";
 import { getRouteById, getStopById } from "./helper";
@@ -7,6 +7,7 @@ import { getRouteById, getStopById } from "./helper";
 import { Trip, TripBox, TripList } from "./interface";
 
 export async function tripsList(routeId: ObjectId, departId: ObjectId, arriveId: ObjectId, date: string): Promise<TripList> {
+    await connectToDatabase();
     
     if (!collections.trips || !collections.routes || !collections.stops) {
         throw HTTPError(500, 'Database collection is not initialized');

@@ -1,10 +1,12 @@
 import HTTPError from "http-errors";
 import { getRouteById, getStopById } from "./helper";
 import { Route, RouteSection, User } from "./interface";
-import { collections } from "./mongoUtil";
+import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 
 export async function saveRoute(userId: ObjectId, routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
+    await connectToDatabase();
+
     const route = await collections.routes?.findOne<Route>({ routeId: routeId });
     if (!route) {
         throw HTTPError(400, 'route not found');

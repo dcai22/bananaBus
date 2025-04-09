@@ -10,8 +10,8 @@ import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updat
 import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
-import { collections } from './mongoUtil';
 import { addManager, removeManager } from './manager';
+import { collections } from './mongoUtil';
 
 const app = express();
 
@@ -93,7 +93,7 @@ app.post('/autologin', async (req: Request, res: Response, next) => {
 
 app.post('/logout', async (req: Request, res: Response, next) => {
     try {
-        const token = req.body.token as string;
+        const token = req.headers.authorization as string;
         const userId = req.body.userId as ObjectId;
         res.json(await authLogout(userId, token));
     } catch (error) {
