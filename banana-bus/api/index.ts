@@ -255,4 +255,38 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
     }
 })
 
+app.post('/manager/createRoute', async (req: Request, res: Response, next) => {
+    const stops = req.body.stops as ObjectId[];
+
+    try {
+        const dbRes = await collections.routes?.insertOne({
+            stops,
+            trips: [],
+        });
+        res.json({ insertedId: dbRes?.insertedId });
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => {
+    const routeId = req.body.routeId as ObjectId;
+
+    try {
+        await collections.routes?.deleteOne({ routeId: routeId });
+        res.json({});
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.get('/manager/allStops', async (req: Request, res: Response, next) => {
+    try {
+        const dbRes = collections.stops?.find().toArray();
+        res.json(dbRes);
+    } catch (err) {
+        next(err);
+    }
+})
+
 app.use(errorHandler())
