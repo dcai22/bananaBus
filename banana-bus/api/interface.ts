@@ -14,7 +14,7 @@ interface User {
     password: string;
     tokens: string[];
     resetToken: resetToken;
-    bookings: number[];
+    bookings: ObjectId[];
     savedRoutes: RouteSection[];
 }
 
@@ -36,7 +36,7 @@ export class UserBuilder implements Partial<User> {
         expiry: new Date(),
     };
     _id?: ObjectId;
-    bookings: number[] = [];
+    bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
 
     withFirstName(firstName: string) {
@@ -167,9 +167,9 @@ export class Trip {
     vehicleId: ObjectId;
     routeId: ObjectId;
     stopTimes: string[];					// array of ISO String
-    bookings: number[];
+    bookings: ObjectId[];
 
-    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: number[] = []) {
+    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = []) {
         this._id = _id;
         this.vehicleId = vehicleId;
         this.routeId = routeId;
@@ -199,16 +199,16 @@ export class Booking {
         const trip = await getTripById(this.tripId);
         const route = await getRouteById(trip.routeId);
 
-        const originName = await getStopById(this.originId).name;
-        const destName = await getStopById(this.destId).name;
+        const origin = await getStopById(this.originId);
+        const dest = await getStopById(this.destId);
         const departureTime = trip.stopTimes[route.stops.indexOf(this.originId)];
 
         return {
             _id: this._id,
             userId: this.userId,
             tripId: this.tripId,
-            originName: originName,
-            destName: destName,
+            originName: origin.name,
+            destName: dest.name,
             departureTime: departureTime,
         };
     }
