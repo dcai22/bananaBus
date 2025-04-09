@@ -82,17 +82,28 @@ app.delete('/deleteAccount', (req: Request, res: Response) => {
     return;
 })
 
-app.get('/pastBookings', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    const numBookings = req.body.numBookings as number;
-    res.json(searchBookings(userId, 'past', numBookings));
+app.get('/pastBookings', async (req: Request, res: Response, next) => {
+    try {
+        const userId = req.body.userId as number;
+        const numBookings = req.body.numBookings as number;
+        const bookings = await searchBookings(userId, 'past', numBookings);
+        res.json(bookings);
+    } catch (err) {
+        next(err)
+    }
+
     return;
 })
 
-app.get('/upcomingBookings', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    const numBookings = req.body.numBookings as number;
-    res.json(searchBookings(userId, 'upcoming', numBookings));
+app.get('/upcomingBookings', async (req: Request, res: Response, next) => {
+    try {
+        const userId = req.body.userId as number;
+        const numBookings = req.body.numBookings as number;
+        const bookings = await searchBookings(userId, 'upcoming', numBookings);
+        res.json(bookings);
+    } catch (err) {
+        next(err)
+    }
     return;
 })
 
