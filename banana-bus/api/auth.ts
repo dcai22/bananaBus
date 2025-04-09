@@ -32,7 +32,8 @@ export async function authRegister(email: string, password: string, firstName: s
             expiry: new Date(),
         },
         bookings: [],
-        savedRoutes: []
+        savedRoutes: [],
+        isManager: false,
     }
 
     const userId = await collections.users.insertOne(newUser);

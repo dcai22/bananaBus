@@ -11,6 +11,7 @@ import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
 import { collections } from './mongoUtil';
+import { addManager, removeManager } from './manager';
 
 const app = express();
 
@@ -284,6 +285,26 @@ app.get('/manager/allStops', async (req: Request, res: Response, next) => {
     try {
         const dbRes = collections.stops?.find().toArray();
         res.json(dbRes);
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.put('/manager/add', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+
+    try {
+        res.json(await addManager(userId));
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.put('/manager/remove', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+
+    try {
+        res.json(await removeManager(userId));
     } catch (err) {
         next(err);
     }
