@@ -24,10 +24,14 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Hello world');
 })
 
-app.post('/login', (req: Request, res: Response) => {
-    const email = req.body.email as string;
-    const password = req.body.password as string;
-    res.json(authLogin(email, password));
+app.post('/login', async (req: Request, res: Response, next) => {
+    try {
+        const email = req.body.email as string;
+        const password = req.body.password as string;
+        res.json(await authLogin(email, password));
+    } catch(error) {
+        next(error);
+    }
     return;
 })
 
@@ -44,43 +48,67 @@ app.post('/register', async (req: Request, res: Response, next) => {
     return;
 })
 
-app.post('/resetPasswordEmail', async (req: Request, res: Response) => {
-    const email = req.body.email as string;
-    res.json(await authPasswordResetEmail(email));
+app.post('/resetPasswordEmail', async (req: Request, res: Response, next) => {
+    try {
+        const email = req.body.email as string;
+        res.json(await authPasswordResetEmail(email));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.post('/resetPasswordVerifyCode', (req: Request, res: Response) => {
-    const token = req.query.token as string;
-    const code = req.body.code as string;
-    res.json(authPasswordVerifyCode(token, code));
+app.post('/resetPasswordVerifyCode', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.query.token as string;
+        const code = req.body.code as string;
+        res.json(await authPasswordVerifyCode(token, code));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.post('/resetPassword', (req: Request, res: Response) => {
-    const token = req.query.token as string;
-    const newPassword = req.body.newPassword as string;
-    res.json(authPasswordReset(token, newPassword));
+app.post('/resetPassword', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.query.token as string;
+        const newPassword = req.body.newPassword as string;
+        res.json(await authPasswordReset(token, newPassword));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.post('/autologin', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    res.json(authAutoLogin(token));
+app.post('/autologin', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await authAutoLogin(token));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.post('/logout', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const userId = parseInt(req.body.userId)
-    res.json(authLogout(userId, token));
+app.post('/logout', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.body.token as string;
+        const userId = req.body.userId as ObjectId;
+        res.json(await authLogout(userId, token));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.delete('/deleteAccount', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const userId = parseInt(req.body.userId);
-    res.json(deleteAccount(userId, token));
+app.delete('/deleteAccount', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const userId = req.body.userId as ObjectId;
+        res.json(await deleteAccount(userId, token));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
@@ -144,32 +172,47 @@ app.delete('/unsaveRoute', (req: Request, res: Response) => {
     return;
 })
 
-app.get('/getAccountName', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    res.json(getAccountName(token));
+app.get('/getAccountName', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await getAccountName(token));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.get('/getAccountDetails', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    res.json(getUserDetails(token));
+app.get('/getAccountDetails', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await getUserDetails(token));
+    } catch (error) {
+        next(error);
+    }
+})
+
+app.post('/updateAccountDetails', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const firstName = req.body.firstName as string;
+        const lastName = req.body.lastName as string;
+        const email = req.body.email as string;
+        res.json(await updateUserDetails(token, firstName, lastName, email));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
-app.post('/updateAccountDetails', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const firstName = req.body.firstName as string;
-    const lastName = req.body.lastName as string;
-    const email = req.body.email as string;
-    res.json(updateUserDetails(token, firstName, lastName, email));
-    return;
-})
-
-app.post('/updateAccountPassword', (req: Request, res: Response) => {
-    const token = req.headers.authorization as string;
-    const oldPassword = req.body.oldPassword as string;
-    const newPassword = req.body.newPassword as string;
-    res.json(updateUserPassword(token, oldPassword, newPassword));
+app.post('/updateAccountPassword', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const oldPassword = req.body.oldPassword as string;
+        const newPassword = req.body.newPassword as string;
+        res.json(await updateUserPassword(token, oldPassword, newPassword));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
