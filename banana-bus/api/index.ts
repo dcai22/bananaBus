@@ -283,8 +283,8 @@ app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => 
 
 app.get('/manager/allStops', async (req: Request, res: Response, next) => {
     try {
-        const dbRes = collections.stops?.find().toArray();
-        res.json(dbRes);
+        const allStops = collections.stops?.find().toArray();
+        res.json({ stops: allStops });
     } catch (err) {
         next(err);
     }
@@ -305,6 +305,15 @@ app.put('/manager/remove', async (req: Request, res: Response, next) => {
 
     try {
         res.json(await removeManager(userId));
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
+    try {
+        const allVehicles = await collections.vehicles?.find().toArray();
+        res.json({ vehicles: allVehicles });
     } catch (err) {
         next(err);
     }

@@ -10,6 +10,7 @@ export const collections: {
     bookings?: mongoDB.Collection;
     routes?: mongoDB.Collection;
     stops?: mongoDB.Collection;
+    vehicles?: mongoDB.Collection;
 } = {};
 
 let mongoClient: mongoDB.MongoClient | null = null;
@@ -33,6 +34,7 @@ export async function connectToDatabase() {
         collections.bookings = database.collection("bookings");
         collections.routes = database.collection("routes");
         collections.stops = database.collection("stops");
+        collections.vehicles = database.collection("vehicles");
         console.log("Connected to MongoDB");
     } catch (error) {
         console.error("Error connecting to MongoDB", error);
