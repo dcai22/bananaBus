@@ -9,6 +9,7 @@ import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
 import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
+import { ObjectId } from 'mongodb';
 
 const app = express();
 
@@ -37,7 +38,7 @@ app.post('/register', async (req: Request, res: Response, next) => {
         const lastName = req.body.lastName as string;
         res.json(await authRegister(email, password, firstName, lastName));
     } catch(error) {
-        next(error)
+        next(error);
     }
     return;
 })
@@ -84,12 +85,12 @@ app.delete('/deleteAccount', (req: Request, res: Response) => {
 
 app.get('/pastBookings', async (req: Request, res: Response, next) => {
     try {
-        const userId = req.body.userId as number;
+        const userId = req.body.userId as ObjectId;
         const numBookings = req.body.numBookings as number;
         const bookings = await searchBookings(userId, 'past', numBookings);
         res.json(bookings);
     } catch (err) {
-        next(err)
+        next(err);
     }
 
     return;
@@ -97,12 +98,12 @@ app.get('/pastBookings', async (req: Request, res: Response, next) => {
 
 app.get('/upcomingBookings', async (req: Request, res: Response, next) => {
     try {
-        const userId = req.body.userId as number;
+        const userId = req.body.userId as ObjectId;
         const numBookings = req.body.numBookings as number;
         const bookings = await searchBookings(userId, 'upcoming', numBookings);
         res.json(bookings);
     } catch (err) {
-        next(err)
+        next(err);
     }
     return;
 })
@@ -116,7 +117,7 @@ app.get('/tripsList', (req: Request, res: Response, next) => {
     
         res.json(tripsList(routeId, departId, arriveId, date));
     } catch (err) {
-        next(err)
+        next(err);
     }
 })
 
@@ -176,8 +177,8 @@ app.get('/getDeals', async (req: Request, res: Response, next) => {
         const deals = await getDeals()
         res.json(deals);
     } catch (err) {
-        next(err)
+        next(err);
     }
 })
 
-app.use(errorHandler())
+app.use(errorHandler());

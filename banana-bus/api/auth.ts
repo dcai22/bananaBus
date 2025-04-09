@@ -37,7 +37,7 @@ export async function authRegister(email: string, password: string, firstName: s
 
     const userId = await collections.users.insertOne(newUser);
     return {
-        userId: userId,
+        userId: userId.insertedId,
         token: token
     };
 
