@@ -8,6 +8,7 @@ export const collections: {
     bookings?: mongoDB.Collection;
     routes?: mongoDB.Collection;
     stops?: mongoDB.Collection;
+    vehicles?: mongoDB.Collection;
 } = {};
 
 export async function connectToDatabase() {
@@ -19,5 +20,6 @@ export async function connectToDatabase() {
     collections.bookings = db.collection("bookings");
     collections.routes = db.collection("routes");
     collections.stops = db.collection("stops");
+    collections.vehicles = db.collection("vehicles");
     console.log("Connected to MongoDB");
 }

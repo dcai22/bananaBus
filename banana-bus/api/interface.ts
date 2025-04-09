@@ -240,3 +240,19 @@ export interface Promotion {
     validTo: string
 }
 
+export interface Vehicle {
+    _id: ObjectId;
+    driverId: ObjectId;
+    lat: number,
+    lng: number,
+    maxCapacity: number,
+    curCapacity: number,
+    numPlate: string,
+    model: string,
+}
+
+export class Vehicle implements Vehicle {
+    constructor(vehicle: Vehicle) {
+        Object.assign(this, vehicle);
+    }
+}
