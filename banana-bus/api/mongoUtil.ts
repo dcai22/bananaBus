@@ -1,15 +1,17 @@
 import * as mongoDB from "mongodb";
 import dotenv from "dotenv";
+import { Route, Stop, Trip, Vehicle } from "./interface";
 
 dotenv.config();
 let dbName = "app";
 
 export const collections: {
     users?: mongoDB.Collection;
-    trips?: mongoDB.Collection;
+    trips?: mongoDB.Collection<Trip>;
     bookings?: mongoDB.Collection;
-    routes?: mongoDB.Collection;
-    stops?: mongoDB.Collection;
+    routes?: mongoDB.Collection<Route>;
+    stops?: mongoDB.Collection<Stop>;
+    vehicles?: mongoDB.Collection<Vehicle>;
 } = {};
 
 let mongoClient: mongoDB.MongoClient | null = null;
@@ -33,6 +35,7 @@ export async function connectToDatabase() {
         collections.bookings = database.collection("bookings");
         collections.routes = database.collection("routes");
         collections.stops = database.collection("stops");
+        collections.vehicles = database.collection("vehicles");
         console.log("Connected to MongoDB");
     } catch (error) {
         console.error("Error connecting to MongoDB", error);

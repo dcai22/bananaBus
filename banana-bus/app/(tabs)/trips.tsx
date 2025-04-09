@@ -166,12 +166,13 @@ export default function Trips() {
         //         date: new Date().toISOString(),
         //     }
         // })
+        // hard coded for the only route in db with 2 stops
         router.push({
             pathname: '/tripsList',
             params: {
-                routeId: 1,
-                departId: 1,
-                arriveId: 2,
+                routeId: "67f678743fb87d7a2df89c40",
+                departId: "67f6789907015b5d0c6ab38f",
+                arriveId: "67f678d207015b5d0c6ab391",
                 date: new Date().toISOString(),
             }
         })

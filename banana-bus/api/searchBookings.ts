@@ -16,7 +16,7 @@ export async function searchBookings(userId: ObjectId, timeFrame: string, numBoo
         throw HTTPError(400, 'user not found');
     }
 
-    const curTime = new Date().toISOString();
+    const curTime = new Date();
     bookings = bookings.filter(async (booking) => {
         if (timeFrame === 'all') {
             return true;

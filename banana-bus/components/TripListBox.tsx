@@ -29,7 +29,11 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
         if (!departed && !disabled) {
             router.push({
                 pathname: '/booking',
-                params: { tripId: `${trip.tripId}`},
+                params: { 
+                    departId: `${trip.departId}`,
+                    arriveId: `${trip.arriveId}`,
+                    tripId: `${trip.tripId}`
+                },
             })
         } else {
             // make a pop up or something
@@ -67,7 +71,7 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
                             <FontAwesome name="wheelchair" 
                                 style = {[
                                     styles.wheelchair,
-                                    trip.disability && styles.wheelchairAvailable
+                                    trip.hasAssist && styles.wheelchairAvailable
                                 ]}
                             />
                             <View style = {styles.luggageContainer}>

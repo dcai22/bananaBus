@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import HTTPError from "http-errors";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
-import { Route, Stop, Trip } from "./interface";
+import { Route, Stop, Trip, Vehicle } from "./interface";
 
 export function getHash(text: string) {
     const salt = bcrypt.genSaltSync(10);
@@ -68,6 +68,14 @@ export async function getStopById(stopId: ObjectId) {
         throw HTTPError(400, 'stop not found');
     }
     return stop;
+}
+
+export async function getVehicleById(vehicleId: ObjectId) {
+    const vehicle = await collections.vehicles?.findOne<Vehicle>({ _id: vehicleId});
+    if (!vehicle) {
+        throw HTTPError(400, 'vehicle not found');
+    }
+    return vehicle;
 }
 
 export async function findUserByResetToken(token: string) {

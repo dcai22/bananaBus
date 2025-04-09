@@ -16,7 +16,7 @@ export default function tripsList() {
     const [departName, setDepartName] = useState("Loading");
     const [arriveName, setArriveName] = useState("");
     const [trips, setTrips] = useState<TripBox[]>([]);
-
+    
     useEffect(() => {
         setLoading(true)
         axios.get("https://banana-bus.vercel.app/tripsList", {
@@ -29,6 +29,7 @@ export default function tripsList() {
         }).then((res) => {
             setDepartName(res.data.departName)
             setArriveName(res.data.arriveName)
+            console.log(res.data.trips)
             setTrips(res.data.trips)
         }).catch((err) => {
             setError(err.response.data.error)

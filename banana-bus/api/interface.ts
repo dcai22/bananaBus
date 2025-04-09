@@ -167,14 +167,14 @@ export class Trip {
     _id: ObjectId;
     vehicleId: ObjectId;
     routeId: ObjectId;
-    stopTimes: string[];					// array of ISO String
+    stopTimes: Date[];
     bookings: ObjectId[];
 
     constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = []) {
         this._id = _id;
         this.vehicleId = vehicleId;
         this.routeId = routeId;
-        this.stopTimes = stopTimes.map((date: Date) => date.toISOString());
+        this.stopTimes = stopTimes;
         this.bookings = bookings;
     }
 }
@@ -186,7 +186,8 @@ export class Booking {
     originId: ObjectId;
     destId: ObjectId;
     numTickets: number = 1;
-    bookingTime: string;					// ISO String
+    numLuggage: number = 1;
+    bookingTime: Date;
 
     constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number) {
         this._id = _id;
@@ -195,7 +196,7 @@ export class Booking {
         this.originId = originId;
         this.destId = destId;
         if (typeof numTickets !== "undefined") this.numTickets = numTickets;
-        this.bookingTime = new Date().toISOString();
+        this.bookingTime = new Date();
     }
 
     async asDisplayBooking() {
@@ -225,6 +226,8 @@ export interface TripList {
 
 export interface TripBox {
     tripId: ObjectId,
+    departId: ObjectId,
+    arriveId: ObjectId,
     departureTime: Date,
     arrivalTime: Date,
     price: number,
@@ -233,8 +236,15 @@ export interface TripBox {
     curLuggageCapacity: number,
     maxLuggageCapacity: number,
     luggagePrice: number,
-    disability: boolean, 
+    hasAssist: boolean, 
 }
+
+export interface TripInfo {
+    departName: string,
+    arriveName: string,
+    trip: TripBox,
+}
+
 export interface Promotion {
     title: string,
     description: string,
@@ -244,3 +254,11 @@ export interface Promotion {
     validTo: string
 }
 
+export interface Vehicle {
+    _id: ObjectId,
+    //driverId : ObjectId,
+    maxCapacity: number,
+    maxLuggageCapacity: number,
+    hasAssist: boolean,
+    numberPlate: string,
+}

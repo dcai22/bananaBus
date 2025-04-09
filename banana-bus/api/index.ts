@@ -3,7 +3,7 @@ import cors from 'cors';
 import errorHandler from "middleware-http-errors"
 
 import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode } from './auth';
-import { tripsList } from './tripsList';
+import { getTrip, tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
@@ -151,6 +151,18 @@ app.get('/tripsList', async (req: Request, res: Response, next) => {
     }
 })
 
+app.get('/getTrip', async (req: Request, res: Response, next) => {
+    try {
+        const departId = new ObjectId(req.query.departId as string); 
+        const arriveId = new ObjectId(req.query.arriveId as string);
+        const tripId = new ObjectId(req.query.tripId as string);
+        
+        res.json(await getTrip(departId, arriveId, tripId));
+    } catch (err) {
+        next(err);
+    }
+})
+
 app.get('/getSavedRoutes', async (req: Request, res: Response, next) => {
     const userId = req.body.userId as ObjectId;
     try {
@@ -261,6 +273,7 @@ app.post('/manager/createRoute', async (req: Request, res: Response, next) => {
 
     try {
         const dbRes = await collections.routes?.insertOne({
+            _id: new ObjectId(),
             stops,
             trips: [],
         });
