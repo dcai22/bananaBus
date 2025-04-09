@@ -3,6 +3,7 @@ import HTTPError from "http-errors";
 import { getData } from "./dataStore";
 import { collections } from "./mongoUtil";
 import { ObjectId } from "mongodb";
+import { Route, Stop, Trip } from "./interface";
 
 export function getHash(text: string) {
     const salt = bcrypt.genSaltSync(10);
@@ -47,7 +48,7 @@ export async function findUserByToken(token: string) {
 }
 
 export async function getTripById(tripId: ObjectId) {
-    const trip = await collections.trips?.findOne({ _id: tripId });
+    const trip = await collections.trips?.findOne<Trip>({ _id: tripId });
     if (!trip) {
         throw HTTPError(400, 'trip not found');
     }
@@ -55,7 +56,7 @@ export async function getTripById(tripId: ObjectId) {
 }
 
 export async function getRouteById(routeId: ObjectId) {
-    const route = await collections.routes?.findOne({ _id: routeId });
+    const route = await collections.routes?.findOne<Route>({ _id: routeId });
     if (!route) {
         throw HTTPError(400, 'route not found');
     }
@@ -63,7 +64,7 @@ export async function getRouteById(routeId: ObjectId) {
 }
 
 export async function getStopById(stopId: ObjectId) {
-    const stop = await collections.stops?.findOne({ _id: stopId });
+    const stop = await collections.stops?.findOne<Stop>({ _id: stopId });
     if (!stop) {
         throw HTTPError(400, 'stop not found');
     }

@@ -108,14 +108,14 @@ app.get('/upcomingBookings', async (req: Request, res: Response, next) => {
     return;
 })
 
-app.get('/tripsList', (req: Request, res: Response, next) => {
+app.get('/tripsList', async (req: Request, res: Response, next) => {
     try {
-        const routeId = parseInt(req.query.routeId as string);
-        const departId = parseInt(req.query.departId as string); 
-        const arriveId = parseInt(req.query.arriveId as string);
+        const routeId = new ObjectId(req.query.routeId as string);
+        const departId = new ObjectId(req.query.departId as string); 
+        const arriveId = new ObjectId(req.query.arriveId as string);
         const date = req.query.date as string;
     
-        res.json(tripsList(routeId, departId, arriveId, date));
+        res.json(await tripsList(routeId, departId, arriveId, date));
     } catch (err) {
         next(err);
     }
