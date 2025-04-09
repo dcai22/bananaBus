@@ -122,26 +122,35 @@ app.get('/tripsList', async (req: Request, res: Response, next) => {
     }
 })
 
-app.get('/getSavedRoutes', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    res.json(getSavedRoutes(userId));
-    return;
+app.get('/getSavedRoutes', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+    try {
+        res.json(await getSavedRoutes(userId));
+    } catch (err) {
+        next(err);
+    }
 })
 
-app.post('/saveRoute', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
-    const routeId = req.body.routeId as number;
-    const originId = req.body.originId as number;
-    const destId = req.body.destId as number;
-    res.json(saveRoute(userId, routeId, originId, destId));
-    return;
+app.post('/saveRoute', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+    const routeId = req.body.routeId as ObjectId;
+    const originId = req.body.originId as ObjectId;
+    const destId = req.body.destId as ObjectId;
+    try {
+        res.json(await saveRoute(userId, routeId, originId, destId));
+    } catch (err) {
+        next(err);
+    }
 })
 
-app.delete('/unsaveRoute', (req: Request, res: Response) => {
-    const userId = req.body.userId as number;
+app.delete('/unsaveRoute', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
     const routeSection = req.body.routeSection as RouteSection;
-    res.json(unsaveRoute(userId, routeSection));
-    return;
+    try {
+        res.json(await unsaveRoute(userId, routeSection));
+    } catch (err) {
+        next(err);
+    }
 })
 
 app.get('/getAccountName', (req: Request, res: Response) => {
@@ -201,6 +210,6 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
     } catch (err) {
         next(err);
     }
-});
+})
 
 app.use(errorHandler())

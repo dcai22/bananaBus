@@ -6,7 +6,7 @@ export interface Error {
     error: string
 }
 
-interface User {
+export interface User {
     _id: ObjectId;
     firstName: string,
     lastName: string,
@@ -18,7 +18,7 @@ interface User {
     savedRoutes: RouteSection[];
 }
 
-class User implements User {
+export class User implements User {
     constructor(user: User) {
         Object.assign(this, user);
     }
