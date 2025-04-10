@@ -63,13 +63,13 @@ export default function TabLayout() {
                         tabBarStyle: { display: "none" },
                     }}
                 />
-            <Tabs.Screen
-                name="forgotPassword"
-                options={{
-                    href: null,
-                    tabBarStyle: { display: "none" },
-                }}
-            />
+                <Tabs.Screen
+                    name="forgotPassword"
+                    options={{
+                        href: null,
+                        tabBarStyle: { display: "none" },
+                    }}
+                />
                 <Tabs.Screen
                     name="payment"
                     options={{
@@ -124,19 +124,25 @@ export default function TabLayout() {
                         href: null,
                     }}
                 />
-            <Tabs.Screen
-                name="newPayment"
-                options={{
-                    href: null,
-                    tabBarStyle: { display: "none" },
-                }}
-            />
-            <Tabs.Screen
-                name="settings"
-                options={{
-                    href: null,
-                }}
-            />
+                <Tabs.Screen
+                    name="newPayment"
+                    options={{
+                        href: null,
+                        tabBarStyle: { display: "none" },
+                    }}
+                />
+                <Tabs.Screen
+                    name="settings"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
+                    name="support"
+                    options={{
+                        href: null,
+                    }}
+                />
             </Tabs>
         </KeyboardAvoidingView>
     );

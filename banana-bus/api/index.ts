@@ -2,6 +2,7 @@ import express, { json, Request, Response } from "express";
 import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
+<<<<<<< HEAD
 import {
     authLogin,
     authRegister,
@@ -27,6 +28,29 @@ import { ObjectId } from "mongodb";
 import { addManager, removeManager } from "./manager";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { findUserByToken } from "./helper";
+=======
+import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode } from './auth';
+import { getTrip, tripsList } from './tripsList';
+import { searchBookings } from './searchBookings';
+import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
+import { deleteAccount,
+            getAccountName, 
+            getUserDetails,
+            updateUserDetails,
+            updateUserPassword,
+            addCard,
+            editCard,
+            deleteCard,
+            makeDefaultCard,
+            getUserCards, 
+            sendEnquiry} from './account';
+import { getDeals } from './getDeals';
+import { Route, RouteSection } from './interface';
+import { ObjectId } from 'mongodb';
+import { addManager, removeManager } from './manager';
+import { collections, connectToDatabase } from './mongoUtil';
+import { findUserByToken } from './helper';
+>>>>>>> main
 
 const app = express();
 
@@ -147,8 +171,13 @@ app.get("/pastBookings", async (req: Request, res: Response, next) => {
 app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
+<<<<<<< HEAD
         const numBookings = req.body.numBookings as number;
         const bookings = await searchBookings(token, "upcoming", numBookings);
+=======
+        const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
+        const bookings = await searchBookings(token, 'upcoming', numBookings);
+>>>>>>> main
         res.json(bookings);
     } catch (err) {
         next(err);
@@ -296,9 +325,21 @@ app.post("/createBooking", async (req: Request, res: Response, next) => {
             numTickets,
             numLuggage,
         });
+<<<<<<< HEAD
         await collections.trips?.updateOne({ _id: tripId }, {
             $push: { bookings: dbRes?.insertedId },
         } as any);
+=======
+        await collections.trips?.updateOne(
+            { _id: tripId },
+            { $push: { bookings: dbRes?.insertedId } } as any
+        )
+        await collections.users?.updateOne(
+            { _id: user._id },
+            { $push: { bookings: dbRes?.insertedId } } as any
+        )
+
+>>>>>>> main
         res.json({ insertedId: dbRes?.insertedId });
     } catch (err) {
         next(err);
@@ -367,7 +408,11 @@ app.get("/manager/allStops", async (req: Request, res: Response, next) => {
     const user = await findUserByToken(strippedToken);
 
     if (!user) {
+<<<<<<< HEAD
         res.status(403).json({ error: "invalid token" });
+=======
+        res.status(403).json({ error: 'invalid token' });
+>>>>>>> main
         return;
     }
     try {
@@ -398,7 +443,33 @@ app.put("/manager/remove", async (req: Request, res: Response, next) => {
     }
 });
 
+<<<<<<< HEAD
 app.get("/stops/reachableFrom", async (req: Request, res: Response, next) => {
+=======
+app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
+    try {
+        const heading = req.body.heading as string;
+        const body = req.body.body as string;
+        const token = req.headers.authorization as string;
+        res.json(await sendEnquiry(token, heading, body));
+    } catch (error) {
+        next(error);
+    }
+    return;
+})
+
+app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
+    try {
+        const allVehicles = await collections.vehicles?.find().toArray();
+        res.json({ vehicles: allVehicles });
+    } catch (err) {
+        next(err);
+    }
+    return;
+})
+
+app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
+>>>>>>> main
     await connectToDatabase();
 
     const token = req.headers.authorization as string;
@@ -439,7 +510,76 @@ app.get("/stops/reachableFrom", async (req: Request, res: Response, next) => {
     }
 });
 
+<<<<<<< HEAD
 app.get("/routes/fromSection", async (req: Request, res: Response, next) => {
+=======
+app.post('/addCard', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const type = req.body.type as string;
+        const cardNumber = req.body.cardNumber as string;
+        const cvv = req.body.cvv as string;
+        const expMonth = parseInt(req.body.expMonth as string);
+        const expYear = parseInt(req.body.expYear as string);
+        res.json(await addCard(token, type, cardNumber, cvv, expMonth, expYear));
+    } catch(error) {
+        next(error);
+    }
+    return;
+})
+
+app.put('/editCard', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const cardId = req.body.cardId as ObjectId;
+        const type = req.body.type as string;
+        const cardNumber = req.body.cardNumber as string;
+        const cvv = req.body.cvv as string;
+        const expMonth = parseInt(req.body.expMonth as string);
+        const expYear = parseInt(req.body.expYear as string);
+        res.json(await editCard(token, cardId, type, cardNumber, cvv, expMonth, expYear));
+    } catch(error) {
+        next(error);
+    }
+    return;
+})
+
+
+app.put('/makeDefaultCard', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const cardId = new ObjectId(req.body.cardId as string);
+    console.log(cardId);
+    try{
+        res.json(await makeDefaultCard(token, cardId));
+    } catch ( err ) {
+        next(err);
+    }
+    return;
+})
+
+app.delete('/deleteCard', async(req: Request, res: Response, next) => {
+    try{
+        const token = req.headers.authorization as string;
+        const cardId = new ObjectId(req.body.cardId as string);
+        res.json(await deleteCard(token, cardId));
+    } catch ( err ) {
+        next(err);
+    }
+    return;
+})
+
+app.get('/getUserCards', async(req: Request, res: Response, next) => {
+    try{
+        const token = req.headers.authorization as string;
+        res.json(await getUserCards(token));
+    } catch ( err ) {
+        next(err);
+    }
+    return;
+})
+
+app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
+>>>>>>> main
     await connectToDatabase();
 
     const token = req.headers.authorization as string;
@@ -452,8 +592,11 @@ app.get("/routes/fromSection", async (req: Request, res: Response, next) => {
 
     const departId = new ObjectId(req.query.departId as string);
     const arriveId = new ObjectId(req.query.arriveId as string);
+    console.log('departId ' + departId);
+    console.log('arriveId ' + arriveId);
 
     try {
+<<<<<<< HEAD
         const allRoutes = await collections.routes
             ?.find<Route>({
                 $and: [
@@ -465,16 +608,38 @@ app.get("/routes/fromSection", async (req: Request, res: Response, next) => {
 
         if (typeof allRoutes === "undefined") {
             res.status(400).json({ error: "unable to search routes" });
+=======
+        const allRoutes = await collections.routes?.find<Route>({
+            $and: [
+                { stops: { $elemMatch: { $eq: departId } } },
+                { stops: { $elemMatch: { $eq: arriveId } } }
+            ]
+        }).toArray();
+
+        console.log('allRoutes ' + allRoutes);
+
+        if (typeof allRoutes === 'undefined') {
+            res.status(400).json({ error: 'unable to search routes' })
+>>>>>>> main
             return;
         }
 
         const routes = allRoutes.filter((route) => {
+<<<<<<< HEAD
             return (
                 route.stops.indexOf(arriveId) > route.stops.indexOf(departId)
             );
         });
 
         res.json({ routes });
+=======
+            return route.stops.findIndex(s => s.equals(arriveId)) > route.stops.findIndex(s => s.equals(departId));
+        })
+
+        console.log('routes ' + routes);
+
+        res.json( { routes });
+>>>>>>> main
     } catch (err) {
         next(err);
     }

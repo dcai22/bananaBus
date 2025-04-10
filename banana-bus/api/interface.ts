@@ -16,6 +16,7 @@ export interface User {
     bookings: ObjectId[];
     savedRoutes: RouteSection[];
     isManager: boolean;
+    cards: Card[];
 }
 
 export class User implements User {
@@ -39,6 +40,7 @@ export class UserBuilder implements Partial<User> {
     bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
     isManager: boolean = false;
+    cards: Card[] = [];
 
     withFirstName(firstName: string) {
         return Object.assign(this, { firstName: firstName });
@@ -72,9 +74,23 @@ export class UserBuilder implements Partial<User> {
         return Object.assign(this, { savedRoutes: savedRoutes });
     }
 
+    withCards(cards: Card[]){
+        return Object.assign(this, { cards: cards });
+    }
+
     build(this: User) {
         return new User(this);
     }
+}
+
+export interface Card {
+    _id: ObjectId;
+    type: string;
+    cardNumber: string;
+    cvv: string;
+    expiry: Date;
+    last4: string;
+    isDefault: boolean;
 }
 
 export interface DataStore {
@@ -205,7 +221,7 @@ export class Booking {
 
         const origin = await getStopById(this.originId);
         const dest = await getStopById(this.destId);
-        const departureTime = trip.stopTimes[route.stops.indexOf(this.originId)];
+        const departureTime = trip.stopTimes[route.stops.findIndex(s => s.equals(this.originId))];
 
         return {
             _id: this._id,
