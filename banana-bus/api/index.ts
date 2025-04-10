@@ -252,9 +252,9 @@ app.get('/getDeals', async (req: Request, res: Response, next) => {
 
 app.post('/createBooking', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const tripId = req.body.tripId as ObjectId;
-    const originId = req.body.originId as ObjectId;
-    const destId = req.body.destId as ObjectId;
+    const tripId = new ObjectId(req.body.tripId as string);
+    const originId = new ObjectId(req.body.originId as string);
+    const destId = new ObjectId(req.body.destId as string);
     const numTickets = req.body.numTickets as number;
     const numLuggage = req.body.numLuggage as number;
 
