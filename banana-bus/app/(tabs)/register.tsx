@@ -27,7 +27,7 @@ export default function RegisterScreen() {
         // Register user
 
         try {
-            const response = await fetch('https://banana-psi-lemon.vercel.app/register', {
+            const response = await fetch('https://banana-bus.vercel.app/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

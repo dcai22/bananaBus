@@ -34,7 +34,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/resetPasswordEmail", {
+            const response = await fetch("https://banana-bus.vercel.app/resetPasswordEmail", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -63,7 +63,7 @@ export default function LoginScreen() {
     const checkEmailCode = async () => {
         const paramToken = await getItem('resetToken');
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/resetPasswordVerifyCode" + `?token=${paramToken}`, {
+            const response = await fetch("https://banana-bus.vercel.app/resetPasswordVerifyCode" + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export default function LoginScreen() {
                 const token = await getItem('token');
                 if (token !== null) {
                     try {
-                        const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {
+                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -110,7 +110,7 @@ export default function LoginScreen() {
                 const token = localStorage.getItem('token');
                 if (token !== null) {
                     try {
-                        const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {
+                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -137,7 +137,7 @@ export default function LoginScreen() {
         console.log("Password:", password);
 
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/login", {
+            const response = await fetch("https://banana-bus.vercel.app/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -1,63 +1,54 @@
 import React, { useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router } from "expo-router";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
+import { LoadingPage } from "@/components/LoadingPage";
+import { getItem } from "../helper";
 
 export default function tripsList() {
     const { routeId, departId, arriveId, date } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string, date: string}>()
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("")
-    const [departName, setDepartName] = useState("");
+    const [departName, setDepartName] = useState("Loading");
     const [arriveName, setArriveName] = useState("");
     const [trips, setTrips] = useState<TripBox[]>([]);
-
+    
     useEffect(() => {
-        setLoading(true)
-        axios.get("https://banana-psi-lemon.vercel.app/tripsList", {
-            params: {
-                routeId,
-                departId,
-                arriveId,
-                date
-            }
-        }).then((res) => {
-            setDepartName(res.data.departName)
-            setArriveName(res.data.arriveName)
-            setTrips(res.data.trips)
-        }).catch((err) => {
-            console.log(err.response.data.error);
-            console.log(err.response.status);
-            setError(err.response.data.error)
-        }).finally(() => {
-            setLoading(false)
-        })
+        const fetchData = async () => {
+            const token = await getItem("token");
+            setLoading(true)
+            axios.get("https://banana-bus.vercel.app/tripsList", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                params: {
+                    routeId,
+                    departId,
+                    arriveId,
+                    date
+                }
+            }).then((res) => {
+                setDepartName(res.data.departName)
+                setArriveName(res.data.arriveName)
+                console.log(res.data.trips)
+                setTrips(res.data.trips)
+            }).catch((err) => {
+                setError(err.response.data.error)
+            }).finally(() => {
+                setLoading(false)
+            })
+        }
+
+        fetchData();
     }, [])
 
-    // TODO: make more responsive to screen size and create stylesheets
-
-    // TODO: add refresh
-
-    // make nicer
-    if (loading) {
+    function Header() {
         return(
-            <Text>Loading.... asdsadasd</Text>
-        )
-    }
-
-    // make nicer or pop up
-    if (error) {
-        return(
-            <Text>{error}</Text>
-        )
-    }
-
-    return(
-        <View style={styles.screen}>
             <View style= {styles.header}>
                 <View style={styles.goBackContainer}>
                     <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}></FontAwesome>
@@ -71,6 +62,30 @@ export default function tripsList() {
                     </View>
                 </View>
             </View>
+        )
+    }
+
+    // TODO: add refresh
+
+    if (loading) {
+        return(
+            <View style={styles.screen}>
+                <Header/>
+                <LoadingPage/>
+            </View>
+        )
+    }
+
+    // make nicer or pop up
+    if (error) {
+        return(
+            <Text>Error: {error}</Text>
+        )
+    }
+
+    return(
+        <View style={styles.screen}>
+            <Header/>
             <ScrollView style={styles.tripListContainer}>   
             <Text style = {styles.tripListDate}>{format(date, "E, do LLL y")}</Text>
                 <View>
