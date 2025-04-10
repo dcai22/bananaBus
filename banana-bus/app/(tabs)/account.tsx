@@ -42,7 +42,7 @@ export default function Account() {
         setHumidity(80);
         // TODO Fetch user role from API
         setIsAdmin(true);
-    }, []);
+    });
 
     return (
         <View style={styles.container}>
