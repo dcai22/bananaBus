@@ -12,6 +12,7 @@ import {
 import React, { useState, useRef, useEffect } from "react";
 import { Stop, Route } from "@/api/interface";
 import { FontAwesome } from "@expo/vector-icons";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { IStop, IRoute } from "@/app/(tabs)";
 import { mockRoutes, mockStops } from "./temp";
 
@@ -93,7 +94,6 @@ export default function MapSearch({
         console.log(stop);
         setFromLoc(stop);
         activateToSearch();
-        setFromSearchQuery("");
         // Keyboard.dismiss();
     };
 
@@ -109,8 +109,7 @@ export default function MapSearch({
         console.log("from search selected");
         setFromSearchActive(true);
         setToSearchActive(false);
-        // TODO: Set to selected option, update search component to have clear button when the from/toloc has already been set
-        setFromSearchQuery(fromLoc.name || "");
+        // setFromSearchQuery("");
 
         // Focus the from input after a short delay to ensure the component has updated
         setTimeout(() => {
@@ -124,7 +123,7 @@ export default function MapSearch({
         console.log("from search selected");
         setToSearchActive(true);
         setFromSearchActive(false);
-        setToSearchQuery(toLoc.name || "");
+        // setToSearchQuery(toLoc.name || "");
 
         setTimeout(() => {
             if (toInputRef.current) {
@@ -216,6 +215,14 @@ export default function MapSearch({
                         onFocus={activateFromSearch}
                         // autoFocus
                     />
+                    {fromSearchActive && fromSearchQuery.length > 0 && (
+                        <TouchableOpacity
+                            onPress={() => setFromSearchQuery("")}
+                            style={styles.clearButton}
+                        >
+                            <FontAwesome6 name="xmark" size={16} color="#888" />
+                        </TouchableOpacity>
+                    )}
                 </TouchableOpacity>
 
                 <View
@@ -245,6 +252,14 @@ export default function MapSearch({
                         onFocus={activateToSearch}
                         // autoFocus
                     />
+                    {toSearchActive && toSearchQuery.length > 0 && (
+                        <TouchableOpacity
+                            onPress={() => setToSearchQuery("")}
+                            style={styles.clearButton}
+                        >
+                            <FontAwesome6 name="xmark" size={16} color="#888" />
+                        </TouchableOpacity>
+                    )}
                 </TouchableOpacity>
             </View>
 
@@ -354,9 +369,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#333",
         padding: 0,
-        borderColor: "red",
-        borderWidth: 1,
-        width: "100%",
+        flex: 1,
+    },
+    clearButton: {
+        marginLeft: 4,
     },
     resultsContainer: {
         backgroundColor: "white",
