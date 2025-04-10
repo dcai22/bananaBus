@@ -12,12 +12,29 @@ import { getItem } from "../helper";
 
 // TODO: fix up stack/tabs so router back works properly
 
+const tripBox  = {
+    tripId: "hello",
+    departId: "hello",
+    arriveId: "hello",
+    departureTime: new Date(),
+    arrivalTime: new Date(),
+    price: 20,
+    curCapacity: 20,
+    maxCapacity: 20,
+    curLuggageCapacity: 20,
+    maxLuggageCapacity: 20,
+    luggagePrice: 20,
+    hasAssist: true, 
+}
+
+
+
 export default function booking() {
     const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
     const [ numPassenger, setNumPassenger ] = useState<number>(0)
     const [ numLuggage, setNumLuggage ] = useState<number>(0)
     const [trip, setTrip] = useState<TripBox>();
-
+    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("")
     const [departName, setDepartName] = useState("");
@@ -25,41 +42,45 @@ export default function booking() {
     const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"})
     
     const navigation = useNavigation();
-
-    // TODO: backend to retrieve card details
-    useFocusEffect(
-        useCallback(() => {
-            const fetchData = async () => {
-                const token = await getItem("token");
-                setLoading(true);
-                axios.get("http://banana-bus.vercel.app/getTrip", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                    },
-                    params: {
-                        departId,
-                        arriveId,
-                        tripId,
-                    }
-                }).then((res) => {
-                    setDepartName(res.data.departName);
-                    setArriveName(res.data.arriveName);
-                    setTrip(res.data.trip);
-                }).catch((err) => {
-                    setError(err.response?.data?.error || "Error");
-                }).finally(() => {
-                    setLoading(false);
-                });
-            }
-
-            fetchData();
     
+    // TODO: backend to retrieve card details
+    
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = await getItem("token");
+            setLoading(true)
+            axios.get("https://banana-bus.vercel.app/getTrip", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                params: {
+                    departId,
+                    arriveId,
+                    tripId
+                }
+            }).then((res) => {
+                setDepartName(res.data.departName)
+                setArriveName(res.data.arriveName)
+                setTrip(res.data.trip)
+            }).catch((err) => {
+                setError(err.response.data.error)
+            }).finally(() => {
+                setLoading(false)
+            })
+        }
+
+        fetchData();
+    }, [departId, arriveId, tripId])
+    
+    useFocusEffect(
+         useCallback(() => { 
             // Makes sure to reload page upon leaving page
             return () => {
                 setLoading(true)
             };
-        }, [departId, arriveId, tripId])
+        }, [])
     )
+
 
     function CheckoutHeader() {
         return(
@@ -82,18 +103,19 @@ export default function booking() {
         )
     }
 
-    if(!trip) {
-        return (
-            <Text> Trip not found</Text>
-        )
-    }
-
+    
     // make nicer or pop up
     if (error) {
         return(
             <Text>Error:{error}</Text>
         )
     }    
+    
+    if(!trip) {
+        return (
+            <Text> Trip not found</Text>
+        )
+    }
 
     const maxTickets = trip.maxCapacity - trip.curCapacity
 
