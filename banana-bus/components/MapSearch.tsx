@@ -88,7 +88,6 @@ export default function MapSearch({
           )
         : possibleDestinations;
 
-    // TODO: Refactor this into a single function
     const handleFromSelect = (stop: IStop) => {
         console.log(stop);
         setFromLoc(stop);
@@ -106,16 +105,31 @@ export default function MapSearch({
     };
 
     const activateFromSearch = () => {
+        console.log("from search selected");
         setFromSearchActive(true);
         setToSearchActive(false);
         // TODO: Set to selected option, update search component to have clear button when the from/toloc has already been set
         setSearchQuery(fromLoc.name || "");
+
+        // Focus the from input after a short delay to ensure the component has updated
+        setTimeout(() => {
+            if (fromInputRef.current) {
+                fromInputRef.current.focus();
+            }
+        }, 50);
     };
 
     const activateToSearch = () => {
+        console.log("from search selected");
         setToSearchActive(true);
         setFromSearchActive(false);
         setSearchQuery(toLoc.name || "");
+
+        setTimeout(() => {
+            if (toInputRef.current) {
+                toInputRef.current.focus();
+            }
+        }, 50);
     };
 
     const closeSearch = () => {
@@ -153,8 +167,9 @@ export default function MapSearch({
             </View>
             {distance !== null && (
                 <View style={styles.distanceInfo}>
-                    {/* {index === 0 && <View style={styles.redBar} />} */}
                     <Text style={styles.distanceText}>{distance}</Text>
+
+                    {/* TODO: TouchableOpacity + Add logic to save trip */}
                     <FontAwesome
                         name="star-o"
                         size={16}
@@ -165,6 +180,19 @@ export default function MapSearch({
             )}
         </TouchableOpacity>
     );
+
+    // List Foot component
+    const ListFooter = () => {
+        return (
+            <View style={styles.footerContainer}>
+                <Text style={styles.footerText}>No more results</Text>
+            </View>
+        );
+    };
+
+    const ITEM_HEIGHT = 45;
+    const VISIBLE_ITEMS = 3.5;
+    const LIST_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
     return (
         <View style={[styles.outerContainer]}>
@@ -192,7 +220,8 @@ export default function MapSearch({
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                             placeholder={fromLoc.name ?? "Search locations..."}
-                            autoFocus
+                            returnKeyType="next"
+                            // autoFocus
                         />
                     ) : (
                         <Text style={styles.location}>
@@ -223,7 +252,8 @@ export default function MapSearch({
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                             placeholder={toLoc.name ?? "Search locations..."}
-                            autoFocus
+                            returnKeyType="done"
+                            // autoFocus
                         />
                     ) : (
                         <Text style={styles.location}>
@@ -240,6 +270,7 @@ export default function MapSearch({
                         Closest Based on Location
                     </Text>
                     <FlatList
+                        keyboardShouldPersistTaps="always"
                         data={
                             fromSearchActive
                                 ? filteredFromStops.slice(0, 4)
@@ -252,10 +283,16 @@ export default function MapSearch({
                                 fromSearchActive
                                     ? handleFromSelect
                                     : handleToSelect,
-                                fromSearchActive ? "-1m" : "" // TODO: Fix this
+                                fromSearchActive ? "-1m" : "" // TODO: Fix this to actually calculate length
                             )
                         }
-                        style={styles.list}
+                        style={[styles.list, { height: LIST_HEIGHT }]}
+                        getItemLayout={(data, index) => ({
+                            length: ITEM_HEIGHT,
+                            offset: ITEM_HEIGHT * index,
+                            index,
+                        })}
+                        ListFooterComponent={ListFooter}
                     />
                 </View>
             )}
@@ -332,6 +369,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#333",
         padding: 0,
+        borderColor: "red",
+        borderWidth: 1,
+        width: "100%",
+        height: "100%",
     },
     resultsContainer: {
         backgroundColor: "white",
@@ -387,11 +428,22 @@ const styles = StyleSheet.create({
     starIcon: {
         marginRight: 4,
     },
-    redBar: {
-        width: 24,
-        height: 4,
-        backgroundColor: "red",
-        borderRadius: 2,
-        marginLeft: 4,
+    // redBar: {
+    //     width: 24,
+    //     height: 4,
+    //     backgroundColor: "red",
+    //     borderRadius: 2,
+    //     marginLeft: 4,
+    // },
+    footerContainer: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
+        alignItems: "center",
+    },
+    footerText: {
+        fontSize: 13,
+        color: "#888",
+        fontStyle: "italic",
     },
 });
