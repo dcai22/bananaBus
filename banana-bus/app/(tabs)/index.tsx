@@ -324,42 +324,45 @@ export default function Index() {
                                     />
                                 </Mapbox.PointAnnotation>
 
-                                {/* Booking label */}
-                                <Mapbox.MarkerView
-                                    id="bookingLabel"
-                                    coordinate={[
-                                        fromLoc.longitude,
-                                        fromLoc.latitude,
-                                    ]}
-                                    anchor={{ x: 0.5, y: 1 }}
-                                >
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.labelContainer,
-                                            styles.bookingContainer,
+                                {/* Booking label - only show when both to and from are set*/}
+
+                                {fromLoc.stopId && toLoc.stopId && (
+                                    <Mapbox.MarkerView
+                                        id="bookingLabel"
+                                        coordinate={[
+                                            fromLoc.longitude,
+                                            fromLoc.latitude,
                                         ]}
-                                        hitSlop={{
-                                            top: 20,
-                                            bottom: 20,
-                                            left: 20,
-                                            right: 20,
-                                        }}
+                                        anchor={{ x: 0.5, y: 1 }}
                                     >
-                                        <Text
+                                        <TouchableOpacity
                                             style={[
-                                                styles.labelText,
-                                                styles.bookingText,
+                                                styles.labelContainer,
+                                                styles.bookingContainer,
                                             ]}
+                                            hitSlop={{
+                                                top: 20,
+                                                bottom: 20,
+                                                left: 20,
+                                                right: 20,
+                                            }}
                                         >
-                                            Confirm Booking
-                                        </Text>
-                                        <FontAwesome
-                                            name="arrow-right"
-                                            size={12}
-                                            color="black"
-                                        />
-                                    </TouchableOpacity>
-                                </Mapbox.MarkerView>
+                                            <Text
+                                                style={[
+                                                    styles.labelText,
+                                                    styles.bookingText,
+                                                ]}
+                                            >
+                                                Confirm Booking
+                                            </Text>
+                                            <FontAwesome
+                                                name="arrow-right"
+                                                size={12}
+                                                color="black"
+                                            />
+                                        </TouchableOpacity>
+                                    </Mapbox.MarkerView>
+                                )}
                             </>
                         )}
 
