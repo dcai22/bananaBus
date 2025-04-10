@@ -2,33 +2,6 @@ import express, { json, Request, Response } from "express";
 import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
-<<<<<<< HEAD
-import {
-    authLogin,
-    authRegister,
-    authAutoLogin,
-    authLogout,
-    authPasswordResetEmail,
-    authPasswordReset,
-    authPasswordVerifyCode,
-} from "./auth";
-import { getTrip, tripsList } from "./tripsList";
-import { searchBookings } from "./searchBookings";
-import { getSavedRoutes, saveRoute, unsaveRoute } from "./savedRoutes";
-import {
-    deleteAccount,
-    getAccountName,
-    getUserDetails,
-    updateUserDetails,
-    updateUserPassword,
-} from "./account";
-import { getDeals } from "./getDeals";
-import { Route, RouteSection } from "./interface";
-import { ObjectId } from "mongodb";
-import { addManager, removeManager } from "./manager";
-import { collections, connectToDatabase } from "./mongoUtil";
-import { findUserByToken } from "./helper";
-=======
 import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode } from './auth';
 import { getTrip, tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
@@ -50,7 +23,6 @@ import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
 import { collections, connectToDatabase } from './mongoUtil';
 import { findUserByToken } from './helper';
->>>>>>> main
 
 const app = express();
 
@@ -171,13 +143,8 @@ app.get("/pastBookings", async (req: Request, res: Response, next) => {
 app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
-<<<<<<< HEAD
-        const numBookings = req.body.numBookings as number;
-        const bookings = await searchBookings(token, "upcoming", numBookings);
-=======
         const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
         const bookings = await searchBookings(token, 'upcoming', numBookings);
->>>>>>> main
         res.json(bookings);
     } catch (err) {
         next(err);
@@ -325,11 +292,6 @@ app.post("/createBooking", async (req: Request, res: Response, next) => {
             numTickets,
             numLuggage,
         });
-<<<<<<< HEAD
-        await collections.trips?.updateOne({ _id: tripId }, {
-            $push: { bookings: dbRes?.insertedId },
-        } as any);
-=======
         await collections.trips?.updateOne(
             { _id: tripId },
             { $push: { bookings: dbRes?.insertedId } } as any
@@ -339,7 +301,6 @@ app.post("/createBooking", async (req: Request, res: Response, next) => {
             { $push: { bookings: dbRes?.insertedId } } as any
         )
 
->>>>>>> main
         res.json({ insertedId: dbRes?.insertedId });
     } catch (err) {
         next(err);
@@ -408,11 +369,7 @@ app.get("/manager/allStops", async (req: Request, res: Response, next) => {
     const user = await findUserByToken(strippedToken);
 
     if (!user) {
-<<<<<<< HEAD
-        res.status(403).json({ error: "invalid token" });
-=======
         res.status(403).json({ error: 'invalid token' });
->>>>>>> main
         return;
     }
     try {
@@ -443,9 +400,6 @@ app.put("/manager/remove", async (req: Request, res: Response, next) => {
     }
 });
 
-<<<<<<< HEAD
-app.get("/stops/reachableFrom", async (req: Request, res: Response, next) => {
-=======
 app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
     try {
         const heading = req.body.heading as string;
@@ -469,7 +423,6 @@ app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
 })
 
 app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
->>>>>>> main
     await connectToDatabase();
 
     const token = req.headers.authorization as string;
@@ -510,9 +463,6 @@ app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
     }
 });
 
-<<<<<<< HEAD
-app.get("/routes/fromSection", async (req: Request, res: Response, next) => {
-=======
 app.post('/addCard', async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
@@ -579,7 +529,6 @@ app.get('/getUserCards', async(req: Request, res: Response, next) => {
 })
 
 app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
->>>>>>> main
     await connectToDatabase();
 
     const token = req.headers.authorization as string;
@@ -596,19 +545,6 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
     console.log('arriveId ' + arriveId);
 
     try {
-<<<<<<< HEAD
-        const allRoutes = await collections.routes
-            ?.find<Route>({
-                $and: [
-                    { stops: { $elemMatch: { $eq: departId } } },
-                    { stops: { $elemMatch: { $eq: arriveId } } },
-                ],
-            })
-            .toArray();
-
-        if (typeof allRoutes === "undefined") {
-            res.status(400).json({ error: "unable to search routes" });
-=======
         const allRoutes = await collections.routes?.find<Route>({
             $and: [
                 { stops: { $elemMatch: { $eq: departId } } },
@@ -620,26 +556,16 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
 
         if (typeof allRoutes === 'undefined') {
             res.status(400).json({ error: 'unable to search routes' })
->>>>>>> main
             return;
         }
 
         const routes = allRoutes.filter((route) => {
-<<<<<<< HEAD
-            return (
-                route.stops.indexOf(arriveId) > route.stops.indexOf(departId)
-            );
-        });
-
-        res.json({ routes });
-=======
             return route.stops.findIndex(s => s.equals(arriveId)) > route.stops.findIndex(s => s.equals(departId));
         })
 
         console.log('routes ' + routes);
 
         res.json( { routes });
->>>>>>> main
     } catch (err) {
         next(err);
     }
