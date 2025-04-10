@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { NoButton } from '@/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
+import { getItem } from '../helper';
+import * as Device from "expo-device";
 
 export default function Payment() {
     const [enquiryType, setEnquiryType] = useState('');
@@ -20,10 +22,9 @@ export default function Payment() {
     const handleSend = async () => {
         // TODO make an API call to send the email
         // generate a ticket number as well
-        const ticketNumber = `TICKET-${Math.floor(Math.random() * 1000000)}`;
+        // const ticketNumber = `TICKET-${Math.floor(Math.random() * 1000000)}`;
         const heading = enquiryType === 'other' ? customHeading : enquiryType;
         const body = enquiryText;
-
         if (!heading) {
             Alert.alert('Error', 'Please select an enquiry type or enter a custom heading.');
             return;
@@ -33,17 +34,46 @@ export default function Payment() {
             Alert.alert('Error', 'Please enter your enquiry text.');
             return;
         }
+        let token;
+        if (Device.deviceType === Device.DeviceType.PHONE) {
+            token = await getItem('token');
+        } else {
+            token = localStorage.getItem('token');
+        }
+        
+        if (!token) {
+            return;
+        }
 
-        // TODO remove
-        console.log(`Sending email with ticket number: ${ticketNumber}`);
-        console.log(`Heading: ${heading}`);
-        console.log(`Body: ${body}`);
+        try {
+            const response = await fetch('https://banana-psi-lemon.vercel.app/sendEnquiry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    heading,
+                    body,
+                }),
+            });
 
+            if (!response.ok) {
+                const errorData = await response.json();
+                Alert.alert('Error', errorData.error || 'Failed to send your enquiry. Please try again later.');
+            }
+
+            const data = await response.json();
+            const ticketNumber = data.ticketNumber;
+            Alert.alert('Success', `Your enquiry has been sent! Ticket Number: ${ticketNumber}`);
+        } catch (error) {
+            Alert.alert('Error', 'Failed to send your enquiry. Please try again later.');
+            return;
+        }
         setEnquiryType('');
         setCustomHeading('');
         setEnquiryText('');
         Keyboard.dismiss();
-        Alert.alert('Success', `Your enquiry has been sent! Ticket Number: ${ticketNumber}`);
     };
 
     const openModal = () => {

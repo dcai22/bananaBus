@@ -105,3 +105,65 @@ export function deleteAccount(userId: number, token: string) {
     setData(data);
     return {};
 }
+
+export async function sendEnquiry(token: string, heading: string, body: string) {
+    await connectToDatabase();
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+    const email = user.email;
+    // Change the ticket number to be random and unique
+    const ticketNumber = Math.floor(Math.random() * 899999 + 100000).toString();
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+            user: 'delphine.batz@ethereal.email',
+            pass: 'djexbJqVg88mr4u38u'
+        },
+    });
+
+    await new Promise((resolve, reject) => {
+        transporter.verify(function(error: Error, success: any) {
+            if (error) {
+                console.log(error);
+                reject(error);
+            } else {
+                console.log('Server is ready to take our messages');
+                resolve(success);
+            }
+        });
+    });
+
+    const mailOptions = {
+        from: 'Customer Enquiry',
+        to: 'beanslover65@hotmail.com',
+        subject: `Enquiry from ${user.firstName} ${user.lastName} (${email}) - Ticket Number: ${ticketNumber}`,
+        text: `${heading}\n\n${body}`,
+    }
+
+    await new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, function(error: Error, info: any) {
+            if (error) {
+                console.log(error);
+                reject(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+                resolve(info.response);
+            }
+        });
+    });
+
+    return {
+        message: 'Enquiry sent',
+        ticketNumber
+    }
+}

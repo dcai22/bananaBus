@@ -7,7 +7,7 @@ import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { RouteSection } from './interface';
-import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
+import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword, sendEnquiry } from './account';
 
 const app = express();
 
@@ -152,6 +152,18 @@ app.post('/updateAccountPassword', (req: Request, res: Response) => {
     const oldPassword = req.body.oldPassword as string;
     const newPassword = req.body.newPassword as string;
     res.json(updateUserPassword(token, oldPassword, newPassword));
+    return;
+})
+
+app.post('/sendEnquiry', async (req: Request, res: Response) => {
+    try {
+        const heading = req.body.heading as string;
+        const body = req.body.body as string;
+        const token = req.headers.authorization as string;
+        res.json(await sendEnquiry(token, heading, body));
+    } catch (error) {
+        next(error);
+    }
     return;
 })
 
