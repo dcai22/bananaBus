@@ -93,6 +93,8 @@ export default function MapSearch({
     const handleFromSelect = (stop: IStop) => {
         console.log(stop);
         setFromLoc(stop);
+        setFromSearchQuery("");
+
         activateToSearch();
         // Keyboard.dismiss();
     };
@@ -120,7 +122,7 @@ export default function MapSearch({
     };
 
     const activateToSearch = () => {
-        console.log("from search selected");
+        console.log("to search selected");
         setToSearchActive(true);
         setFromSearchActive(false);
         // setToSearchQuery(toLoc.name || "");
