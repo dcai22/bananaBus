@@ -295,12 +295,29 @@ export default function Index() {
 
                     {/* To marker */}
                     {toLoc.longitude !== null && toLoc.latitude !== null && (
-                        <Mapbox.PointAnnotation
-                            id="toLocation"
-                            coordinate={[toLoc.longitude, toLoc.latitude]}
-                        >
-                            <View style={[styles.marker, styles.toMarker]} />
-                        </Mapbox.PointAnnotation>
+                        <>
+                            <Mapbox.PointAnnotation
+                                id="toLocation"
+                                coordinate={[toLoc.longitude, toLoc.latitude]}
+                            >
+                                <View
+                                    style={[styles.marker, styles.toMarker]}
+                                />
+                            </Mapbox.PointAnnotation>
+
+                            {/* Destination label */}
+                            <Mapbox.MarkerView
+                                id="toLocationLabel"
+                                coordinate={[toLoc.longitude, toLoc.latitude]}
+                                anchor={{ x: 0.5, y: 1.5 }}
+                            >
+                                <View style={styles.labelContainer}>
+                                    <Text style={styles.labelText}>
+                                        {toLoc.name || "Destination"}
+                                    </Text>
+                                </View>
+                            </Mapbox.MarkerView>
+                        </>
                     )}
 
                     {/* Route Line */}
@@ -415,5 +432,21 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
+    },
+    labelContainer: {
+        backgroundColor: "#1a73e8",
+        padding: 5,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    labelText: {
+        fontSize: 12,
+        fontWeight: "bold",
+        color: "white",
     },
 });
