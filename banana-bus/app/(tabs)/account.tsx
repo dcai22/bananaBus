@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useNavigation } from 'expo-router';
+import { useFocusEffect, useNavigation } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
 
@@ -10,9 +10,16 @@ export default function Account() {
     const [windSpeed, setWindSpeed] = useState(0);
     const [humidity, setHumidity] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [refresh, setRefresh] = useState(false);
 
     const navigation = useNavigation();
 
+    useFocusEffect(
+        React.useCallback(() => {
+            setRefresh(true);
+            return () => {};
+        }, [])
+    )
     useEffect(() => {
         // TODO Fetch user name from API
         const getAccountName = async () => {
@@ -42,6 +49,7 @@ export default function Account() {
         setHumidity(80);
         // TODO Fetch user role from API
         setIsAdmin(true);
+        setRefresh(false);
     });
 
     return (

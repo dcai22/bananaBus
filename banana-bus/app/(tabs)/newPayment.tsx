@@ -1,9 +1,10 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Modal } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { router } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
 import { set } from 'date-fns';
+import { getItem } from '../helper';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -13,9 +14,77 @@ export default function Payment() {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState('');
 
-    const handleAddCard = () => {
-        console.log({ cardNumber, expiryMonth, expiryYear, cvv });
-        // TODO add card to database
+    const handleAddCard = async () => {
+        let errorMessage = '';
+
+        switch (true) {
+            case !cardNumber || !expiryMonth || !expiryYear || !cvv:
+                errorMessage = 'Please fill in all fields.';
+                break;
+
+            case cardNumber.length !== 16:
+                errorMessage = 'Card number must be 16 digits long.';
+                break;
+
+            case expiryMonth.length !== 2 || expiryYear.length !== 2:
+                errorMessage = 'Expiry date must be in MM/YY format.';
+                break;
+
+            case parseInt(expiryMonth) < 1 || parseInt(expiryMonth) > 12:
+                errorMessage = 'Expiry month must be between 01 and 12.';
+                break;
+
+            case cvv.length !== 3:
+                errorMessage = 'CVV must be a 3-digit number.';
+                break;
+
+            case parseInt(expiryYear) < new Date().getFullYear() % 100:
+                errorMessage = 'Expiry year must be greater than the current year.';
+                break;
+
+            default:
+                break;
+        }
+
+        if (errorMessage) {
+            Alert.alert('Error', errorMessage);
+            return;
+        }
+
+        const token = await getItem('token');
+        try {
+            const response = await fetch('https://banana-bus.vercel.app/addCard', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    // TODO CHANGE BACKEND CARD TYPE
+                    type: 'Visa',
+                    cardNumber,
+                    expiryMonth,
+                    expiryYear,
+                    cvv,
+                }),
+            });
+            if (response.ok) {
+				Alert.alert('Success', 'Card added successfully!');
+                setCardNumber('');
+                setExpiryMonth('');
+                setExpiryYear('');
+                setCvv('');
+                router.back();
+			}
+        } catch (error) {
+            Alert.alert('Error', 'Failed to add card. Please try again.');
+            setCardNumber('');
+            setExpiryMonth('');
+            setExpiryYear('');
+            setCvv('');
+            router.back();
+        }
+        console.log('Card added:', { cardNumber, expiryMonth, expiryYear, cvv });
     };
 
     const openModal = (content: string) => {
