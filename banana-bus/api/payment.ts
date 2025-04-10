@@ -147,6 +147,13 @@ export async function editCard(userId: ObjectId, cardId: ObjectId, type: string,
         throw new Error('Card update failed');
     }
 
-    return {}
+    return {
+        cardId: cardId,
+        type: type,
+        cardNumber: hashedCardNumber,
+        cvv: hashedCvv,
+        expiry: expiry,
+        last4: last4
+    }
 }
 
