@@ -24,23 +24,19 @@ export default function Payment() {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			let token;
-			if (Device.deviceType === Device.DeviceType.PHONE) {
-				token = await getItem('token');
-			} else {
-				token = localStorage.getItem('token');
-			}
+			const token = await getItem('token');
 			try {
 				const response = await fetch('https://banana-bus.vercel.app/getUserCards', {
 					method : 'GET',
 					headers: {
-						'Authorization': `Bearer ${await getItem('token')}`,
-						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${token}`,
 					},
 				});
 				if (response.ok) {
 					const data = await response.json();
 					setCards(data.cards);
+					console.log(data.cards);
+					console.log(cards);
 				}
 			} catch (error) {
 				console.error('Error fetching payment data:', error);
@@ -55,11 +51,12 @@ export default function Payment() {
 	};
 
 	const handleRemoveCard = async () => {
+		const token = await getItem('token');
 		try {
 			const response = await fetch('https://banana-bus.vercel.app/deleteCard', {
 				method: 'DELETE',
 				headers: {
-					'Authorization': `Bearer ${await getItem('token')}`,
+					'Authorization': `Bearer ${token}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ cardId: selectedCard }),
@@ -74,11 +71,12 @@ export default function Payment() {
 	}
 
 	const handleMakeDefault = async () => {
+		const token = await getItem('token');
 		try {
 			const response = await fetch('https://banana-bus.vercel.app/makeDefaultCard', {
 				method: 'PUT',
 				headers: {
-					'Authorization': `Bearer ${await getItem('token')}`,
+					'Authorization': `Bearer ${token}`,
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({ cardId: selectedCard }),

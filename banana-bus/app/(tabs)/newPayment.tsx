@@ -15,11 +15,12 @@ export default function Payment() {
     const [modalContent, setModalContent] = useState('');
 
     const handleAddCard = async () => {
+        const token = await getItem('token');
         try {
             const response = await fetch('https://banana-bus.vercel.app/addCard', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${await getItem('token')}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
