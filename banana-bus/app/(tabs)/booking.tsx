@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
+import { getItem } from "../helper";
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -28,22 +29,30 @@ export default function booking() {
     // TODO: backend to retrieve card details
     useFocusEffect(
         useCallback(() => {
-            setLoading(true);
-            axios.get("http://banana-bus.vercel.app/getTrip", {
-                params: {
-                departId,
-                arriveId,
-                tripId,
+            const fetchData = async () => {
+                const token = await getItem("token");
+                setLoading(true);
+                axios.get("http://banana-bus.vercel.app/getTrip", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    params: {
+                        departId,
+                        arriveId,
+                        tripId,
+                    }
+                }).then((res) => {
+                    setDepartName(res.data.departName);
+                    setArriveName(res.data.arriveName);
+                    setTrip(res.data.trip);
+                }).catch((err) => {
+                    setError(err.response?.data?.error || "Error");
+                }).finally(() => {
+                    setLoading(false);
+                });
             }
-            }).then((res) => {
-                setDepartName(res.data.departName);
-                setArriveName(res.data.arriveName);
-                setTrip(res.data.trip);
-            }).catch((err) => {
-                setError(err.response?.data?.error || "Error");
-            }).finally(() => {
-                setLoading(false);
-            });
+
+            fetchData();
     
             // Makes sure to reload page upon leaving page
             return () => {
@@ -122,15 +131,15 @@ export default function booking() {
     
     async function handleCheckout() {
         // TODO: handle payment
-
-        // TODO: rework
-        /* try {
+        const token = await getItem("token");
+        try {
             const res = await fetch('https://banana-bus.vercel.app/createBooking', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ userId, tripId, departId, arriveId, numTickets: numPassenger }),
+                body: JSON.stringify({ token, tripId, departId, arriveId, numTickets: numPassenger }),
             });
 
             if (res.ok) {
@@ -145,7 +154,7 @@ export default function booking() {
             }
         } catch (err) {
             Alert.alert('Error', 'An error occurred. Please try again.');
-        } */
+        }
     }
 
 
