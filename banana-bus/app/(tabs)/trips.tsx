@@ -178,7 +178,7 @@ export default function Trips() {
     };
 
     return (
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={styles.container}>
             <View style={styles.headerBox}>
                 <Text style={styles.header}>Saved Trips</Text>
                 {/* TODO change this icon */}
@@ -232,7 +232,7 @@ export default function Trips() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#dff4ff',
+        backgroundColor: '#e5f0fa',
     },
     headerBox: {
         backgroundColor: '#fff',
@@ -243,9 +243,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+        elevation: 6,
     },
     header: {
         fontSize: 36,

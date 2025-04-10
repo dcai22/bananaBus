@@ -104,6 +104,13 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="newPayment"
+                options={{
+                    href: null,
+                    tabBarStyle: { display: "none" },
+                }}
+            />
+            <Tabs.Screen
                 name="settings"
                 options={{
                     href: null,
