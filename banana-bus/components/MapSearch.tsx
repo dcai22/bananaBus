@@ -64,7 +64,8 @@ export default function MapSearch({
 }: MapProps) {
     const [fromSearchActive, setFromSearchActive] = useState(false);
     const [toSearchActive, setToSearchActive] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [fromSearchQuery, setFromSearchQuery] = useState("");
+    const [toSearchQuery, setToSearchQuery] = useState("");
 
     const fromInputRef = useRef(null);
     const toInputRef = useRef(null);
@@ -76,15 +77,15 @@ export default function MapSearch({
         ? getPossibleDestinations(fromLoc.stopId)
         : [];
 
-    const filteredFromStops = searchQuery
+    const filteredFromStops = fromSearchQuery
         ? allStops.filter((stop) =>
-              stop.name.toLowerCase().includes(searchQuery.toLowerCase())
+              stop.name.toLowerCase().includes(fromSearchQuery.toLowerCase())
           )
         : allStops;
 
-    const filteredToStops = searchQuery
+    const filteredToStops = toSearchQuery
         ? possibleDestinations.filter((stop) =>
-              stop.name.toLowerCase().includes(searchQuery.toLowerCase())
+              stop.name.toLowerCase().includes(toSearchQuery.toLowerCase())
           )
         : possibleDestinations;
 
@@ -92,7 +93,7 @@ export default function MapSearch({
         console.log(stop);
         setFromLoc(stop);
         activateToSearch();
-        setSearchQuery("");
+        setFromSearchQuery("");
         // Keyboard.dismiss();
     };
 
@@ -109,7 +110,7 @@ export default function MapSearch({
         setFromSearchActive(true);
         setToSearchActive(false);
         // TODO: Set to selected option, update search component to have clear button when the from/toloc has already been set
-        setSearchQuery(fromLoc.name || "");
+        setFromSearchQuery(fromLoc.name || "");
 
         // Focus the from input after a short delay to ensure the component has updated
         setTimeout(() => {
@@ -123,7 +124,7 @@ export default function MapSearch({
         console.log("from search selected");
         setToSearchActive(true);
         setFromSearchActive(false);
-        setSearchQuery(toLoc.name || "");
+        setToSearchQuery(toLoc.name || "");
 
         setTimeout(() => {
             if (toInputRef.current) {
@@ -168,14 +169,6 @@ export default function MapSearch({
             {distance !== null && (
                 <View style={styles.distanceInfo}>
                     <Text style={styles.distanceText}>{distance}</Text>
-
-                    {/* TODO: TouchableOpacity + Add logic to save trip */}
-                    <FontAwesome
-                        name="star-o"
-                        size={16}
-                        color="#888"
-                        style={styles.starIcon}
-                    />
                 </View>
             )}
         </TouchableOpacity>
@@ -213,28 +206,25 @@ export default function MapSearch({
                     onPress={activateFromSearch}
                 >
                     <Text style={styles.label}>From</Text>
-                    {fromSearchActive ? (
-                        <TextInput
-                            ref={fromInputRef}
-                            style={styles.input}
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                            placeholder={fromLoc.name ?? "Search locations..."}
-                            returnKeyType="next"
-                            // autoFocus
-                        />
-                    ) : (
-                        <Text style={styles.location}>
-                            {fromLoc.name ?? "Select Location"}
-                        </Text>
-                    )}
+                    <TextInput
+                        ref={fromInputRef}
+                        style={styles.input}
+                        value={fromSearchQuery}
+                        onChangeText={setFromSearchQuery}
+                        placeholder={fromLoc.name ?? "Search locations..."}
+                        returnKeyType="next"
+                        onFocus={activateFromSearch}
+                        // autoFocus
+                    />
                 </TouchableOpacity>
 
-                {isSearchActive ? (
-                    <View style={styles.horizontalDivider} />
-                ) : (
-                    <View style={styles.verticalDivider} />
-                )}
+                <View
+                    style={
+                        isSearchActive
+                            ? styles.horizontalDivider
+                            : styles.verticalDivider
+                    }
+                />
 
                 <TouchableOpacity
                     style={[
@@ -245,21 +235,16 @@ export default function MapSearch({
                     onPress={activateToSearch}
                 >
                     <Text style={styles.label}>To</Text>
-                    {toSearchActive ? (
-                        <TextInput
-                            ref={toInputRef}
-                            style={styles.input}
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                            placeholder={toLoc.name ?? "Search locations..."}
-                            returnKeyType="done"
-                            // autoFocus
-                        />
-                    ) : (
-                        <Text style={styles.location}>
-                            {toLoc.name ?? "Select Location"}
-                        </Text>
-                    )}
+                    <TextInput
+                        ref={toInputRef}
+                        style={styles.input}
+                        value={toSearchQuery}
+                        onChangeText={setToSearchQuery}
+                        placeholder={toLoc.name ?? "Search locations..."}
+                        returnKeyType="done"
+                        onFocus={activateToSearch}
+                        // autoFocus
+                    />
                 </TouchableOpacity>
             </View>
 
@@ -303,8 +288,8 @@ export default function MapSearch({
 const styles = StyleSheet.create({
     outerContainer: {
         marginHorizontal: 16,
-        borderColor: "#F00",
-        borderWidth: 1,
+        // borderColor: "#F00",
+        // borderWidth: 1,
         flex: 1,
     },
     container: {
@@ -372,7 +357,6 @@ const styles = StyleSheet.create({
         borderColor: "red",
         borderWidth: 1,
         width: "100%",
-        height: "100%",
     },
     resultsContainer: {
         backgroundColor: "white",
