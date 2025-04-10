@@ -12,8 +12,7 @@ import DatePicker from 'react-native-date-picker'
 
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
-
-     const [refresh, setRefresh] = useState(true);
+    const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [departName, setDepartName] = useState("Loading");

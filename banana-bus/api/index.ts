@@ -6,6 +6,9 @@ import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEm
 import { getTrip, tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
+<<<<<<< HEAD
+import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword, sendEnquiry } from './account';
+=======
 import { deleteAccount,
             getAccountName, 
             getUserDetails,
@@ -16,6 +19,7 @@ import { deleteAccount,
             deleteCard,
             makeDefaultCard,
             getUserCards } from './account';
+>>>>>>> main
 import { getDeals } from './getDeals';
 import { Route, RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
@@ -389,12 +393,23 @@ app.put('/manager/remove', async (req: Request, res: Response, next) => {
     }
 })
 
+<<<<<<< HEAD
+app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
+    try {
+        const heading = req.body.heading as string;
+        const body = req.body.body as string;
+        const token = req.headers.authorization as string;
+        res.json(await sendEnquiry(token, heading, body));
+    } catch (error) {
+        next(error);
+=======
 app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     try {
         const allVehicles = await collections.vehicles?.find().toArray();
         res.json({ vehicles: allVehicles });
     } catch (err) {
         next(err);
+>>>>>>> main
     }
     return;
 })
