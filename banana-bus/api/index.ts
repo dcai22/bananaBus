@@ -12,6 +12,7 @@ import { RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
 import { collections } from './mongoUtil';
+import { addCard, editCard, deleteCard, makeDefaultCard, getUserCards } from './payment';
 
 const app = express();
 
@@ -319,4 +320,70 @@ app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     }
 })
 
-app.use(errorHandler())
+app.post('/addCard', async (req: Request, res: Response, next) => {
+    try {
+        const userId = req.body.userId as ObjectId;
+        const type = req.body.type as string;
+        const cardNumber = req.body.cardNumber as string;
+        const cvv = req.body.cvv as string;
+        const expMonth = req.body.expMonth as number;
+        const expYear = req.body.expYear as number;
+        res.json(await addCard(userId, type, cardNumber, cvv, expMonth, expYear));
+    } catch(error) {
+        next(error);
+    }
+    return;
+})
+
+app.put('/editCard', async (req: Request, res: Response, next) => {
+    try {
+        const userId = req.body.userId as ObjectId;
+        const cardId = req.body.cardId as ObjectId;
+        const type = req.body.type as string;
+        const cardNumber = req.body.cardNumber as string;
+        const cvv = req.body.cvv as string;
+        const expMonth = req.body.expMonth as number;
+        const expYear = req.body.expYear as number;
+        res.json(await editCard(userId, cardId, type, cardNumber, cvv, expMonth, expYear));
+    } catch(error) {
+        next(error);
+    }
+    return;
+})
+
+
+app.put('/makeDefaultCard', async (req: Request, res: Response, next) => {
+    const userId = req.body.userId as ObjectId;
+    const cardId = req.body.cardId as ObjectId;
+    try{
+        res.json(await makeDefaultCard(userId, cardId));
+    } catch ( err ) {
+        next(err);
+    }
+    return;
+})
+
+app.delete('/deleteCard', async(req: Request, res: Response, next) => {
+    try{
+        const userId = req.body.userId as ObjectId;
+        const cardId = req.body.cardId as ObjectId;
+        res.json(await deleteCard(userId, cardId));
+    } catch ( err ) {
+        next(err);
+    }
+    return;
+})
+
+app.get('/getUserCards', async(req: Request, res: Response, next) => {
+    try{
+        const userId = req.body.userId as ObjectId;
+        res.json(await getUserCards(userId));
+    } catch ( err ) {
+        next(err);
+    }
+    return;
+})
+
+
+
+ 
