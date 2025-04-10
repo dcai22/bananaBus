@@ -205,7 +205,7 @@ export class Booking {
 
         const origin = await getStopById(this.originId);
         const dest = await getStopById(this.destId);
-        const departureTime = trip.stopTimes[route.stops.indexOf(this.originId)];
+        const departureTime = trip.stopTimes[route.stops.findIndex(s => s.equals(this.originId))];
 
         return {
             _id: this._id,

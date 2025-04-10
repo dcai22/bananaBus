@@ -285,12 +285,11 @@ export default function booking() {
             <View style= {styles.checkoutBar}>
                 <Text style= {styles.checkoutTotal}>Total: RM {totalPrice()}</Text>
                 <TouchableOpacity style={styles.checkoutButton} disabled={isCheckout || numPassenger === 0}>
-                    {isCheckout && 
+                    {isCheckout ? (
                         <ActivityIndicator size="small" color="white"/>
-                    }
-                    {!isCheckout &&
+                    ): (
                         <Text style= {styles.checkoutText} onPress={handleCheckout}>Checkout</Text>
-                    }
+                    )}
                 </TouchableOpacity>
             </View>
         </View>
