@@ -1,4 +1,5 @@
 import {
+    Alert,
     Text,
     TextInput,
     TouchableOpacity,
@@ -14,40 +15,69 @@ import { Stop, Route } from "@/api/interface";
 import { FontAwesome } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { IStop, IRoute } from "@/app/(tabs)";
-import { mockRoutes, mockStops } from "./temp";
+import { getItem } from "@/app/helper";
+import axios from "axios";
 
 // Helper function to fetch all stops
-export function getAllStops(): Stop[] {
-    return mockStops;
+async function getAllStops(): Promise<IStop[]> {
+    try {
+        const token = await getItem("token");
+        const response = await axios.get(
+            "https://banana-bus.vercel.app/manager/allStops",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        console.log(response.data);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching stops:", error);
+        Alert.alert("Something went wrong!", "Error fetching stops", [
+            { text: "OK" },
+        ]);
+        return [];
+    }
 }
 
 // Helper function to get possible destinations from a selected stop
-export function getPossibleDestinations(fromStopId: number): Stop[] {
-    // Find all routes that contain the fromStopId
-    const relevantRoutes = mockRoutes.filter((route) =>
-        route.stops.includes(fromStopId)
-    );
+async function getPossibleDestinations(
+    fromStopId: string,
+    allStops: IStop[]
+): Promise<IStop[]> {
+    console.log("Attempting to fetch");
 
-    // Get all possible destination stop IDs from those routes
-    const possibleStopIds = new Set<number>();
+    try {
+        const token = await getItem("token");
+        const response = await axios.get(
+            "https://banana-bus.vercel.app/stops/reachableFrom",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                params: {
+                    fromId: fromStopId,
+                },
+            }
+        );
+        console.log(response.data);
 
-    relevantRoutes.forEach((route) => {
-        const fromIndex = route.stops.indexOf(fromStopId);
+        const destinationIds = response.data.stops || [];
 
-        // Add all stops that come after the fromStop in each route
-        for (let i = fromIndex + 1; i < route.stops.length; i++) {
-            possibleStopIds.add(route.stops[i]);
-        }
-    });
+        const destinations = destinationIds
+            .map((id: string) => allStops.find((stop) => stop._id === id))
+            .filter((stop: IStop) => stop._id !== fromStopId) as IStop[];
 
-    // Convert the stop IDs to actual Stop objects
-    return mockStops.filter((stop) => possibleStopIds.has(stop.stopId));
-}
-
-// Helper function to get stopId from name
-function getNameFromID(stopID: number): string | null {
-    const stop = mockStops.find((stop) => stop.stopId === stopID);
-    return stop ? stop.name : null;
+        console.log("Constructed destinations:", destinations);
+        return destinations;
+    } catch (error) {
+        console.error("Error fetching destinations:", error);
+        Alert.alert("Something went wrong!", "Error fetching destinations", [
+            { text: "OK" },
+        ]);
+        return [];
+    }
 }
 
 interface MapProps {
@@ -67,26 +97,63 @@ export default function MapSearch({
     const [toSearchActive, setToSearchActive] = useState(false);
     const [fromSearchQuery, setFromSearchQuery] = useState("");
     const [toSearchQuery, setToSearchQuery] = useState("");
+    const [loadingResults, setLoadingResults] = useState(false);
+
+    // State for storing fetched data
+    const [allStops, setAllStops] = useState<IStop[]>([]);
+    const [possibleDestinations, setPossibleDestinations] = useState<IStop[]>(
+        []
+    );
+
+    const isSearchActive = fromSearchActive || toSearchActive;
 
     const fromInputRef = useRef(null);
     const toInputRef = useRef(null);
 
-    const isSearchActive = fromSearchActive || toSearchActive;
-    const allStops = getAllStops();
+    // Fetch stops on component mount
+    useEffect(() => {
+        const fetchStops = async () => {
+            try {
+                const stops = await getAllStops();
+                setAllStops(stops);
+            } catch (error) {
+                console.error("Failed to load stops:", error);
+            }
+        };
 
-    const possibleDestinations = fromLoc.stopId
-        ? getPossibleDestinations(fromLoc.stopId)
-        : [];
+        fetchStops();
+    }, []);
+
+    // Update possible destinations on fromLoc update
+    useEffect(() => {
+        if (fromLoc._id) {
+            const fetchDestinations = async () => {
+                try {
+                    const destinations = await getPossibleDestinations(
+                        fromLoc._id as string,
+                        allStops
+                    );
+                    setPossibleDestinations(destinations);
+                } catch (error) {
+                    console.error("Failed to load destinations:", error);
+                }
+            };
+
+            fetchDestinations();
+        } else {
+            setPossibleDestinations([]);
+        }
+    }, [fromLoc._id]);
 
     const filteredFromStops = fromSearchQuery
         ? allStops.filter((stop) =>
-              stop.name.toLowerCase().includes(fromSearchQuery.toLowerCase())
+              stop.name?.toLowerCase().includes(fromSearchQuery.toLowerCase())
           )
         : allStops;
 
     const filteredToStops = toSearchQuery
         ? possibleDestinations.filter((stop) =>
-              stop.name.toLowerCase().includes(toSearchQuery.toLowerCase())
+              stop.name?.toLowerCase().includes(toSearchQuery.toLowerCase())
           )
         : possibleDestinations;
 
@@ -276,9 +343,10 @@ export default function MapSearch({
                         data={
                             fromSearchActive
                                 ? filteredFromStops.slice(0, 4)
-                                : filteredToStops.slice(0, 4)
+                                : filteredToStops
+                            // : filteredToStops.slice(0, 4)
                         }
-                        keyExtractor={(item) => item.stopId.toString()}
+                        keyExtractor={(item) => item._id.toString()}
                         renderItem={(props) =>
                             renderStopItem(
                                 { ...props, index: props.index },

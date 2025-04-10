@@ -1,13 +1,17 @@
 import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import { Redirect } from "expo-router";
 import React, { useState, useEffect, useRef } from "react";
-import Mapbox from "@rnmapbox/maps";
-import { Camera } from "@rnmapbox/maps";
+import Mapbox, { Camera } from "@rnmapbox/maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapSearch from "@/components/MapSearch";
-import { FontAwesome } from "@expo/vector-icons";
 import * as ExpoLocation from "expo-location";
+import { Link, useNavigation, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
+
+// Icons
+import { FontAwesome } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
+import { getItem } from "../helper";
+import axios from "axios";
 
 const MAPBOX_TOKEN =
     "pk.eyJ1IjoiMzkwMGYxNWFiYW5hbmEyNSIsImEiOiJjbTg3ZWhxNmMwNzF6MmxvYjg3Z2dwdmx6In0.PlMxV_sUySfYSA3UNzuglA";
@@ -20,10 +24,10 @@ export interface IRoute {
 }
 
 export interface IStop {
-    stopId: number | null;
+    _id: string | null;
     name: string | null;
-    longitude: number | null;
-    latitude: number | null;
+    lat: number | null;
+    lng: number | null;
 }
 
 interface RouteGeometry {
@@ -31,32 +35,59 @@ interface RouteGeometry {
     coordinates: number[][];
 }
 
+// async function getRouteId(departId: string, arriveId: string) {
+//     try {
+//         const token = await getItem("token");
+//         const response = await axios.get(
+//             "https://banana-bus.vercel.app/routes/fromSection",
+//             {
+//                 headers: {
+//                     Authorization: `Bearer ${token}`,
+//                 },
+//                 params: {
+//                     departId,
+//                     arriveId,
+//                 },
+//             }
+//         );
+//         return response.data[0]._id; // TODO: Fix this later to use more than one
+//     } catch (error) {
+//         console.error("Error fetching route id:", error);
+//         Alert.alert("Something went wrong!", "Error fetching destinations", [
+//             { text: "OK" },
+//         ]);
+//     }
+// }
+
 export default function Index() {
     const [location, setLocation] = useState({
-        latitude: 2.7567602,
-        longitude: 101.7007533, // Default to Bus Terminal, KLIA 1
+        lat: 2.7567602,
+        lng: 101.7007533, // Default to Bus Terminal, KLIA 1
     });
     const [compassHeading, setCompassHeading] = useState(0);
     const [routeGeometry, setRouteGeometry] = useState<RouteGeometry | null>(
         null
     );
     const [fromLoc, setFromLoc] = useState<IStop>({
-        stopId: null,
+        _id: null,
         name: null,
-        longitude: null,
-        latitude: null,
+        lng: null,
+        lat: null,
     });
     const [toLoc, setToLoc] = useState<IStop>({
-        stopId: null,
+        _id: null,
         name: null,
-        longitude: null,
-        latitude: null,
+        lng: null,
+        lat: null,
     });
+    const [routeId, setRouteId] = useState<string | null>(null);
 
     const cameraRef = useRef<Camera>(null);
     const locationWatcherRef = useRef<ExpoLocation.LocationSubscription | null>(
         null
     );
+
+    const navigation = useNavigation();
 
     const requestLocationPermission = async () => {
         try {
@@ -92,8 +123,8 @@ export default function Index() {
                 (newLocation) => {
                     console.log("Location updated:", newLocation.coords);
                     setLocation({
-                        latitude: newLocation.coords.latitude,
-                        longitude: newLocation.coords.longitude,
+                        lat: newLocation.coords.latitude,
+                        lng: newLocation.coords.longitude,
                     });
                 }
             );
@@ -107,8 +138,17 @@ export default function Index() {
         }
     };
 
+    // TODO: Debug its a little glitchy sometimes idk why
     const pinpoint = async () => {
         try {
+            if (cameraRef.current) {
+                cameraRef.current.setCamera({
+                    centerCoordinate: [location.lng, location.lat],
+                    zoomLevel: 15,
+                    animationDuration: 1000,
+                });
+            }
+
             const hasPermission = await requestLocationPermission();
             if (!hasPermission) return;
 
@@ -117,18 +157,15 @@ export default function Index() {
             });
 
             const newLocation = {
-                latitude: currentLocation.coords.latitude,
-                longitude: currentLocation.coords.longitude,
+                lat: currentLocation.coords.latitude,
+                lng: currentLocation.coords.longitude,
             };
 
             setLocation(newLocation);
 
             if (cameraRef.current) {
                 cameraRef.current.setCamera({
-                    centerCoordinate: [
-                        newLocation.longitude,
-                        newLocation.latitude,
-                    ],
+                    centerCoordinate: [location.lng, location.lat],
                     zoomLevel: 15,
                     animationDuration: 1000,
                 });
@@ -151,12 +188,7 @@ export default function Index() {
 
     // Function to fetch route between two points
     const fetchRoute = async () => {
-        if (
-            !fromLoc.longitude ||
-            !fromLoc.latitude ||
-            !toLoc.longitude ||
-            !toLoc.latitude
-        ) {
+        if (!fromLoc.lng || !fromLoc.lat || !toLoc.lng || !toLoc.lat) {
             Alert.alert(
                 "Error",
                 "Please select both start and destination locations"
@@ -165,8 +197,8 @@ export default function Index() {
         }
 
         try {
-            const startCoord = `${fromLoc.longitude},${fromLoc.latitude}`;
-            const endCoord = `${toLoc.longitude},${toLoc.latitude}`;
+            const startCoord = `${fromLoc.lng},${fromLoc.lat}`;
+            const endCoord = `${toLoc.lng},${toLoc.lat}`;
             const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${startCoord};${endCoord}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
 
             const response = await fetch(url);
@@ -226,13 +258,36 @@ export default function Index() {
     };
 
     useEffect(() => {
-        if (
-            fromLoc.longitude &&
-            fromLoc.latitude &&
-            toLoc.longitude &&
-            toLoc.latitude
-        ) {
+        const fetchRouteId = async () => {
+            try {
+                const token = await getItem("token");
+                const response = await axios.get(
+                    "https://banana-bus.vercel.app/routes/fromSection",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        params: {
+                            departId: fromLoc._id,
+                            arriveId: toLoc._id,
+                        },
+                    }
+                );
+                console.log(response.data.routes[0]);
+                setRouteId(response.data.routes[0]._id); // TODO: Fix this later to use more than one route
+            } catch (error) {
+                console.error("Error fetching route id:", error);
+                Alert.alert(
+                    "Something went wrong!",
+                    "Error fetching destinations",
+                    [{ text: "OK" }]
+                );
+            }
+        };
+
+        if (fromLoc.lng && fromLoc.lat && toLoc.lng && toLoc.lat) {
             fetchRoute();
+            fetchRouteId();
         }
     }, [fromLoc, toLoc]);
 
@@ -250,15 +305,15 @@ export default function Index() {
     }, []);
 
     // TODO: Change this so it doesnt autoupdate when location updates, only when pinpoint
-    useEffect(() => {
-        if (cameraRef.current && location) {
-            cameraRef.current.setCamera({
-                centerCoordinate: [location.longitude, location.latitude],
-                zoomLevel: 15,
-                animationDuration: 1000,
-            });
-        }
-    }, [location]);
+    // useEffect(() => {
+    //     if (cameraRef.current && location) {
+    //         cameraRef.current.setCamera({
+    //             centerCoordinate: [location.lng, location.lat],
+    //             zoomLevel: 15,
+    //             animationDuration: 1000,
+    //         });
+    //     }
+    // }, [location]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -271,10 +326,7 @@ export default function Index() {
                     <Mapbox.Camera
                         ref={cameraRef}
                         defaultSettings={{
-                            centerCoordinate: [
-                                location.longitude,
-                                location.latitude,
-                            ],
+                            centerCoordinate: [location.lng, location.lat],
                             zoomLevel: 14,
                         }}
                     />
@@ -300,78 +352,79 @@ export default function Index() {
                     {/* Location marker */}
                     <Mapbox.PointAnnotation
                         id="currentLocation"
-                        coordinate={[location.longitude, location.latitude]}
+                        coordinate={[location.lng, location.lat]}
                     >
                         <View style={styles.marker} />
                     </Mapbox.PointAnnotation>
 
                     {/* From marker */}
-                    {fromLoc.longitude !== null &&
-                        fromLoc.latitude !== null && (
-                            <>
-                                <Mapbox.PointAnnotation
-                                    id="fromLocation"
-                                    coordinate={[
-                                        fromLoc.longitude,
-                                        fromLoc.latitude,
-                                    ]}
+                    {fromLoc.lng !== null && fromLoc.lat !== null && (
+                        <>
+                            <Mapbox.PointAnnotation
+                                id="fromLocation"
+                                coordinate={[fromLoc.lng, fromLoc.lat]}
+                            >
+                                <View
+                                    style={[styles.marker, styles.fromMarker]}
+                                />
+                            </Mapbox.PointAnnotation>
+
+                            {/* Booking label - only show when both to and from are set*/}
+
+                            {fromLoc._id && toLoc._id && (
+                                <Mapbox.MarkerView
+                                    id="bookingLabel"
+                                    coordinate={[fromLoc.lng, fromLoc.lat]}
+                                    anchor={{ x: 0.5, y: 1 }}
                                 >
-                                    <View
+                                    <TouchableOpacity
                                         style={[
-                                            styles.marker,
-                                            styles.fromMarker,
+                                            styles.labelContainer,
+                                            styles.bookingContainer,
                                         ]}
-                                    />
-                                </Mapbox.PointAnnotation>
-
-                                {/* Booking label - only show when both to and from are set*/}
-
-                                {fromLoc.stopId && toLoc.stopId && (
-                                    <Mapbox.MarkerView
-                                        id="bookingLabel"
-                                        coordinate={[
-                                            fromLoc.longitude,
-                                            fromLoc.latitude,
-                                        ]}
-                                        anchor={{ x: 0.5, y: 1 }}
+                                        hitSlop={{
+                                            top: 20,
+                                            bottom: 20,
+                                            left: 20,
+                                            right: 20,
+                                        }}
+                                        onPressIn={() => {
+                                            console.log("Button pressed!");
+                                            router.push({
+                                                pathname: "/tripsList",
+                                                params: {
+                                                    routeId: routeId,
+                                                    departId: fromLoc._id,
+                                                    arriveId: toLoc._id,
+                                                },
+                                            });
+                                        }}
                                     >
-                                        <TouchableOpacity
+                                        <Text
                                             style={[
-                                                styles.labelContainer,
-                                                styles.bookingContainer,
+                                                styles.labelText,
+                                                styles.bookingText,
                                             ]}
-                                            hitSlop={{
-                                                top: 20,
-                                                bottom: 20,
-                                                left: 20,
-                                                right: 20,
-                                            }}
                                         >
-                                            <Text
-                                                style={[
-                                                    styles.labelText,
-                                                    styles.bookingText,
-                                                ]}
-                                            >
-                                                Confirm Booking
-                                            </Text>
-                                            <FontAwesome
-                                                name="arrow-right"
-                                                size={12}
-                                                color="black"
-                                            />
-                                        </TouchableOpacity>
-                                    </Mapbox.MarkerView>
-                                )}
-                            </>
-                        )}
+                                            Confirm Booking
+                                        </Text>
+                                        <FontAwesome
+                                            name="arrow-right"
+                                            size={12}
+                                            color="black"
+                                        />
+                                    </TouchableOpacity>
+                                </Mapbox.MarkerView>
+                            )}
+                        </>
+                    )}
 
                     {/* To marker */}
-                    {toLoc.longitude !== null && toLoc.latitude !== null && (
+                    {toLoc.lng !== null && toLoc.lat !== null && (
                         <>
                             <Mapbox.PointAnnotation
                                 id="toLocation"
-                                coordinate={[toLoc.longitude, toLoc.latitude]}
+                                coordinate={[toLoc.lng, toLoc.lat]}
                             >
                                 <View
                                     style={[styles.marker, styles.toMarker]}
@@ -381,7 +434,7 @@ export default function Index() {
                             {/* Destination label */}
                             <Mapbox.MarkerView
                                 id="toLocationLabel"
-                                coordinate={[toLoc.longitude, toLoc.latitude]}
+                                coordinate={[toLoc.lng, toLoc.lat]}
                                 anchor={{ x: 0.5, y: 1 }}
                             >
                                 <View style={styles.labelContainer}>
