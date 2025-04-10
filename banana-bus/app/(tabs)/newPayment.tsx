@@ -1,9 +1,10 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Modal } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { router } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
 import { set } from 'date-fns';
+import { getItem } from '../helper';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -13,9 +14,39 @@ export default function Payment() {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState('');
 
-    const handleAddCard = () => {
-        console.log({ cardNumber, expiryMonth, expiryYear, cvv });
-        // TODO add card to database
+    const handleAddCard = async () => {
+        try {
+            const response = await fetch('https://banana-bus.vercel.app/addCard', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${await getItem('token')}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    // TODO CHANGE BACKEND CARD TYPE
+                    type: 'Visa',
+                    cardNumber,
+                    expiryMonth,
+                    expiryYear,
+                    cvv,
+                }),
+            });
+            if (response.ok) {
+				Alert.alert('Success', 'Card added successfully!');
+                setCardNumber('');
+                setExpiryMonth('');
+                setExpiryYear('');
+                setCvv('');
+                router.back();
+			}
+        } catch (error) {
+            Alert.alert('Error', 'Failed to add card. Please try again.');
+            setCardNumber('');
+            setExpiryMonth('');
+            setExpiryYear('');
+            setCvv('');
+            router.back();
+        }
     };
 
     const openModal = (content: string) => {

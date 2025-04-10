@@ -83,37 +83,15 @@ export class UserBuilder implements Partial<User> {
     }
 }
 
-
-export class Card {
-    cardId: ObjectId;
+export interface Card {
+    _id: ObjectId;
     type: string;
     cardNumber: string;
     cvv: string;
     expiry: Date;
     last4: string;
     isDefault: boolean;
-
-    constructor(cardId: ObjectId, type: string, cardNumber: string, cvv: string, expiry: Date, last4: string, isDefault: boolean) {
-        this.cardId = cardId;
-        this.type = type;
-        this.cardNumber = cardNumber;
-        this.cvv = cvv;
-        this.expiry = expiry;
-        this.last4 = last4;
-        this.isDefault = isDefault;
-    }
-
-    isExpired(): boolean{
-        const today = new Date();
-        const currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
-        const expDate = new Date(this.expiry.getFullYear(), this.expiry.getMonth() + 1, 0);
-
-        return expDate < currentDate;
-
-    }
 }
-
-
 
 export interface DataStore {
     users: User[],

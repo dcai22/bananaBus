@@ -1,38 +1,99 @@
-import { Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigation } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton, YesButton } from '@/components/Buttons';
+import * as Device from 'expo-device';
+import { getItem } from '../helper';
+
+interface Card {
+	_id: string;
+	type: string;
+	cardNumber: string;
+	cvv: string;
+	expiry: Date;
+	last4: string;
+	isDefault: boolean;
+}
 
 export default function Payment() {
-	const [cards, setCards] = useState([
-		{ id: 1, type: 'Visa', last4: '1234', isDefault: true },
-		{ id: 2, type: 'MasterCard', last4: '1234', isDefault: false },
-		{ id: 3, type: 'MasterCard', last4: '1234', isDefault: false },
-	]);
+	const [cards, setCards] = useState<Card[]>([]);
 	const [modalVisible, setModalVisible] = useState(false);
-	const [selectedCard, setSelectedCard] = useState<number | null>(null);
+	const [selectedCard, setSelectedCard] = useState<string | null>(null);
 	const navigation = useNavigation();
 
 	useEffect(() => {
-		// TODO Fetch payment datas
-		// setCards([]);
+		const fetchData = async () => {
+			let token;
+			if (Device.deviceType === Device.DeviceType.PHONE) {
+				token = await getItem('token');
+			} else {
+				token = localStorage.getItem('token');
+			}
+			try {
+				const response = await fetch('https://banana-bus.vercel.app/getUserCards', {
+					method : 'GET',
+					headers: {
+						'Authorization': `Bearer ${await getItem('token')}`,
+						'Content-Type': 'application/json',
+					},
+				});
+				if (response.ok) {
+					const data = await response.json();
+					setCards(data.cards);
+				}
+			} catch (error) {
+				console.error('Error fetching payment data:', error);
+			}
+		};
+		fetchData();
 	}, []);
 
-	const handleEditCard = (cardId: number) => {
+	const handleEditCard = (cardId: string) => {
 		setSelectedCard(cardId);
 		setModalVisible(true);
 	};
 
 	const handleRemoveCard = async () => {
-		console.log('Remove card:', selectedCard);
-		// TODO remove card from database
+		try {
+			const response = await fetch('https://banana-bus.vercel.app/deleteCard', {
+				method: 'DELETE',
+				headers: {
+					'Authorization': `Bearer ${await getItem('token')}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ cardId: selectedCard }),
+			});
+			if (response.ok) {
+				setCards(cards.filter(card => card._id !== selectedCard));
+			}
+		} catch (error) {
+			Alert.alert('Error', 'Failed to remove card. Please try again later.');
+		}
 		closeModal();
 	}
 
 	const handleMakeDefault = async () => {
-		console.log('Make card default:', selectedCard);
-		// TODO make card default in database
+		try {
+			const response = await fetch('https://banana-bus.vercel.app/makeDefaultCard', {
+				method: 'PUT',
+				headers: {
+					'Authorization': `Bearer ${await getItem('token')}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ cardId: selectedCard }),
+			});
+			if (response.ok) {
+				setCards(cards.map(card => {
+					if (card._id === selectedCard) {
+						return { ...card, isDefault: true };
+					}
+					return { ...card, isDefault: false };
+				}));
+			}
+		} catch (error) {
+			Alert.alert('Error', 'Failed to make card default. Please try again later.');
+		}
 		closeModal();
 	}
 
@@ -50,9 +111,9 @@ export default function Payment() {
 			<View style={styles.cards}>
 				{cards.map(card => (
 						<TouchableOpacity
-							key={card.id}
+							key={card._id}
 							style={styles.card}
-							onPress={() => handleEditCard(card.id)}
+							onPress={() => handleEditCard(card._id)}
 							activeOpacity={0.7}
 						>
 							<View>
