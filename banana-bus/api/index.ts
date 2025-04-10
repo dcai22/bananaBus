@@ -277,7 +277,7 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
             numLuggage,
         });
         await collections.trips?.updateOne(
-            { tripId: tripId },
+            { _id: tripId },
             { $push: { bookings: dbRes?.insertedId } } as any
         )
         res.json({ insertedId: dbRes?.insertedId });
