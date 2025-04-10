@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router, useNavigation, useFocusEffect } from "expo-router";
-import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert} from "react-native";
+import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert, ActivityIndicator} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
@@ -34,18 +34,34 @@ export default function booking() {
     const [ numPassenger, setNumPassenger ] = useState<number>(0)
     const [ numLuggage, setNumLuggage ] = useState<number>(0)
     const [trip, setTrip] = useState<TripBox>();
-    
+
+    const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("")
+    const [error, setError] = useState("");
     const [departName, setDepartName] = useState("");
     const [arriveName, setArriveName] = useState("");
-    const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"})
+    const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"});
     
+    const [isCheckout, setIsCheckout] = useState(false);
+
     const navigation = useNavigation();
     
     // TODO: backend to retrieve card details
     
+    useFocusEffect(
+         useCallback(() => { 
+            setRefresh(true)
+            // Makes sure to reload page upon leaving page
+            return () => {
+                setLoading(true)
+                setNumPassenger(0)
+                setNumLuggage(0)
+            };
+        }, [])
+    )
+
     useEffect(() => {
+        if (!refresh) return
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
@@ -66,21 +82,13 @@ export default function booking() {
                 setError(err.response.data.error)
             }).finally(() => {
                 setLoading(false)
+                setRefresh(false)
             })
         }
 
         fetchData();
-    }, [departId, arriveId, tripId])
+    }, [tripId, departId, arriveId, refresh])
     
-    useFocusEffect(
-         useCallback(() => { 
-            // Makes sure to reload page upon leaving page
-            return () => {
-                setLoading(true)
-            };
-        }, [])
-    )
-
 
     function CheckoutHeader() {
         return(
@@ -153,6 +161,7 @@ export default function booking() {
     
     async function handleCheckout() {
         // TODO: handle payment
+        setIsCheckout(true)
         const token = await getItem("token");
         try {
             const res = await fetch('https://banana-bus.vercel.app/createBooking', {
@@ -161,14 +170,15 @@ export default function booking() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ token, tripId, departId, arriveId, numTickets: numPassenger }),
+                body: JSON.stringify({ token, tripId, originId: departId, destId: arriveId, numTickets: numPassenger, numLuggage }),
             });
 
             if (res.ok) {
                 const data = await res.json();
-
+                setIsCheckout(false)
                 console.log(`Created booking with id ${data.insertedId}`);
-
+                // probably change to something better
+                Alert.alert("Booking confirmed")
                 navigation.navigate("index");
             } else {
                 const errorData = await res.json();
@@ -274,8 +284,13 @@ export default function booking() {
 
             <View style= {styles.checkoutBar}>
                 <Text style= {styles.checkoutTotal}>Total: RM {totalPrice()}</Text>
-                <TouchableOpacity style={styles.checkoutButton}>
-                    <Text style= {styles.checkoutText} onPress={handleCheckout}>Checkout</Text>
+                <TouchableOpacity style={styles.checkoutButton} disabled={isCheckout || numPassenger === 0}>
+                    {isCheckout && 
+                        <ActivityIndicator size="small" color="white"/>
+                    }
+                    {!isCheckout &&
+                        <Text style= {styles.checkoutText} onPress={handleCheckout}>Checkout</Text>
+                    }
                 </TouchableOpacity>
             </View>
         </View>
@@ -285,7 +300,7 @@ export default function booking() {
 const styles = StyleSheet.create({
     screen: {
         height: "100%",
-        backgroundColor: "lightblue",
+        backgroundColor: "#e5f0fa",
     },
     header: {
         backgroundColor: "#060c40",

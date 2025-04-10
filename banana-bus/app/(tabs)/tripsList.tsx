@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Touchable, TouchableOpacity } from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
@@ -13,6 +13,7 @@ import DatePicker from 'react-native-date-picker'
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
 
+     const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [departName, setDepartName] = useState("Loading");
@@ -21,7 +22,22 @@ export default function tripsList() {
     const [date, setDate] = useState(new Date());
     const [open, setOpen] = useState(false);
     
+    useFocusEffect(
+        useCallback(() => { 
+            setRefresh(true)
+            // Makes sure to reload page upon leaving page
+            return () => {
+                setLoading(true)
+            };
+        }, [])
+    )
+    
     useEffect(() => {
+        setRefresh(true);
+    }, [date]);
+
+    useEffect(() => {
+        if (!refresh) return
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
@@ -44,11 +60,13 @@ export default function tripsList() {
                 setError(err.response.data.error)
             }).finally(() => {
                 setLoading(false)
+                setRefresh(false)
             })
         }
 
         fetchData();
-    }, [date])
+    }, [date, routeId, departId, arriveId, refresh])
+
 
     function Header() {
         return(
