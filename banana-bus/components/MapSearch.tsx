@@ -12,7 +12,7 @@ import {
 import React, { useState, useRef, useEffect } from "react";
 import { Stop, Route } from "@/api/interface";
 import { FontAwesome } from "@expo/vector-icons";
-
+import { IStop, IRoute } from "@/app/(tabs)";
 import { mockRoutes, mockStops } from "./temp";
 
 // Helper function to fetch all stops
@@ -49,22 +49,19 @@ function getNameFromID(stopID: number): string | null {
     return stop ? stop.name : null;
 }
 
-interface IRoute {
-    routeId: number;
-    stops: number[];
-    trips: number[];
+interface MapProps {
+    fromLoc: IStop;
+    toLoc: IStop;
+    setFromLoc: (stopID: IStop) => void;
+    setToLoc: (stopID: IStop) => void;
 }
 
-interface IStop {
-    stopId: number;
-    name: string;
-    longitude: number;
-    latitude: number;
-}
-
-export default function MapSearch() {
-    const [fromLoc, setFromLoc] = useState(0);
-    const [toLoc, setToLoc] = useState(0);
+export default function MapSearch({
+    fromLoc,
+    toLoc,
+    setFromLoc,
+    setToLoc,
+}: MapProps) {
     const [fromSearchActive, setFromSearchActive] = useState(false);
     const [toSearchActive, setToSearchActive] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -75,8 +72,8 @@ export default function MapSearch() {
     const isSearchActive = fromSearchActive || toSearchActive;
     const allStops = getAllStops();
 
-    const possibleDestinations = fromLoc
-        ? getPossibleDestinations(fromLoc)
+    const possibleDestinations = fromLoc.stopId
+        ? getPossibleDestinations(fromLoc.stopId)
         : [];
 
     const filteredFromStops = searchQuery
@@ -91,18 +88,18 @@ export default function MapSearch() {
           )
         : possibleDestinations;
 
-    const handleFromSelect = (stopID: number) => {
-        console.log(stopID);
-        setFromLoc(stopID);
+    // TODO: Refactor this into a single function
+    const handleFromSelect = (stop: IStop) => {
+        console.log(stop);
+        setFromLoc(stop);
         activateToSearch();
         setSearchQuery("");
         // Keyboard.dismiss();
     };
 
-    const handleToSelect = (stopID: number) => {
-        console.log(stopID);
-
-        setToLoc(stopID);
+    const handleToSelect = (stop: IStop) => {
+        console.log(stop);
+        setToLoc(stop);
         setToSearchActive(false);
         // setSearchQuery("");
         Keyboard.dismiss();
@@ -112,13 +109,13 @@ export default function MapSearch() {
         setFromSearchActive(true);
         setToSearchActive(false);
         // TODO: Set to selected option, update search component to have clear button when the from/toloc has already been set
-        setSearchQuery("");
+        setSearchQuery(fromLoc.name || "");
     };
 
     const activateToSearch = () => {
         setToSearchActive(true);
         setFromSearchActive(false);
-        setSearchQuery("");
+        setSearchQuery(toLoc.name || "");
     };
 
     const closeSearch = () => {
@@ -143,7 +140,7 @@ export default function MapSearch() {
     const renderStopItem = ({ item, index }, onSelect, distance = null) => (
         <TouchableOpacity
             style={styles.listItem}
-            onPress={() => onSelect(item.stopId)}
+            onPress={() => onSelect(item)}
         >
             <View style={styles.locationRow}>
                 <FontAwesome
@@ -194,18 +191,12 @@ export default function MapSearch() {
                             style={styles.input}
                             value={searchQuery}
                             onChangeText={setSearchQuery}
-                            placeholder={
-                                fromLoc
-                                    ? getNameFromID(fromLoc)
-                                    : "Search locations..."
-                            }
+                            placeholder={fromLoc.name ?? "Search locations..."}
                             autoFocus
                         />
                     ) : (
                         <Text style={styles.location}>
-                            {fromLoc
-                                ? getNameFromID(fromLoc)
-                                : "Select Location"}
+                            {fromLoc.name ?? "Select Location"}
                         </Text>
                     )}
                 </TouchableOpacity>
@@ -231,12 +222,12 @@ export default function MapSearch() {
                             style={styles.input}
                             value={searchQuery}
                             onChangeText={setSearchQuery}
-                            placeholder="Search destinations..."
+                            placeholder={toLoc.name ?? "Search locations..."}
                             autoFocus
                         />
                     ) : (
                         <Text style={styles.location}>
-                            {toLoc ? getNameFromID(toLoc) : "Select Location"}
+                            {toLoc.name ?? "Select Location"}
                         </Text>
                     )}
                 </TouchableOpacity>
@@ -251,8 +242,8 @@ export default function MapSearch() {
                     <FlatList
                         data={
                             fromSearchActive
-                                ? filteredFromStops.slice(0, 5)
-                                : filteredToStops.slice(0, 5)
+                                ? filteredFromStops.slice(0, 4)
+                                : filteredToStops.slice(0, 4)
                         }
                         keyExtractor={(item) => item.stopId.toString()}
                         renderItem={(props) =>

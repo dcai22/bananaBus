@@ -8,14 +8,47 @@ import MapSearch from "@/components/MapSearch";
 import { FontAwesome } from "@expo/vector-icons";
 import * as ExpoLocation from "expo-location";
 
-Mapbox.setAccessToken(
-    "pk.eyJ1IjoiMzkwMGYxNWFiYW5hbmEyNSIsImEiOiJjbTg3ZWhxNmMwNzF6MmxvYjg3Z2dwdmx6In0.PlMxV_sUySfYSA3UNzuglA"
-);
+const MAPBOX_TOKEN =
+    "pk.eyJ1IjoiMzkwMGYxNWFiYW5hbmEyNSIsImEiOiJjbTg3ZWhxNmMwNzF6MmxvYjg3Z2dwdmx6In0.PlMxV_sUySfYSA3UNzuglA";
+Mapbox.setAccessToken(MAPBOX_TOKEN);
+
+export interface IRoute {
+    routeId: number;
+    stops: number[];
+    trips: number[];
+}
+
+export interface IStop {
+    stopId: number | null;
+    name: string | null;
+    longitude: number | null;
+    latitude: number | null;
+}
+
+interface RouteGeometry {
+    type: "LineString";
+    coordinates: number[][];
+}
 
 export default function Index() {
     const [location, setLocation] = useState({
         latitude: 2.7567602,
         longitude: 101.7007533, // Default to Bus Terminal, KLIA 1
+    });
+    const [routeGeometry, setRouteGeometry] = useState<RouteGeometry | null>(
+        null
+    );
+    const [fromLoc, setFromLoc] = useState<IStop>({
+        stopId: null,
+        name: null,
+        longitude: null,
+        latitude: null,
+    });
+    const [toLoc, setToLoc] = useState<IStop>({
+        stopId: null,
+        name: null,
+        longitude: null,
+        latitude: null,
     });
 
     const cameraRef = useRef<Camera>(null);
@@ -107,6 +140,92 @@ export default function Index() {
             );
         }
     };
+    // Function to fetch route between two points
+    const fetchRoute = async () => {
+        if (
+            !fromLoc.longitude ||
+            !fromLoc.latitude ||
+            !toLoc.longitude ||
+            !toLoc.latitude
+        ) {
+            Alert.alert(
+                "Error",
+                "Please select both start and destination locations"
+            );
+            return;
+        }
+
+        try {
+            const startCoord = `${fromLoc.longitude},${fromLoc.latitude}`;
+            const endCoord = `${toLoc.longitude},${toLoc.latitude}`;
+            const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startCoord};${endCoord}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.routes && data.routes.length > 0) {
+                setRouteGeometry({
+                    coordinates: data.routes[0].geometry.coordinates,
+                    type: "LineString",
+                });
+
+                // Adjust camera to fit the route
+                fitToRoute(data.routes[0].geometry.coordinates);
+            } else {
+                Alert.alert(
+                    "Route Error",
+                    "No route found between these locations"
+                );
+            }
+        } catch (error) {
+            console.error("Error fetching route:", error);
+            Alert.alert("Error", "Failed to fetch route directions");
+        }
+    };
+
+    // Fit camera to route
+    const fitToRoute = (coordinates: number[][]) => {
+        if (coordinates.length < 2 || !cameraRef.current) return;
+
+        let minLng = coordinates[0][0];
+        let maxLng = coordinates[0][0];
+        let minLat = coordinates[0][1];
+        let maxLat = coordinates[0][1];
+
+        coordinates.forEach((coord) => {
+            minLng = Math.min(minLng, coord[0]);
+            maxLng = Math.max(maxLng, coord[0]);
+            minLat = Math.min(minLat, coord[1]);
+            maxLat = Math.max(maxLat, coord[1]);
+        });
+
+        const paddingFactor = 0.1;
+        const lngDelta = maxLng - minLng;
+        const latDelta = maxLat - minLat;
+
+        minLng -= lngDelta * paddingFactor;
+        maxLng += lngDelta * paddingFactor;
+        minLat -= latDelta * paddingFactor;
+        maxLat += latDelta * paddingFactor;
+
+        cameraRef.current.fitBounds(
+            [minLng, minLat],
+            [maxLng, maxLat],
+            100,
+            1000
+        );
+    };
+
+    useEffect(() => {
+        if (
+            fromLoc.longitude &&
+            fromLoc.latitude &&
+            toLoc.longitude &&
+            toLoc.latitude
+        ) {
+            fetchRoute();
+        }
+    }, [fromLoc, toLoc]);
 
     useEffect(() => {
         console.log("Starting location tracking");
@@ -155,10 +274,52 @@ export default function Index() {
                         id="currentLocation"
                         coordinate={[location.longitude, location.latitude]}
                     >
-                        <View style={styles.markerContainer}>
-                            <View style={styles.marker} />
-                        </View>
+                        <View style={styles.marker} />
                     </Mapbox.PointAnnotation>
+
+                    {/* From marker */}
+                    {fromLoc.longitude !== null &&
+                        fromLoc.latitude !== null && (
+                            <Mapbox.PointAnnotation
+                                id="fromLocation"
+                                coordinate={[
+                                    fromLoc.longitude,
+                                    fromLoc.latitude,
+                                ]}
+                            >
+                                <View
+                                    style={[styles.marker, styles.fromMarker]}
+                                />
+                            </Mapbox.PointAnnotation>
+                        )}
+
+                    {/* To marker */}
+                    {toLoc.longitude !== null && toLoc.latitude !== null && (
+                        <Mapbox.PointAnnotation
+                            id="toLocation"
+                            coordinate={[toLoc.longitude, toLoc.latitude]}
+                        >
+                            <View style={[styles.marker, styles.toMarker]} />
+                        </Mapbox.PointAnnotation>
+                    )}
+
+                    {/* Route Line */}
+                    {routeGeometry && (
+                        <Mapbox.ShapeSource
+                            id="routeSource"
+                            shape={routeGeometry}
+                        >
+                            <Mapbox.LineLayer
+                                id="routeLine"
+                                style={{
+                                    lineColor: "#2196F3",
+                                    lineWidth: 4,
+                                    lineCap: "round",
+                                    lineJoin: "round",
+                                }}
+                            />
+                        </Mapbox.ShapeSource>
+                    )}
                 </Mapbox.MapView>
             </View>
 
@@ -168,7 +329,12 @@ export default function Index() {
             </TouchableOpacity>
 
             <View style={styles.MapSearchContainer}>
-                <MapSearch />
+                <MapSearch
+                    fromLoc={fromLoc}
+                    toLoc={toLoc}
+                    setFromLoc={setFromLoc}
+                    setToLoc={setToLoc}
+                />
             </View>
         </SafeAreaView>
     );
@@ -236,6 +402,13 @@ const styles = StyleSheet.create({
         backgroundColor: "blue",
         borderWidth: 2,
         borderColor: "white",
+    },
+    fromMarker: {
+        backgroundColor: "red",
+    },
+    toMarker: {
+        borderRadius: 0,
+        backgroundColor: "green",
     },
     MapSearchContainer: {
         position: "absolute",
