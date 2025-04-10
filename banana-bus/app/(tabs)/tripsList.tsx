@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router } from "expo-router";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Touchable, TouchableOpacity } from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
+import DatePicker from 'react-native-date-picker'
 
 export default function tripsList() {
-    const { routeId, departId, arriveId, date } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string, date: string}>()
+    const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("")
     const [departName, setDepartName] = useState("Loading");
     const [arriveName, setArriveName] = useState("");
     const [trips, setTrips] = useState<TripBox[]>([]);
+    const [date, setDate] = useState(new Date())
+    const [open, setOpen] = useState(false)
     
     useEffect(() => {
         const fetchData = async () => {
@@ -45,7 +48,7 @@ export default function tripsList() {
         }
 
         fetchData();
-    }, [])
+    }, [date])
 
     function Header() {
         return(
@@ -66,7 +69,6 @@ export default function tripsList() {
     }
 
     // TODO: add refresh
-
     if (loading) {
         return(
             <View style={styles.screen}>
@@ -86,12 +88,28 @@ export default function tripsList() {
     return(
         <View style={styles.screen}>
             <Header/>
-            <ScrollView style={styles.tripListContainer}>   
-            <Text style = {styles.tripListDate}>{format(date, "E, do LLL y")}</Text>
+            <ScrollView style={styles.tripListContainer}>
+                <TouchableOpacity style={styles.tripListDate} onPress={() => setOpen(true)}>
+                    <Text style={styles.tripListDateText}>{format(date, "E, do LLL y")}</Text>
+                    <FontAwesome name="chevron-down" style={styles.tripDateArrow}></FontAwesome>
+                </TouchableOpacity>
                 <View>
                     {trips.map((t, index )=> <TripListBox key={index} trip={t} disabled={false}/>)}
                 </View>
             </ScrollView>
+            <DatePicker
+                modal
+                open={open}
+                date={date}
+                minimumDate={new Date()}
+                onConfirm={(date) => {
+                    setOpen(false)
+                    setDate(date)
+                }}
+                onCancel={() => {
+                    setOpen(false)
+                }}
+            />
         </View>
     );
 }
@@ -99,7 +117,7 @@ export default function tripsList() {
 const styles = StyleSheet.create({
     screen: {
         height: "100%",
-        backgroundColor: "lightblue",
+        backgroundColor: "#e5f0fa",
     },
     header: {
         backgroundColor: "white",
@@ -113,7 +131,7 @@ const styles = StyleSheet.create({
     },
     goBackArrow: {
         paddingTop: 5,
-        color: "#009cff",
+        color: "#74b9f1",
         fontSize: 20,
     },
     goBackText: {   
@@ -147,9 +165,26 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     tripListDate: {
+        marginBottom: 20,
+        padding: 10,
+        borderRadius: 10,
+        backgroundColor: "#fff",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        paddingRight: 20,
+    },
+    tripListDateText: {
+        fontSize: 24,
         fontWeight: "bold",
+    },
+    tripDateArrow: {
         fontSize: 20,
-        paddingBottom: 20,
-        paddingLeft: 10,
-    }
+        alignSelf: "center",
+        color: "#74b9f1",
+    },
 });
