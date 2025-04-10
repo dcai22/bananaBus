@@ -1,9 +1,8 @@
 import { Text, View, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigation } from "expo-router";
+import { Link, useFocusEffect, useNavigation } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton, YesButton } from '@/components/Buttons';
-import * as Device from 'expo-device';
 import { getItem } from '../helper';
 
 interface Card {
@@ -20,7 +19,15 @@ export default function Payment() {
 	const [cards, setCards] = useState<Card[]>([]);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [selectedCard, setSelectedCard] = useState<string | null>(null);
+	const [refresh, setRefresh] = useState(false);
 	const navigation = useNavigation();
+
+	useFocusEffect(
+		React.useCallback(() => {
+			setRefresh(true);
+			return () => {};
+		}, [])
+	)
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -43,7 +50,8 @@ export default function Payment() {
 			}
 		};
 		fetchData();
-	}, []);
+		setRefresh(false);
+	}, [refresh]);
 
 	const handleEditCard = (cardId: string) => {
 		setSelectedCard(cardId);
