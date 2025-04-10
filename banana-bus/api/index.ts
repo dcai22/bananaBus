@@ -2,12 +2,13 @@ import express, { json, Request, Response } from 'express';
 import cors from 'cors';
 import errorHandler from "middleware-http-errors"
 
-import { authLogin, authRegister, authAutoLogin, authLogout } from './auth';
+import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode } from './auth';
 import { tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
+import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
+import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
-import { getAccountName } from './account';
 
 const app = express();
 
@@ -37,6 +38,26 @@ app.post('/register', (req: Request, res: Response) => {
     return;
 })
 
+app.post('/resetPasswordEmail', async (req: Request, res: Response) => {
+    const email = req.body.email as string;
+    res.json(await authPasswordResetEmail(email));
+    return;
+})
+
+app.post('/resetPasswordVerifyCode', (req: Request, res: Response) => {
+    const token = req.query.token as string;
+    const code = req.body.code as string;
+    res.json(authPasswordVerifyCode(token, code));
+    return;
+})
+
+app.post('/resetPassword', (req: Request, res: Response) => {
+    const token = req.query.token as string;
+    const newPassword = req.body.newPassword as string;
+    res.json(authPasswordReset(token, newPassword));
+    return;
+})
+
 app.post('/autologin', (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
     res.json(authAutoLogin(token));
@@ -44,9 +65,16 @@ app.post('/autologin', (req: Request, res: Response) => {
 })
 
 app.post('/logout', (req: Request, res: Response) => {
-    const token = req.header('token') as string;
-    const userId = req.body.userId as number;
+    const token = req.headers.authorization as string;
+    const userId = parseInt(req.body.userId)
     res.json(authLogout(userId, token));
+    return;
+})
+
+app.delete('/deleteAccount', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    const userId = parseInt(req.body.userId);
+    res.json(deleteAccount(userId, token));
     return;
 })
 
@@ -103,6 +131,38 @@ app.get('/getAccountName', (req: Request, res: Response) => {
     const token = req.headers.authorization as string;
     res.json(getAccountName(token));
     return;
+})
+
+app.get('/getAccountDetails', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    res.json(getUserDetails(token));
+    return;
+})
+
+app.post('/updateAccountDetails', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    const firstName = req.body.firstName as string;
+    const lastName = req.body.lastName as string;
+    const email = req.body.email as string;
+    res.json(updateUserDetails(token, firstName, lastName, email));
+    return;
+})
+
+app.post('/updateAccountPassword', (req: Request, res: Response) => {
+    const token = req.headers.authorization as string;
+    const oldPassword = req.body.oldPassword as string;
+    const newPassword = req.body.newPassword as string;
+    res.json(updateUserPassword(token, oldPassword, newPassword));
+    return;
+})
+
+app.get('/getDeals', async (req: Request, res: Response, next) => {
+    try {
+        const deals = await getDeals()
+        res.json(deals);
+    } catch (err) {
+        next(err)
+    }
 })
 
 app.use(errorHandler())
