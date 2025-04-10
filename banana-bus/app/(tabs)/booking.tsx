@@ -161,7 +161,7 @@ export default function booking() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ token, tripId, departId, arriveId, numTickets: numPassenger }),
+                body: JSON.stringify({ token, tripId, originId: departId, destId: arriveId, numTickets: numPassenger, numLuggage }),
             });
 
             if (res.ok) {
