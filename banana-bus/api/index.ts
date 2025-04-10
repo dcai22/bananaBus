@@ -140,7 +140,7 @@ app.get('/pastBookings', async (req: Request, res: Response, next) => {
 app.get('/upcomingBookings', async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
-        const numBookings = req.body.numBookings as number;
+        const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
         const bookings = await searchBookings(token, 'upcoming', numBookings);
         res.json(bookings);
     } catch (err) {

@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
-import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import axios from "axios";
+import { getItem } from "../helper";
 
 export default function Trips() {
     interface Trip {
@@ -12,10 +14,9 @@ export default function Trips() {
         tripId: number;
         originName: string;
         destName: string;
-        bookingTime: string;
         departureTime: string;
     }
-
+    
     interface Route {
         route: {
             routeId: number;
@@ -27,54 +28,17 @@ export default function Trips() {
         destIndex: number;
         destName: string;
     }
-
+    const [error, setError] = useState("")
+    const [refresh, setRefresh] = useState(true);
+    
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
+    const [upcomingLoading, setUpcomingLoading] = useState(true)
+
     const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
 
-    const fetchUpcomingTrips = async () => {
-        // TODO fetch actual data
-        return [
-            {
-                bookingId: 0,
-                userId: 0,
-                tripId: 0,
-                originName: '1utama Shopping Mall',
-                destName: 'Kuala Lumpur Intl. T1',
-                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-            },
-            {
-                bookingId: 1,
-                userId: 0,
-                tripId: 5,
-                originName: 'Kuala Lumpur Intl. T2',
-                destName: '1utama Shopping Mall',
-                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-            },
-            {
-                bookingId: 2,
-                userId: 0,
-                tripId: 5,
-                originName: 'Kuala Lumpur Intl. T2',
-                destName: '1utama Shopping Mall',
-                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-            },
-            {
-                bookingId: 3,
-                userId: 0,
-                tripId: 5,
-                originName: 'Kuala Lumpur Intl. T2',
-                destName: '1utama Shopping Mall',
-                bookingTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-                departureTime: new Date(3000, 0, 1, 0, 0, 0).toISOString(),
-            },
-        ];
-    };
-    
     const fetchWatchlistRoutes = async () => {
         // TODO fetch actual data
+        
         return [
             {
                 route: {
@@ -145,17 +109,45 @@ export default function Trips() {
         ];
     };
 
+    useFocusEffect(
+        useCallback(() => { 
+            setRefresh(true)
+            // Makes sure to reload page upon leaving page
+            return () => {
+                setUpcomingLoading(true)
+            };
+        }, [])
+    )
+        
     useEffect(() => {
+        if (!refresh) return
         const getTrips = async () => {
-            const upcoming = await fetchUpcomingTrips();
+            const token = await getItem("token");
+            axios.get("https://banana-bus.vercel.app/upcomingBookings", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            }).then((res) => {
+                setUpcomingTrips(res.data)
+            }).catch((err) => {
+                setError(err.response.data.error)
+            }).finally(() => {
+                setUpcomingLoading(false)
+                setRefresh(false)
+            })
+
             const watchlist = await fetchWatchlistRoutes();
-            setUpcomingTrips(upcoming);
             setWatchlistRoutes(watchlist);
         };
 
         getTrips();
-    }, []);
+    }, [refresh]);
 
+    if (error) {
+        return(
+            <Text>Error: {error}</Text>
+        )
+    }
     const handlePress = (route: Route) => {
         // router.push({
         //     pathname: '/tripsList',
@@ -186,7 +178,12 @@ export default function Trips() {
                 <Text style={styles.header}>🚌</Text>
             </View>
             <View style={styles.section}>
-                <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
+                <View style={styles.sectionHeaderContainer}>
+                    <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
+                    { upcomingLoading &&
+                        <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
+                    }
+                </View>
                 <View style={styles.upcomingList}>
                     <FlatList
                         data={upcomingTrips}
@@ -195,7 +192,7 @@ export default function Trips() {
                                 <View style={styles.tripItem}>
                                     <View style={styles.accent} />
                                     <View style={styles.tripContent}>
-                                        <Text>{format(new Date(item.bookingTime), "hh:mm a, do MMMM yyyy")}</Text>
+                                        <Text>{format(new Date(item.departureTime), "hh:mm a, do MMMM yyyy")}</Text>
                                         <Text style={styles.route}>
                                             {item.originName} <FontAwesome name="arrow-right" style={styles.arrow}/> {item.destName}
                                         </Text>
@@ -257,6 +254,9 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 30,
         marginBottom: 24,
+    },
+    sectionHeaderContainer:{
+        flexDirection: "row"
     },
     sectionHeader: {
         fontSize: 28,
