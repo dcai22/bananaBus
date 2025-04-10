@@ -327,8 +327,8 @@ export default function Settings() {
                         )}
                         {(modalType !== "logout" && modalType !== "delete") && (
                             <View style={styles.modalButtons}>
-                                <NoButton text="Cancel" onPress={handleCancel} style={styles.modalButton} />
                                 <YesButton text="Save" onPress={handleSave} style={styles.modalButton}/>
+                                <NoButton text="Cancel" onPress={handleCancel} style={styles.modalButton} />
                             </View>
                         )}
                     </View>
