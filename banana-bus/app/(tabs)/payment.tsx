@@ -5,24 +5,24 @@ import { FontAwesome } from '@expo/vector-icons';
 import { NoButton, YesButton } from '@/components/Buttons';
 
 export default function Payment() {
-    const [cards, setCards] = useState([
-        { id: 1, type: 'Visa', last4: '1234', isDefault: true },
-        { id: 2, type: 'MasterCard', last4: '1234', isDefault: false },
-        { id: 3, type: 'MasterCard', last4: '1234', isDefault: false },
-    ]);
+	const [cards, setCards] = useState([
+		{ id: 1, type: 'Visa', last4: '1234', isDefault: true },
+		{ id: 2, type: 'MasterCard', last4: '1234', isDefault: false },
+		{ id: 3, type: 'MasterCard', last4: '1234', isDefault: false },
+	]);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [selectedCard, setSelectedCard] = useState<number | null>(null);
 	const navigation = useNavigation();
 
-    useEffect(() => {
-        // TODO Fetch payment datas
-        // setCards([]);
-    }, []);
+	useEffect(() => {
+		// TODO Fetch payment datas
+		// setCards([]);
+	}, []);
 
-    const handleEditCard = (cardId: number) => {
-        setSelectedCard(cardId);
+	const handleEditCard = (cardId: number) => {
+		setSelectedCard(cardId);
 		setModalVisible(true);
-    };
+	};
 
 	const handleRemoveCard = async () => {
 		console.log('Remove card:', selectedCard);
@@ -41,7 +41,7 @@ export default function Payment() {
 		setSelectedCard(null);
 	}
 
-    return (
+	return (
 		<View style={styles.container}>
 			<View style={styles.headerBox}>
 				<Link href="/account" style={styles.goBack}>← go back</Link>
@@ -73,22 +73,22 @@ export default function Payment() {
 				</TouchableOpacity>
 			</View>
 			<Modal
-                visible={modalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={closeModal}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Card Options</Text>
+				visible={modalVisible}
+				transparent={true}
+				animationType="slide"
+				onRequestClose={closeModal}
+			>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<Text style={styles.modalTitle}>Card Options</Text>
 						<NoButton onPress={handleRemoveCard} text="Remove Card" />
 						<NoButton onPress={handleMakeDefault} text="Make Default" />
 						<YesButton onPress={closeModal} text="Cancel"/>
-                    </View>
-                </View>
-            </Modal>
+					</View>
+				</View>
+			</Modal>
 		</View>
-    );
+	);
 };
 
 const styles = StyleSheet.create({
@@ -102,21 +102,21 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 	headerBox: {
-        backgroundColor: '#fff',
-        marginBottom: 8,
-        padding: 35,
-        minHeight: 150,
+		backgroundColor: '#fff',
+		marginBottom: 8,
+		padding: 35,
+		minHeight: 150,
 		shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 6,
-        elevation: 6,
-    },
-    header: {
-        fontSize: 36,
-        fontWeight: 'bold',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.5,
+		shadowRadius: 6,
+		elevation: 6,
+	},
+	header: {
+		fontSize: 36,
+		fontWeight: 'bold',
 		color: '#4399dc',
-    },
+	},
 	cards: {
 		flex: 1,
 		padding: 16,
@@ -171,21 +171,21 @@ const styles = StyleSheet.create({
 		fontWeight: 'bold',
 	},
 	modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        width: '80%',
-        alignItems: 'center',
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 12,
-    },
+		flex: 1,
+		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	modalContent: {
+		backgroundColor: 'white',
+		padding: 20,
+		borderRadius: 10,
+		width: '80%',
+		alignItems: 'center',
+	},
+	modalTitle: {
+		fontSize: 20,
+		fontWeight: 'bold',
+		marginBottom: 12,
+	},
 });
