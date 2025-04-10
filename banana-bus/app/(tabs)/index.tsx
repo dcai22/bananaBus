@@ -308,17 +308,59 @@ export default function Index() {
                     {/* From marker */}
                     {fromLoc.longitude !== null &&
                         fromLoc.latitude !== null && (
-                            <Mapbox.PointAnnotation
-                                id="fromLocation"
-                                coordinate={[
-                                    fromLoc.longitude,
-                                    fromLoc.latitude,
-                                ]}
-                            >
-                                <View
-                                    style={[styles.marker, styles.fromMarker]}
-                                />
-                            </Mapbox.PointAnnotation>
+                            <>
+                                <Mapbox.PointAnnotation
+                                    id="fromLocation"
+                                    coordinate={[
+                                        fromLoc.longitude,
+                                        fromLoc.latitude,
+                                    ]}
+                                >
+                                    <View
+                                        style={[
+                                            styles.marker,
+                                            styles.fromMarker,
+                                        ]}
+                                    />
+                                </Mapbox.PointAnnotation>
+
+                                {/* Booking label */}
+                                <Mapbox.MarkerView
+                                    id="bookingLabel"
+                                    coordinate={[
+                                        fromLoc.longitude,
+                                        fromLoc.latitude,
+                                    ]}
+                                    anchor={{ x: 0.5, y: 1 }}
+                                >
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.labelContainer,
+                                            styles.bookingContainer,
+                                        ]}
+                                        hitSlop={{
+                                            top: 20,
+                                            bottom: 20,
+                                            left: 20,
+                                            right: 20,
+                                        }}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.labelText,
+                                                styles.bookingText,
+                                            ]}
+                                        >
+                                            Confirm Booking
+                                        </Text>
+                                        <FontAwesome
+                                            name="arrow-right"
+                                            size={12}
+                                            color="black"
+                                        />
+                                    </TouchableOpacity>
+                                </Mapbox.MarkerView>
+                            </>
                         )}
 
                     {/* To marker */}
@@ -487,9 +529,18 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         elevation: 2,
         marginBottom: 15,
+        flexDirection: "row",
+        gap: 8,
+    },
+    bookingContainer: {
+        backgroundColor: "#E1FF00",
+        padding: 6,
+    },
+    bookingText: {
+        color: "black",
     },
     labelText: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: "bold",
         color: "white",
     },
