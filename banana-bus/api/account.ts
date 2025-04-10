@@ -122,9 +122,8 @@ export async function sendEnquiry(token: string, heading: string, body: string) 
     const ticketNumber = Math.floor(Math.random() * 899999 + 100000).toString();
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+        host: 'smtp.ethereal.email',
         port: 587,
-        secure: false,
         auth: {
             user: 'delphine.batz@ethereal.email',
             pass: 'djexbJqVg88mr4u38u'
