@@ -2,17 +2,25 @@ import HTTPError from "http-errors";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
+import { findUserByToken, getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
 import { Booking, Trip, TripBox, TripInfo, TripList, Vehicle } from "./interface";
 
 const timezone = "Australia/Sydney"
 
-export async function tripsList(routeId: ObjectId, departId: ObjectId, arriveId: ObjectId, date: string): Promise<TripList> {
-    await connectToDatabase();  
+export async function tripsList(token: string, routeId: ObjectId, departId: ObjectId, arriveId: ObjectId, date: string): Promise<TripList> {
+    await connectToDatabase();
     
     if (!collections.trips || !collections.routes || !collections.stops) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
+
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    } 
+    
     const route = await getRouteById(routeId)
 
     // define Start and end of date
@@ -124,8 +132,16 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
 }
 
 // Get a trips info (for booking page)
-export async function getTrip(departId: ObjectId, arriveId: ObjectId, tripId: ObjectId): Promise<TripInfo> {
+export async function getTrip(token: string, departId: ObjectId, arriveId: ObjectId, tripId: ObjectId): Promise<TripInfo> {
     await connectToDatabase();
+    
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
     const trip = await getTripById(tripId)
     const route = await getRouteById(trip.routeId)
     const vehicle = await getVehicleById(trip.vehicleId);
