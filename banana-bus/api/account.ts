@@ -114,7 +114,19 @@ export async function getUserCards(token: string){
         throw HTTPError(403, 'invalid token');
     }
 
-    return user.cards;
+    const cards = [];
+    for (const card of user.cards) {
+        const cardData = {
+            _id: card._id.toString(),
+            type: card.type,
+            last4: card.last4,
+            isDefault: card.isDefault
+        };
+        cards.push(cardData);
+    }
+    return {
+        cards
+    };
 }
 
 export async function addCard(token: string, type: string, cardNumber: string, cvv: string, expMonth: number, expYear: number ){
@@ -186,7 +198,7 @@ export async function deleteCard(token: string, cardId: ObjectId){
 
     const result = await collections.users?.updateOne(
         { _id: user._id },
-        { $pull: { cards: { cardId } } as any}
+        { $pull: { cards: { _id: cardId } } as any}
     );
 
     if (!result || result.modifiedCount === 0) {
@@ -199,6 +211,7 @@ export async function deleteCard(token: string, cardId: ObjectId){
 
 export async function makeDefaultCard(token: string, cardId: ObjectId){
     await connectToDatabase();
+    console.log(cardId);
 
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
@@ -209,15 +222,16 @@ export async function makeDefaultCard(token: string, cardId: ObjectId){
         throw HTTPError(403, 'invalid token');
     }
 
-    const result = await collections.users?.updateOne(
+    await collections.users?.updateOne(
         { _id: user._id },
-        { $set: { 'cards.$[].isDefault': false, 'cards.$[selected].isDefault': true }},
-        { arrayFilters: [{ 'selected.cardId': cardId }] }
+        { $set: { 'cards.$[].isDefault': false }}
     );
 
-    if (!result || result.modifiedCount === 0) {
-        throw HTTPError(400, 'Card does not exist');
-    }
+    
+    const result = await collections.users?.updateOne(
+        { _id: user._id, 'cards._id': cardId },
+        { $set: { 'cards.$.isDefault': true }}
+    );
 
     return {}
 }

@@ -289,6 +289,11 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
             { _id: tripId },
             { $push: { bookings: dbRes?.insertedId } } as any
         )
+        await collections.users?.updateOne(
+            { _id: user._id },
+            { $push: { bookings: dbRes?.insertedId } } as any
+        )
+
         res.json({ insertedId: dbRes?.insertedId });
     } catch (err) {
         next(err);
@@ -354,10 +359,6 @@ app.get('/manager/allStops', async (req: Request, res: Response, next) => {
     const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
-        return;
-    }
-    if (!user.isManager) {
-        res.status(403).json({ error: 'user is not a manager' });
         return;
     }
     try {
@@ -443,8 +444,8 @@ app.post('/addCard', async (req: Request, res: Response, next) => {
         const type = req.body.type as string;
         const cardNumber = req.body.cardNumber as string;
         const cvv = req.body.cvv as string;
-        const expMonth = req.body.expMonth as number;
-        const expYear = req.body.expYear as number;
+        const expMonth = parseInt(req.body.expMonth as string);
+        const expYear = parseInt(req.body.expYear as string);
         res.json(await addCard(token, type, cardNumber, cvv, expMonth, expYear));
     } catch(error) {
         next(error);
@@ -459,8 +460,8 @@ app.put('/editCard', async (req: Request, res: Response, next) => {
         const type = req.body.type as string;
         const cardNumber = req.body.cardNumber as string;
         const cvv = req.body.cvv as string;
-        const expMonth = req.body.expMonth as number;
-        const expYear = req.body.expYear as number;
+        const expMonth = parseInt(req.body.expMonth as string);
+        const expYear = parseInt(req.body.expYear as string);
         res.json(await editCard(token, cardId, type, cardNumber, cvv, expMonth, expYear));
     } catch(error) {
         next(error);
@@ -471,7 +472,8 @@ app.put('/editCard', async (req: Request, res: Response, next) => {
 
 app.put('/makeDefaultCard', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const cardId = req.body.cardId as ObjectId;
+    const cardId = new ObjectId(req.body.cardId as string);
+    console.log(cardId);
     try{
         res.json(await makeDefaultCard(token, cardId));
     } catch ( err ) {
@@ -483,7 +485,7 @@ app.put('/makeDefaultCard', async (req: Request, res: Response, next) => {
 app.delete('/deleteCard', async(req: Request, res: Response, next) => {
     try{
         const token = req.headers.authorization as string;
-        const cardId = req.body.cardId as ObjectId;
+        const cardId = new ObjectId(req.body.cardId as string);
         res.json(await deleteCard(token, cardId));
     } catch ( err ) {
         next(err);
