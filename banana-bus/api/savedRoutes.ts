@@ -63,7 +63,10 @@ export async function unsaveRoute(token: string, routeSection: RouteSection) {
 }
 
 export async function getSavedRoutes(token: string) {
-    const user = await findUserByToken(token);
+    await connectToDatabase();
+    const strippedToken = token.replace('Bearer ', '');
+
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         throw HTTPError(403, 'invalid token');
     }
