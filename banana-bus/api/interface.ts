@@ -1,9 +1,13 @@
 import { getRouteById, getStopById, getTripById } from "./helper";
 import { ObjectId } from "mongodb";
+i
 
 export interface Error {
     error: string
 }
+
+
+
 
 export interface User {
     _id: ObjectId;
@@ -16,6 +20,7 @@ export interface User {
     bookings: ObjectId[];
     savedRoutes: RouteSection[];
     isManager: boolean;
+    cards: Card[];
 }
 
 export class User implements User {
@@ -39,6 +44,7 @@ export class UserBuilder implements Partial<User> {
     bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
     isManager: boolean = false;
+    cards: Card[] = [];
 
     withFirstName(firstName: string) {
         return Object.assign(this, { firstName: firstName });
@@ -72,10 +78,46 @@ export class UserBuilder implements Partial<User> {
         return Object.assign(this, { savedRoutes: savedRoutes });
     }
 
+    withCards(cards: Card[]){
+        return Object.assign(this, { cards: cards });
+    }
+
     build(this: User) {
         return new User(this);
     }
 }
+
+
+export class Card {
+    cardId: ObjectId;
+    type: string;
+    cardNumber: string;
+    cvv: string;
+    expiry: Date;
+    last4: string;
+    isDefault: boolean;
+
+    constructor(cardId: ObjectId, type: string, cardNumber: string, cvv: string, expiry: Date, last4: string, isDefault: boolean) {
+        this.cardId = cardId;
+        this.type = type;
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.expiry = expiry;
+        this.last4 = last4;
+        this.isDefault = isDefault;
+    }
+
+    isExpired(): boolean{
+        const today = new Date();
+        const currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        const expDate = new Date(this.expiry.getFullYear(), this.expiry.getMonth() + 1, 0);
+
+        return expDate < currentDate;
+
+    }
+}
+
+
 
 export interface DataStore {
     users: User[],
@@ -256,3 +298,4 @@ export class Vehicle implements Vehicle {
         Object.assign(this, vehicle);
     }
 }
+
