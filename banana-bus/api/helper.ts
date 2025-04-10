@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import HTTPError from "http-errors";
-import { getData } from "./dataStore";
-import { routeToScreen } from "expo-router/build/useScreens";
+import { collections, connectToDatabase } from "./mongoUtil";
+import { ObjectId } from "mongodb";
+import { Route, Stop, Trip, Vehicle } from "./interface";
 
 export function getHash(text: string) {
     const salt = bcrypt.genSaltSync(10);
@@ -12,9 +13,14 @@ export function compareHash(text: string, hash: string) {
     return bcrypt.compareSync(text, hash);
 }
 
-export function isValidToken(token: string) {
-    const data = getData();
-    for (const user of data.users) {
+export async function isValidToken(token: string) {
+    const users = await collections.users?.find({ tokens: { $ne: [] } }).toArray();
+
+    if (!users) {
+        throw HTTPError(400, 'user not found');
+    }
+
+    for (const user of users) {
         for (const userToken of user.tokens) {
             if (compareHash(token, userToken)) {
                 return true;
@@ -24,9 +30,13 @@ export function isValidToken(token: string) {
     return false;
 }
 
-export function findUserByToken(token: string) {
-    const data = getData();
-    for (const user of data.users) {
+export async function findUserByToken(token: string) {
+    const users = await collections.users?.find({ tokens: { $ne: [] } }).toArray();
+
+    if (!users) {
+        throw HTTPError(400, 'user not found');
+    }
+    for (const user of users) {
         for (const userToken of user.tokens) {
             if (compareHash(token, userToken)) {
                 return user;
@@ -36,32 +46,47 @@ export function findUserByToken(token: string) {
     return;
 }
 
-export function getTripById(tripId: number) {
-    const data = getData();
-    for (const trip of data.trips) {
-        if (trip.tripId === tripId) {
-            return trip;
-        }
+export async function getTripById(tripId: ObjectId) {
+    const trip = await collections.trips?.findOne<Trip>({ _id: tripId });
+    if (!trip) {
+        throw HTTPError(400, 'trip not found');
     }
-    throw HTTPError(400, 'trip not found');
+    return trip;
 }
 
-export function getRouteById(routeId: number) {
-    const data = getData();
-    for (const route of data.routes) {
-        if (route.routeId === routeId) {
-            return route;
-        }
+export async function getRouteById(routeId: ObjectId) {
+    const route = await collections.routes?.findOne<Route>({ _id: routeId });
+    if (!route) {
+        throw HTTPError(400, 'route not found');
     }
-    throw HTTPError(400, 'route not found');
+    return route;
 }
 
-export function getStopById(stopId: number) {
-    const data = getData();
-    for (const stop of data.stops) {
-        if (stop.stopId === stopId) {
-            return stop;
+export async function getStopById(stopId: ObjectId) {
+    const stop = await collections.stops?.findOne<Stop>({ _id: stopId });
+    if (!stop) {
+        throw HTTPError(400, 'stop not found');
+    }
+    return stop;
+}
+
+export async function getVehicleById(vehicleId: ObjectId) {
+    const vehicle = await collections.vehicles?.findOne<Vehicle>({ _id: vehicleId});
+    if (!vehicle) {
+        throw HTTPError(400, 'vehicle not found');
+    }
+    return vehicle;
+}
+
+export async function findUserByResetToken(token: string) {
+    const users = await collections.users?.find({ resetToken: { $ne: [] } }).toArray();
+    if (!users) {
+        return;
+    }
+    for (const user of users) {
+        if (compareHash(token, user.resetToken.token)) {
+            return user;
         }
     }
-    throw HTTPError(400, 'stop not found');
+    return;
 }

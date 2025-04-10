@@ -1,7 +1,103 @@
-import { findUserByToken } from "./helper";
+import HTTPError from "http-errors";
+import { compareHash, findUserByToken, getHash } from "./helper";
+import { collections, connectToDatabase } from "./mongoUtil";
+import { ObjectId } from "mongodb";
 
-export function getAccountName(token: string) {
+export async function getAccountName(token: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
     const strippedToken = token.replace('Bearer ', '');
-    const user = findUserByToken(strippedToken);
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
     return { firstName: user?.firstName, lastName: user?.lastName };
+}
+
+export async function getUserDetails(token: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+    return {
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        email: user?.email,
+    };
+}
+
+export async function updateUserDetails(token: string, firstName: string, lastName: string, email: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+    await collections.users?.updateOne({ _id: user._id }, { $set: { firstName: firstName, lastName: lastName, email: email } } as any);
+
+    return {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+    }
+}
+
+export async function updateUserPassword(token: string, oldPassword: string, newPassword: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    if (!compareHash(oldPassword, user.password)) {
+        throw HTTPError(400, 'incorrect password');
+    }
+    const newHashedPassword = getHash(newPassword);
+    await collections.users?.updateOne({ _id: user._id }, { $set: { password: newHashedPassword } } as any);
+    return {};
+}
+
+export async function deleteAccount(userId: ObjectId, token: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const userById = await collections.users?.findOne({ _id: new ObjectId(userId) });
+    if (!userById) {
+        throw HTTPError(400, 'invalid userId ' + userId);
+    }
+    const userByToken = await findUserByToken(strippedToken);
+    if (!userByToken) {
+        throw HTTPError(403, 'invalid token');
+    }
+    
+    if (!userById._id.equals(userByToken._id)) {
+        throw HTTPError(403, 'invalid data');
+    }
+
+    await collections.users?.deleteOne({ _id: new ObjectId(userId) });
+    return {};
 }

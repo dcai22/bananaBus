@@ -1,85 +1,75 @@
 import HTTPError from "http-errors";
-import { getData, setData } from "./dataStore";
-import { getRouteById, getStopById } from "./helper";
-import { RouteSection } from "./interface";
+import { findUserByToken, getRouteById, getStopById } from "./helper";
+import { Route, RouteSection, User } from "./interface";
+import { collections, connectToDatabase } from "./mongoUtil";
+import { ObjectId } from "mongodb";
 
-export function saveRoute(userId: number, routeId: number, originId: number, destId: number) {
-    const data = getData();
+export async function saveRoute(token: string, routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
+    await connectToDatabase();
+    
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
 
-    if (!data.routes.some((route) => { return route.routeId === routeId; })) {
-        throw HTTPError(400, 'route does not exist');
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
     }
 
-    for (const user of data.users) {
-        if (user.userId !== userId) {
-            continue;
-        }
-
-        const routeSection = new RouteSection(routeId, originId, destId);
-        if (!routeSection.isValid()) {
-            throw HTTPError(400, 'route section is invalid');
-        }
-        if (user.savedRoutes.some((savedRoute) => { return savedRoute === routeSection; })) {
-            throw HTTPError(400, 'route is already saved');
-        }
-
-        // User.savedRoutes array is sorted in increasing order by routeId, then originId, then destId
-        user.savedRoutes.push(routeSection);
-        user.savedRoutes.sort((a, b) => {
-            if (a.routeId != b.routeId) {
-                return a.routeId - b.routeId;
-            }
-            if (a.originId != b.originId) {
-                return a.originId - b.originId;
-            }
-            return a.destId - b.destId;
-        });
-        setData(data);
-
-        return {};
+    const route = await collections.routes?.findOne<Route>({ routeId: routeId });
+    if (!route) {
+        throw HTTPError(400, 'route not found');
     }
 
-    // userId does not exist
-    throw HTTPError(400, 'user not found');
+    const routeSection = new RouteSection(routeId, originId, destId);
+    if (!routeSection.isValid()) {
+        throw HTTPError(400, 'route section is invalid');
+    }
+
+    if (user.savedRoutes.some((savedRoute: RouteSection) => { return savedRoute === routeSection; })) {
+        throw HTTPError(400, 'route is already saved');
+    }
+
+    user.savedRoutes.push(routeSection);
+
+    await collections.users?.replaceOne(
+        { userId: user._id },
+        user,
+    );
+
+    return {};
 }
 
-export function unsaveRoute(userId: number, routeSection: RouteSection) {
-    const data = getData();
+export async function unsaveRoute(token: string, routeSection: RouteSection) {
+    await connectToDatabase();
+    
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
 
-    if (!data.routes.some((route) => { return route.routeId === routeSection.routeId; })) {
-        throw HTTPError(400, 'route does not exist');
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
     }
 
-    for (const user of data.users) {
-        if (user.userId !== userId) {
-            continue;
-        }
-
-        if (!user.savedRoutes.some((savedRoute) => { return savedRoute.equals(routeSection); })) {
-            throw HTTPError(400, 'route was not saved')
-        }
-
-        user.savedRoutes = user.savedRoutes.filter((savedRoute) => { return !savedRoute.equals(routeSection); });
-        setData(data);
-
-        return {};
+    if (!user.savedRoutes.some((savedRoute: RouteSection) => { return savedRoute.equals(routeSection); })) {
+        throw HTTPError(400, 'route was not saved')
     }
 
-    // userId does not exist
-    throw HTTPError(400, 'user not found');
+    user.savedRoutes = user.savedRoutes.filter((savedRoute: RouteSection) => { return !savedRoute.equals(routeSection); });
+
+    collections.users?.replaceOne(
+        { userId: user._id },
+        user,
+    );
+
+    return {};
 }
 
-export function getSavedRoutes(userId: number) {
-    const data = getData();
+export async function getSavedRoutes(token: string) {
+    await connectToDatabase();
+    const strippedToken = token.replace('Bearer ', '');
 
-    for (const user of data.users) {
-        if (user.userId !== userId) {
-            continue;
-        }
-
-        return { savedRoutes: user.savedRoutes.map((savedRoute) => { return savedRoute.asDisplayRouteSection() }) };
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
     }
-
-    // userId does not exist
-    throw HTTPError(400, 'user not found');
+    
+    return { savedRoutes: user.savedRoutes.map((savedRoute: RouteSection) => { return savedRoute.asDisplayRouteSection() }) };
 }

@@ -1,14 +1,90 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigation } from "expo-router";
+import { useNavigation, useLocalSearchParams } from "expo-router";
 import * as Device from "expo-device";
+import { router } from "expo-router";
 
 import { saveItem, getItem } from '../helper';
+import { YesButton, NoButton } from '@/components/Buttons';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalType, setModalType] = useState("sendCode");
+    const [recoveryEmail, setRecoveryEmail] = useState("");
+    const [emailCode, setEmailCode] = useState("");
     const navigation = useNavigation();
+
+    const openModal = () => {
+        setModalVisible(true);
+    }
+
+    const closeModal = () => {
+        setModalType("sendCode");
+        setEmail("");
+        setModalVisible(false);
+    }
+
+    const sendResetMail = async () => {
+        // TODO send code to email
+        if (recoveryEmail === "") {
+            alert("Please enter your email!");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://banana-bus.vercel.app/resetPasswordEmail", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: recoveryEmail }),
+            });
+
+            if (response.ok) {
+                console.log("Confirmation email sent successfully.");
+                const data = await response.json();
+                console.log("Token saved: ", data.token);
+                console.log("Message: ", data.message)
+                saveItem("resetToken", data.token);
+            } else {
+                const errorData = await response.json();
+                Alert.alert("Error", errorData.error || "Failed to send confirmation email");
+            }
+        } catch (error) {
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
+        // Send confirmation email
+        setModalType("enterCode");
+        alert("Confirmation email sent. Check your email!");
+    }
+
+    const checkEmailCode = async () => {
+        const paramToken = await getItem('resetToken');
+        try {
+            const response = await fetch("https://banana-bus.vercel.app/resetPasswordVerifyCode" + `?token=${paramToken}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ code: emailCode }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert("Email code is correct. Set your new password!");
+                closeModal();
+                saveItem("resetToken", data.token);
+                navigation.navigate("forgotPassword");
+            } else {
+                const errorData = await response.json();
+                Alert.alert("Error", errorData.error || "Invalid confirmation code");
+            }
+        } catch {
+            Alert.alert("Error", "An error occurred. Please try again.");
+        }
+    }
 
     useEffect(() => {
         const autoLogin = async () => {
@@ -16,7 +92,7 @@ export default function LoginScreen() {
                 const token = await getItem('token');
                 if (token !== null) {
                     try {
-                        const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {
+                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -34,7 +110,7 @@ export default function LoginScreen() {
                 const token = localStorage.getItem('token');
                 if (token !== null) {
                     try {
-                        const response = await fetch('https://banana-psi-lemon.vercel.app/autologin', {
+                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -61,7 +137,7 @@ export default function LoginScreen() {
         console.log("Password:", password);
 
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/login", {
+            const response = await fetch("https://banana-bus.vercel.app/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -77,14 +153,16 @@ export default function LoginScreen() {
                 if (Device.deviceType === Device.DeviceType.PHONE) {
                     // This only works on mobile
                     console.log("mobile");
-                    saveItem("uid", data.userId.toString());
+                    saveItem("userId", data.userId.toString());
                     saveItem("token", data.token);
                 } else {
                     // Save to local storage on web for testing purposes
                     console.log("web");
-                    localStorage.setItem("uid", data.userId.toString());
+                    localStorage.setItem("userId", data.userId.toString());
                     localStorage.setItem("token", data.token);
                 }
+                setEmail("");
+                setPassword("");
                 navigation.navigate("index");
             } else {
                 const errorData = await response.json();
@@ -123,27 +201,59 @@ export default function LoginScreen() {
                         onChangeText={setPassword}
                         secureTextEntry
                     />
-                    <TouchableOpacity
-                        onPress={handleLogin}
-                        style={[styles.button, styles.loginButton]}
-                    >
-                        <Text style={[styles.buttonText, styles.loginText]}>
-                            Login →
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => {
-                            setEmail("");
-                            setPassword("");
-                            navigation.navigate("register");
-                        }}
-                        style={[styles.button, styles.registerButton]}
-                    >
-                        <Text style={[styles.buttonText, styles.registerText]}>
-                            Register
-                        </Text>
-                    </TouchableOpacity>
+                    <Text
+                        style={styles.forgotPassword}
+                        onPress={openModal}>
+                        Forgot password?
+                    </Text>
+                    <YesButton onPress={handleLogin} text="Login →" />
+                    <NoButton onPress={() => {
+                        setEmail("");
+                        setPassword("");
+                        navigation.navigate("register");
+                    }} text="Register" />
                 </View>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={closeModal}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            {modalType === "sendCode" && (
+                                <>
+                                    <Text style={styles.modalHeader}>Enter your email</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="email"
+                                        value={recoveryEmail}
+                                        onChangeText={setRecoveryEmail}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                    />
+                                    <YesButton onPress={sendResetMail} text="Send confirmation email" />
+                                    <NoButton onPress={closeModal} text="Close" />
+                                </>
+                            )}
+                            {modalType === "enterCode" && (
+                                <>
+                                    <Text style={styles.modalHeader}>Enter the code sent to your email</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="code"
+                                        value={emailCode}
+                                        onChangeText={setEmailCode}
+                                        autoCapitalize="none"
+                                    />
+                                    <YesButton onPress={checkEmailCode} text="Confirm" />
+                                    <NoButton onPress={closeModal} text="Cancel" />
+                                </>
+                            )}
+                        </View>
+                    </View>
+                    
+                </Modal>
             </View>
         </ImageBackground>
     );
@@ -191,32 +301,33 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         backgroundColor: "#fff",
     },
-    button: {
-        width: "100%",
-        padding: 12,
-        marginVertical: 8,
-        borderRadius: 8,
+    forgotPassword: {
+        marginVertical: 6,
+        alignSelf: "flex-end",
+        color: "#c5e1ec",
+        fontSize: 12
+    },
+    modalOverlay: {
+        flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
-    loginButton: {
-        backgroundColor: "#ccff00",
+    modalContent: {
+        width: "80%",
+        backgroundColor: "white",
+        borderRadius: 10,
+        padding: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        alignItems: "center",
     },
-    registerButton: {
-        backgroundColor: "#2A8AE4",
-    },
-    buttonText: {
+    modalHeader: {
+        fontSize: 22,
         fontWeight: "bold",
-        fontSize: 15,
-    },
-    loginText: {
-        color: "#2A8AE4",
-    },
-    registerText: {
-        color: "#fff",
-    },
-    forgotPassword: {
-        color: "#007bff",
-        marginTop: 10,
+        marginBottom: 16,
     },
 });

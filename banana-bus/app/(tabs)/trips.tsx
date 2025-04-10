@@ -166,19 +166,20 @@ export default function Trips() {
         //         date: new Date().toISOString(),
         //     }
         // })
+        // hard coded for the only route in db with 2 stops
         router.push({
             pathname: '/tripsList',
             params: {
-                routeId: 1,
-                departId: 1,
-                arriveId: 2,
+                routeId: "67f678743fb87d7a2df89c40",
+                departId: "67f6789907015b5d0c6ab38f",
+                arriveId: "67f678d207015b5d0c6ab391",
                 date: new Date().toISOString(),
             }
         })
     };
 
     return (
-        <GestureHandlerRootView>
+        <GestureHandlerRootView style={styles.container}>
             <View style={styles.headerBox}>
                 <Text style={styles.header}>Saved Trips</Text>
                 {/* TODO change this icon */}
@@ -232,7 +233,7 @@ export default function Trips() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#dff4ff',
+        backgroundColor: '#e5f0fa',
     },
     headerBox: {
         backgroundColor: '#fff',
@@ -243,9 +244,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+        elevation: 6,
     },
     header: {
         fontSize: 36,

@@ -73,3 +73,47 @@ describe('Login', () => {
         expect(response.status).toBe(400);
     })
 })
+
+describe('Logout', () => {
+    test('successful logout', async () => {
+        const { userId, token } = authRegister('email@email', 'password', 'first', 'last');
+        const response = await request(app)
+            .post('/logout')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                userId,
+            });
+        expect(response.status).toBe(200);
+    });
+});
+
+describe('Delete', () => {
+    test('successful delete', async () => {
+        const token = authRegister('email@email', 'password', 'first', 'last').token;
+        const response = await request(app)
+            .delete('/deleteAccount')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                userId: 0,
+            });
+        expect(response.status).toBe(200);
+
+        const response1 = await request(app)
+            .post('/login')
+            .send({
+                email: 'email@email',
+                password: 'password',
+            });
+        expect(response1.status).toBe(400);
+    })
+
+    test('user not found', async () => {
+        const response = await request(app)
+            .delete('/deleteAccount')
+            .set('Authorization', `Bearer tokenthatdoesnotexist`)
+            .send({
+                userId: 0,
+            });
+        expect(response.status).toBe(400);
+    })
+})
