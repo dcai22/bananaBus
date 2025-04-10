@@ -61,7 +61,7 @@ export default function Payment() {
 	const handleRemoveCard = async () => {
 		const token = await getItem('token');
 		try {
-			const response = await fetch('https://banana-bus-six.vercel.app/deleteCard', {
+			const response = await fetch('https://banana-bus.vercel.app/deleteCard', {
 				method: 'DELETE',
 				headers: {
 					'Authorization': `Bearer ${token}`,
@@ -75,6 +75,7 @@ export default function Payment() {
 		} catch (error) {
 			Alert.alert('Error', 'Failed to remove card. Please try again later.');
 		}
+		setRefresh(true);
 		closeModal();
 	}
 
