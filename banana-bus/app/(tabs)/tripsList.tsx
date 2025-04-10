@@ -15,12 +15,12 @@ export default function tripsList() {
 
      const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("")
+    const [error, setError] = useState("");
     const [departName, setDepartName] = useState("Loading");
     const [arriveName, setArriveName] = useState("");
     const [trips, setTrips] = useState<TripBox[]>([]);
-    const [date, setDate] = useState(new Date())
-    const [open, setOpen] = useState(false)
+    const [date, setDate] = useState(new Date());
+    const [open, setOpen] = useState(false);
     
     useFocusEffect(
         useCallback(() => { 

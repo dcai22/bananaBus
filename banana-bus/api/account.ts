@@ -2,6 +2,7 @@ import HTTPError from "http-errors";
 import { compareHash, findUserByToken, getHash } from "./helper";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
+import { Card, User } from "./interface";
 
 export async function getAccountName(token: string) {
     await connectToDatabase();
@@ -101,3 +102,204 @@ export async function deleteAccount(userId: ObjectId, token: string) {
     await collections.users?.deleteOne({ _id: new ObjectId(userId) });
     return {};
 }
+
+export async function getUserCards(token: string){
+    await connectToDatabase();
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const cards = [];
+    for (const card of user.cards) {
+        const cardData = {
+            _id: card._id.toString(),
+            type: card.type,
+            last4: card.last4,
+            isDefault: card.isDefault
+        };
+        cards.push(cardData);
+    }
+    return {
+        cards
+    };
+}
+
+export async function addCard(token: string, type: string, cardNumber: string, cvv: string, expMonth: number, expYear: number ){
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const expiry = new Date(expYear, expMonth-1,1);
+    const now = new Date();
+    const curDate = new Date(now.getFullYear(), now.getMonth(),1);
+
+    if (expiry < curDate) {
+        throw HTTPError(400, "Card is expired");
+    }
+
+    const hashedCardNumber = getHash(cardNumber);
+    const hashedCvv = getHash(cvv);
+    const last4 = cardNumber.slice(-4);
+    
+    let isDefault = false;
+
+    const cardId = new ObjectId(); 
+
+    if (user.cards.length == 0) {
+        isDefault = true;
+    }
+
+    const newCard: Card = {
+        _id: cardId,
+        type: type,
+        cardNumber: hashedCardNumber,
+        cvv: hashedCvv,
+        expiry: expiry,
+        last4: last4,
+        isDefault: isDefault
+    };
+
+    const result = await collections.users?.updateOne(
+        { _id: user._id },
+        { $push: { cards: newCard } as any }
+    );
+    
+    if (!result || result.modifiedCount === 0) {
+        throw HTTPError(400, 'Failed to add card');
+    }
+    
+    return newCard;
+
+}
+
+export async function deleteCard(token: string, cardId: ObjectId){
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const cardtoDelete = user.cards.find((card: any) => card._id.equals(cardId));
+    if (!cardtoDelete) {
+        throw HTTPError(400, 'Card does not exist');
+    }
+
+    const result = await collections.users?.updateOne(
+        { _id: user._id },
+        { $pull: { cards: { _id: cardId } } as any}
+    );
+
+    if (!result || result.modifiedCount === 0) {
+        throw HTTPError(400, 'Card does not exist');
+    }
+
+    if (cardtoDelete.isDefault) {
+        const remainingCards = user.cards.filter((card: any) => !card._id.equals(cardId));
+        if (remainingCards.length > 0) {
+            const newDefaultCardId = remainingCards[0]._id; // Pick the first remaining card
+            await collections.users?.updateOne(
+                { _id: user._id, 'cards._id': newDefaultCardId },
+                { $set: { 'cards.$.isDefault': true } }
+            );
+        }
+    }
+
+    return {};
+
+}
+
+export async function makeDefaultCard(token: string, cardId: ObjectId){
+    await connectToDatabase();
+    console.log(cardId);
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    await collections.users?.updateOne(
+        { _id: user._id },
+        { $set: { 'cards.$[].isDefault': false }}
+    );
+
+    
+    const result = await collections.users?.updateOne(
+        { _id: user._id, 'cards._id': cardId },
+        { $set: { 'cards.$.isDefault': true }}
+    );
+
+    return {}
+}
+
+export async function editCard(token: string, cardId: ObjectId, type: string, cardNumber: string, cvv: string, expMonth: number, expYear: number ){
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const now = new Date();
+    const curDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const expiry = new Date(expYear, expMonth - 1, 0);
+
+    if (expiry < curDate) {
+        throw HTTPError(400, 'Card is expired');
+    }
+
+    const hashedCardNumber = await getHash(cardNumber);
+    const hashedCvv = await getHash(cvv);
+    const last4 = cardNumber.slice(-4);
+
+
+    const result = await collections.users?.updateOne(
+        { _id: user._id , "cards.cardId": cardId },
+        {$set: {
+                "cards.$.type": type,
+                "cards.$.cardNumber": hashedCardNumber,
+                "cards.$.cvv": hashedCvv,
+                "cards.$.expiry": expiry,
+                "cards.$.last4": last4,
+            }
+        }
+    );
+
+    if (!result || result.modifiedCount === 0) {
+        throw new Error('Card update failed');
+    }
+
+    return {
+        cardId: cardId,
+        type: type,
+        cardNumber: hashedCardNumber,
+        cvv: hashedCvv,
+        expiry: expiry,
+        last4: last4
+    }
+}
+
