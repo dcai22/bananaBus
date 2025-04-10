@@ -213,10 +213,7 @@ export async function deleteCard(token: string, cardId: ObjectId){
     if (cardtoDelete.isDefault) {
         const remainingCards = user.cards.filter((card: any) => card._id.equals(cardId));
         if (remainingCards.length > 0) {
-            await collections.users?.updateOne(
-                { _id: user._id, 'cards._id': remainingCards[0]._id },
-                { $set: { 'cards.$.isDefault': true } }
-            );
+            makeDefaultCard(token, remainingCards[0]._id);
         }
     }
 
