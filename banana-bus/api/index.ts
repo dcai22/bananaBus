@@ -256,10 +256,12 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
     const originId = req.body.originId as ObjectId;
     const destId = req.body.destId as ObjectId;
     const numTickets = req.body.numTickets as number;
+    const numLuggage = req.body.numLuggage as number;
 
     await connectToDatabase();
 
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
@@ -272,6 +274,7 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
             originId,
             destId,
             numTickets,
+            numLuggage,
         });
         res.json({ insertedId: dbRes?.insertedId });
     } catch (err) {
@@ -284,7 +287,8 @@ app.post('/manager/createRoute', async (req: Request, res: Response, next) => {
     const stops = req.body.stops as ObjectId[];
 
     await connectToDatabase();
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
@@ -311,7 +315,8 @@ app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => 
     const routeId = req.body.routeId as ObjectId;
 
     await connectToDatabase();
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
@@ -332,7 +337,8 @@ app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => 
 app.get('/manager/allStops', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     await connectToDatabase();
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
