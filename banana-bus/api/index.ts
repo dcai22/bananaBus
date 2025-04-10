@@ -529,16 +529,18 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
 
     const departId = new ObjectId(req.query.departId as string);
     const arriveId = new ObjectId(req.query.arriveId as string);
+    console.log('departId ' + departId);
+    console.log('arriveId ' + arriveId);
 
     try {
         const allRoutes = await collections.routes?.find<Route>({
-            stops: {
-                $and: [
-                    { $elemMatch: { $eq: departId }},
-                    { $elemMatch: { $eq: arriveId }},
-                ],
-            }
+            $and: [
+                { stops: { $elemMatch: { $eq: departId } } },
+                { stops: { $elemMatch: { $eq: arriveId } } }
+            ]
         }).toArray();
+
+        console.log('allRoutes ' + allRoutes);
 
         if (typeof allRoutes === 'undefined') {
             res.status(400).json({ error: 'unable to search routes' })
@@ -546,8 +548,10 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
         }
 
         const routes = allRoutes.filter((route) => {
-            return route.stops.indexOf(arriveId) > route.stops.indexOf(departId);
+            return route.stops.findIndex(s => s.equals(arriveId)) > route.stops.findIndex(s => s.equals(departId));
         })
+
+        console.log('routes ' + routes);
 
         res.json( { routes });
     } catch (err) {
