@@ -1,6 +1,6 @@
 import HTTPError from "http-errors";
 import { collections, connectToDatabase } from "./mongoUtil";
-import { getRouteById, getTripById } from "./helper";
+import { findUserByToken, getRouteById, getTripById } from "./helper";
 import { Booking } from "./interface";
 import { ObjectId } from "mongodb";
 
@@ -8,15 +8,22 @@ import { ObjectId } from "mongodb";
 // Past bookings have already arrived at their destination,
 // upcoming bookings are yet to depart from their origin,
 // and so on.
-export async function searchBookings(userId: ObjectId, timeFrame: string, numBookings: number) {
+export async function searchBookings(token: string, timeFrame: string, numBookings: number) {
     await connectToDatabase();
 
-    let bookings = await collections.bookings?.find<Booking>({ userId: userId }).toArray();
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    let bookings = await collections.bookings?.find<Booking>({ userId: user._id }).toArray();
     if (!bookings) {
         throw HTTPError(400, 'user not found');
     }
 
-    const curTime = new Date().toISOString();
+    const curTime = new Date();
     bookings = bookings.filter(async (booking) => {
         if (timeFrame === 'all') {
             return true;

@@ -3,7 +3,7 @@ import cors from 'cors';
 import errorHandler from "middleware-http-errors"
 
 import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode } from './auth';
-import { tripsList } from './tripsList';
+import { getTrip, tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword } from './account';
@@ -11,8 +11,9 @@ import { getDeals } from './getDeals';
 import { RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
-import { collections } from './mongoUtil';
 import { addCard, editCard, deleteCard, makeDefaultCard, getUserCards } from './payment';
+import { collections, connectToDatabase } from './mongoUtil';
+import { findUserByToken } from './helper';
 
 const app = express();
 
@@ -116,9 +117,9 @@ app.delete('/deleteAccount', async (req: Request, res: Response, next) => {
 
 app.get('/pastBookings', async (req: Request, res: Response, next) => {
     try {
-        const userId = req.body.userId as ObjectId;
+        const token = req.headers.authorization as string;
         const numBookings = req.body.numBookings as number;
-        const bookings = await searchBookings(userId, 'past', numBookings);
+        const bookings = await searchBookings(token, 'past', numBookings);
         res.json(bookings);
     } catch (err) {
         next(err);
@@ -129,9 +130,9 @@ app.get('/pastBookings', async (req: Request, res: Response, next) => {
 
 app.get('/upcomingBookings', async (req: Request, res: Response, next) => {
     try {
-        const userId = req.body.userId as ObjectId;
+        const token = req.headers.authorization as string;
         const numBookings = req.body.numBookings as number;
-        const bookings = await searchBookings(userId, 'upcoming', numBookings);
+        const bookings = await searchBookings(token, 'upcoming', numBookings);
         res.json(bookings);
     } catch (err) {
         next(err);
@@ -141,43 +142,57 @@ app.get('/upcomingBookings', async (req: Request, res: Response, next) => {
 
 app.get('/tripsList', async (req: Request, res: Response, next) => {
     try {
+        const token = req.headers.authorization as string;
         const routeId = new ObjectId(req.query.routeId as string);
         const departId = new ObjectId(req.query.departId as string); 
         const arriveId = new ObjectId(req.query.arriveId as string);
         const date = req.query.date as string;
     
-        res.json(await tripsList(routeId, departId, arriveId, date));
+        res.json(await tripsList(token, routeId, departId, arriveId, date));
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.get('/getTrip', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const departId = new ObjectId(req.query.departId as string); 
+        const arriveId = new ObjectId(req.query.arriveId as string);
+        const tripId = new ObjectId(req.query.tripId as string);
+        
+        res.json(await getTrip(token, departId, arriveId, tripId));
     } catch (err) {
         next(err);
     }
 })
 
 app.get('/getSavedRoutes', async (req: Request, res: Response, next) => {
-    const userId = req.body.userId as ObjectId;
+    const token = req.headers.authorization as string;
     try {
-        res.json(await getSavedRoutes(userId));
+        res.json(await getSavedRoutes(token));
     } catch (err) {
         next(err);
     }
 })
 
 app.post('/saveRoute', async (req: Request, res: Response, next) => {
-    const userId = req.body.userId as ObjectId;
+    const token = req.headers.authorization as string;
     const routeId = req.body.routeId as ObjectId;
     const originId = req.body.originId as ObjectId;
     const destId = req.body.destId as ObjectId;
     try {
-        res.json(await saveRoute(userId, routeId, originId, destId));
+        res.json(await saveRoute(token, routeId, originId, destId));
     } catch (err) {
         next(err);
     }
 })
 
 app.delete('/unsaveRoute', async (req: Request, res: Response, next) => {
-    const userId = req.body.userId as ObjectId;
+    const token = req.headers.authorization as string;
     const routeSection = req.body.routeSection as RouteSection;
     try {
-        res.json(await unsaveRoute(userId, routeSection));
+        res.json(await unsaveRoute(token, routeSection));
     } catch (err) {
         next(err);
     }
@@ -237,15 +252,23 @@ app.get('/getDeals', async (req: Request, res: Response, next) => {
 })
 
 app.post('/createBooking', async (req: Request, res: Response, next) => {
-    const userId = req.body.userId as ObjectId;
+    const token = req.headers.authorization as string;
     const tripId = req.body.tripId as ObjectId;
     const originId = req.body.originId as ObjectId;
     const destId = req.body.destId as ObjectId;
     const numTickets = req.body.numTickets as number;
 
+    await connectToDatabase();
+
+    const user = await findUserByToken(token);
+    if (!user) {
+        res.status(403).json({ error: 'invalid token' });
+        return;
+    }
+
     try {
         const dbRes = await collections.bookings?.insertOne({
-            userId,
+            userId: user._id,
             tripId,
             originId,
             destId,
@@ -258,10 +281,23 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
 })
 
 app.post('/manager/createRoute', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
     const stops = req.body.stops as ObjectId[];
+
+    await connectToDatabase();
+    const user = await findUserByToken(token);
+    if (!user) {
+        res.status(403).json({ error: 'invalid token' });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: 'user is not a manager' });
+        return;
+    }
 
     try {
         const dbRes = await collections.routes?.insertOne({
+            _id: new ObjectId(),
             stops,
             trips: [],
         });
@@ -272,7 +308,19 @@ app.post('/manager/createRoute', async (req: Request, res: Response, next) => {
 })
 
 app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
     const routeId = req.body.routeId as ObjectId;
+
+    await connectToDatabase();
+    const user = await findUserByToken(token);
+    if (!user) {
+        res.status(403).json({ error: 'invalid token' });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: 'user is not a manager' });
+        return;
+    }
 
     try {
         await collections.routes?.deleteOne({ routeId: routeId });
@@ -283,6 +331,17 @@ app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => 
 })
 
 app.get('/manager/allStops', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    await connectToDatabase();
+    const user = await findUserByToken(token);
+    if (!user) {
+        res.status(403).json({ error: 'invalid token' });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: 'user is not a manager' });
+        return;
+    }
     try {
         const allStops = collections.stops?.find().toArray();
         res.json({ stops: allStops });
@@ -292,20 +351,20 @@ app.get('/manager/allStops', async (req: Request, res: Response, next) => {
 })
 
 app.put('/manager/add', async (req: Request, res: Response, next) => {
-    const userId = req.body.userId as ObjectId;
+    const token = req.headers.authorization as string;
 
     try {
-        res.json(await addManager(userId));
+        res.json(await addManager(token));
     } catch (err) {
         next(err);
     }
 })
 
 app.put('/manager/remove', async (req: Request, res: Response, next) => {
-    const userId = req.body.userId as ObjectId;
+    const token = req.headers.authorization as string;
 
     try {
-        res.json(await removeManager(userId));
+        res.json(await removeManager(token));
     } catch (err) {
         next(err);
     }

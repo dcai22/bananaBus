@@ -1,20 +1,22 @@
 import HTTPError from "http-errors";
-import { getRouteById, getStopById } from "./helper";
+import { findUserByToken, getRouteById, getStopById } from "./helper";
 import { Route, RouteSection, User } from "./interface";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 
-export async function saveRoute(userId: ObjectId, routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
+export async function saveRoute(token: string, routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
     await connectToDatabase();
+    
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
 
     const route = await collections.routes?.findOne<Route>({ routeId: routeId });
     if (!route) {
         throw HTTPError(400, 'route not found');
-    }
-
-    let user = await collections.users?.findOne<User>({ userId: userId });
-    if (!user) {
-        throw HTTPError(400, 'user not found');
     }
 
     const routeSection = new RouteSection(routeId, originId, destId);
@@ -22,45 +24,52 @@ export async function saveRoute(userId: ObjectId, routeId: ObjectId, originId: O
         throw HTTPError(400, 'route section is invalid');
     }
 
-    if (user.savedRoutes.some((savedRoute) => { return savedRoute === routeSection; })) {
+    if (user.savedRoutes.some((savedRoute: RouteSection) => { return savedRoute === routeSection; })) {
         throw HTTPError(400, 'route is already saved');
     }
 
     user.savedRoutes.push(routeSection);
 
     await collections.users?.replaceOne(
-        { userId: userId },
+        { userId: user._id },
         user,
     );
 
     return {};
 }
 
-export async function unsaveRoute(userId: ObjectId, routeSection: RouteSection) {
-    let user = await collections.users?.findOne<User>({ userId: userId });
+export async function unsaveRoute(token: string, routeSection: RouteSection) {
+    await connectToDatabase();
+    
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
     if (!user) {
-        throw HTTPError(400, 'user not found');
+        throw HTTPError(403, 'invalid token');
     }
 
-    if (!user.savedRoutes.some((savedRoute) => { return savedRoute.equals(routeSection); })) {
+    if (!user.savedRoutes.some((savedRoute: RouteSection) => { return savedRoute.equals(routeSection); })) {
         throw HTTPError(400, 'route was not saved')
     }
 
-    user.savedRoutes = user.savedRoutes.filter((savedRoute) => { return !savedRoute.equals(routeSection); });
+    user.savedRoutes = user.savedRoutes.filter((savedRoute: RouteSection) => { return !savedRoute.equals(routeSection); });
 
     collections.users?.replaceOne(
-        { userId: userId },
+        { userId: user._id },
         user,
     );
 
     return {};
 }
 
-export async function getSavedRoutes(userId: ObjectId) {
-    const user = await collections.users?.findOne<User>({ userId: userId });
+export async function getSavedRoutes(token: string) {
+    await connectToDatabase();
+    const strippedToken = token.replace('Bearer ', '');
+
+    const user = await findUserByToken(strippedToken);
     if (!user) {
-        throw HTTPError(400, 'user not found');
+        throw HTTPError(403, 'invalid token');
     }
     
-    return { savedRoutes: user.savedRoutes.map((savedRoute) => { return savedRoute.asDisplayRouteSection() }) };
+    return { savedRoutes: user.savedRoutes.map((savedRoute: RouteSection) => { return savedRoute.asDisplayRouteSection() }) };
 }

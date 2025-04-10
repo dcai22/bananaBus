@@ -1,16 +1,17 @@
 import * as mongoDB from "mongodb";
 import dotenv from "dotenv";
+import { Route, Stop, Trip, Vehicle } from "./interface";
 
 dotenv.config();
 let dbName = "app";
 
 export const collections: {
     users?: mongoDB.Collection;
-    trips?: mongoDB.Collection;
+    trips?: mongoDB.Collection<Trip>;
     bookings?: mongoDB.Collection;
-    routes?: mongoDB.Collection;
-    stops?: mongoDB.Collection;
-    vehicles?: mongoDB.Collection;
+    routes?: mongoDB.Collection<Route>;
+    stops?: mongoDB.Collection<Stop>;
+    vehicles?: mongoDB.Collection<Vehicle>;
 } = {};
 
 let mongoClient: mongoDB.MongoClient | null = null;

@@ -1,88 +1,121 @@
-import React from "react";
+import React, { useCallback } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams, router, useNavigation } from "expo-router";
+import { useLocalSearchParams, router, useNavigation, useFocusEffect } from "expo-router";
 import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { TripBox } from "@/server/interface";
-import { ObjectId } from "mongodb";
+import { TripBox } from "@/api/interface";
+import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 
 // TODO: fix up stack/tabs so router back works properly
 
-// sample trip until backend is created
-const now = new Date()
-
-const trip: TripBox = {
-    tripId: 1,
-    departureTime: new Date(now.getTime() + 30 * 60 * 1000),
-    arrivalTime: new Date(now.getTime() + 2 *30 * 60 * 1000),
+const tripBox  = {
+    tripId: "hello",
+    departId: "hello",
+    arriveId: "hello",
+    departureTime: new Date(),
+    arrivalTime: new Date(),
     price: 20,
-    curCapacity: 14, 
+    curCapacity: 20,
     maxCapacity: 20,
+    curLuggageCapacity: 20,
+    maxLuggageCapacity: 20,
+    luggagePrice: 20,
+    hasAssist: true, 
 }
 
+
+
 export default function booking() {
-    const { routeId, departId, arriveId, tripId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string, tripId: string}>()
+    const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
     const [ numPassenger, setNumPassenger ] = useState<number>(0)
     const [ numLuggage, setNumLuggage ] = useState<number>(0)
-
+    const [trip, setTrip] = useState<TripBox>();
+    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("")
-    const [departName, setDepartName] = useState("airport");
-    const [arriveName, setArriveName] = useState("utama mall");
+    const [departName, setDepartName] = useState("");
+    const [arriveName, setArriveName] = useState("");
     const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"})
     
     const navigation = useNavigation();
-    // const [trip, setTrip] = useState<TripBox>();
+    
+    // TODO: backend to retrieve card details
+    
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = await getItem("token");
+            setLoading(true)
+            axios.get("https://banana-bus.vercel.app/getTrip", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                params: {
+                    departId,
+                    arriveId,
+                    tripId
+                }
+            }).then((res) => {
+                setDepartName(res.data.departName)
+                setArriveName(res.data.arriveName)
+                setTrip(res.data.trip)
+            }).catch((err) => {
+                setError(err.response.data.error)
+            }).finally(() => {
+                setLoading(false)
+            })
+        }
 
-    // TODO: backend to retrieve trip and card details
-    /* useEffect(() => {
-        setLoading(true)
-        axios.get("http://localhost:3000/booking", {
-            params: {
-                routeId,
-                departId,
-                arriveId,
-                tripId,
-            }
-        }).then((res) => {
-            setDepartName(res.data.departName)
-            setArriveName(res.data.arriveName)
-            setTrip(res.data.trip)
-        }).catch((err) => {
-            console.log(err.response.data.error);
-            console.log(err.response.status);
-            setError(err.response.data.error)
-        }).finally(() => {
-            setLoading(false)
-        })
-    }, [])
+        fetchData();
+    }, [departId, arriveId, tripId])
+    
+    useFocusEffect(
+         useCallback(() => { 
+            // Makes sure to reload page upon leaving page
+            return () => {
+                setLoading(true)
+            };
+        }, [])
+    )
 
-    if(!trip){
+
+    function CheckoutHeader() {
         return(
-            <Text>unknown Trip</Text>
+            <View style= {styles.header}>
+                <View style={styles.goBackContainer}>
+                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}/>
+                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
+                </View>
+                <Text style ={styles.headerText}>Secure Checkout</Text>
+            </View>
         )
     }
 
-    // make nicer
     if (loading) {
         return(
-            <Text>Loading.... asdsadasd</Text>
+            <View style={styles.screen}>
+                <CheckoutHeader/>
+                <LoadingPage/>
+            </View>
         )
     }
 
+    
     // make nicer or pop up
     if (error) {
         return(
-            <Text>{error}</Text>
+            <Text>Error:{error}</Text>
         )
-    } */
-
-
+    }    
     
+    if(!trip) {
+        return (
+            <Text> Trip not found</Text>
+        )
+    }
 
     const maxTickets = trip.maxCapacity - trip.curCapacity
 
@@ -94,9 +127,10 @@ export default function booking() {
         setNumPassenger(num => (num > 0 ? num - 1 : num))
     }
 
-    // TODO: do the same when luggage is added to DataStore
+    const maxLuggage = trip.maxLuggageCapacity - trip.curLuggageCapacity
+
     function handleLuggageIncrease() {
-        setNumLuggage(num => num + 1)
+        setNumLuggage(num => (num < maxLuggage ? num + 1 : num))
     }
 
     function handleLuggageDecrease() {
@@ -104,7 +138,8 @@ export default function booking() {
     }
 
     function totalPrice() {
-        return (numPassenger * trip.price)
+        if (!trip) return 0;
+        return (numPassenger * trip.price) + (numLuggage * trip.luggagePrice)
     }
 
     // TODO: API calls to backend or navigate to new routes
@@ -118,16 +153,15 @@ export default function booking() {
     
     async function handleCheckout() {
         // TODO: handle payment
-
-        const userId = new ObjectId(await getItem("userId") as string);
-
+        const token = await getItem("token");
         try {
             const res = await fetch('https://banana-bus.vercel.app/createBooking', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ userId, tripId, departId, arriveId, numTickets: numPassenger }),
+                body: JSON.stringify({ token, tripId, departId, arriveId, numTickets: numPassenger }),
             });
 
             if (res.ok) {
@@ -148,14 +182,7 @@ export default function booking() {
 
     return(
         <View style={styles.screen}>
-            <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}/>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-                <Text style ={styles.headerText}>Secure Checkout</Text>
-            </View>
-
+            <CheckoutHeader/>
             <ScrollView style={styles.checkoutInfo}>
                 <View style={styles.tripDetails}>
                     <View style={styles.dateContainer}>
