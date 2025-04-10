@@ -23,7 +23,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch('https://banana-psi-lemon.vercel.app/getAccountName', {
+                const response = await fetch('https://banana-bus.vercel.app/getAccountName', {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -42,7 +42,7 @@ export default function Account() {
         setHumidity(80);
         // TODO Fetch user role from API
         setIsAdmin(true);
-    }, []);
+    });
 
     return (
         <View style={styles.container}>

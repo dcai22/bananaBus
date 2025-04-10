@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Touchable, TouchableOpacity } from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
+import { getItem } from "../helper";
 import DatePicker from 'react-native-date-picker'
 
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
 
+     const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("")
     const [departName, setDepartName] = useState("Loading");
@@ -19,26 +21,52 @@ export default function tripsList() {
     const [trips, setTrips] = useState<TripBox[]>([]);
     const [date, setDate] = useState(new Date())
     const [open, setOpen] = useState(false)
+    
+    useFocusEffect(
+        useCallback(() => { 
+            setRefresh(true)
+            // Makes sure to reload page upon leaving page
+            return () => {
+                setLoading(true)
+            };
+        }, [])
+    )
+    
+    useEffect(() => {
+        setRefresh(true);
+    }, [date]);
 
     useEffect(() => {
-        setLoading(true)
-        axios.get("https://banana-psi-lemon.vercel.app/tripsList", {
-            params: {
-                routeId,
-                departId,
-                arriveId,
-                date
-            }
-        }).then((res) => {
-            setDepartName(res.data.departName)
-            setArriveName(res.data.arriveName)
-            setTrips(res.data.trips)
-        }).catch((err) => {
-            setError(err.response.data.error)
-        }).finally(() => {
-            setLoading(false)
-        })
-    }, [date])
+        if (!refresh) return
+        const fetchData = async () => {
+            const token = await getItem("token");
+            setLoading(true)
+            axios.get("https://banana-bus.vercel.app/tripsList", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                params: {
+                    routeId,
+                    departId,
+                    arriveId,
+                    date
+                }
+            }).then((res) => {
+                setDepartName(res.data.departName)
+                setArriveName(res.data.arriveName)
+                console.log(res.data.trips)
+                setTrips(res.data.trips)
+            }).catch((err) => {
+                setError(err.response.data.error)
+            }).finally(() => {
+                setLoading(false)
+                setRefresh(false)
+            })
+        }
+
+        fetchData();
+    }, [date, routeId, departId, arriveId, refresh])
+
 
     function Header() {
         return(

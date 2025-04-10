@@ -1,24 +1,24 @@
-import { getData } from "./dataStore";
 import { getRouteById, getStopById, getTripById } from "./helper";
-import HTTPError from "http-errors";
+import { ObjectId } from "mongodb";
 
 export interface Error {
     error: string
 }
 
-interface User {
+export interface User {
+    _id: ObjectId;
     firstName: string,
     lastName: string,
     email: string;
     password: string;
     tokens: string[];
     resetToken: resetToken;
-    userId: number;
-    bookings: number[];
+    bookings: ObjectId[];
     savedRoutes: RouteSection[];
+    isManager: boolean;
 }
 
-class User implements User {
+export class User implements User {
     constructor(user: User) {
         Object.assign(this, user);
     }
@@ -35,9 +35,10 @@ export class UserBuilder implements Partial<User> {
         code: '',
         expiry: new Date(),
     };
-    userId?: number;
-    bookings: number[] = [];
+    _id?: ObjectId;
+    bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
+    isManager: boolean = false;
 
     withFirstName(firstName: string) {
         return Object.assign(this, { firstName: firstName });
@@ -59,8 +60,8 @@ export class UserBuilder implements Partial<User> {
         return Object.assign(this, { tokens: tokens });
     }
 
-    withUserId(userId: number) {
-        return Object.assign(this, { userId: userId });
+    withUserId(_id: ObjectId) {
+        return Object.assign(this, { _id: _id });
     }
 
     withBookings(bookings: number[]) {
@@ -91,49 +92,53 @@ export interface resetToken {
 }
 
 export class Stop {
-    stopId: number;
+    _id: ObjectId;
     name: string;
+    lat: number;
+    lng: number;
 
-    constructor(stopId: number, name: string) {
-        this.stopId = stopId;
+    constructor(_id: ObjectId, name: string, lat: number, lng: number) {
+        this._id = _id;
         this.name = name;
+        this.lat = lat;
+        this.lng = lng;
     }
 }
 
 export interface AuthUserId {
-    userId: number,
+    userId: ObjectId,
     token: string,
 }
 
 export class Route {
-    routeId: number;
-    stops: number[];
-    trips: number[];
+    _id: ObjectId;
+    stops: ObjectId[];
+    trips: ObjectId[];
 
-    constructor(routeId: number, stops: number[], trips: number[] = []) {
-        this.routeId = routeId;
+    constructor(_id: ObjectId, stops: ObjectId[], trips: ObjectId[] = []) {
+        this._id = _id;
         this.stops = stops;
         this.trips = trips;
     }
 }
 
 export class RouteSection {
-    routeId: number;
-    originId: number;
-    destId: number;
+    routeId: ObjectId;
+    originId: ObjectId;
+    destId: ObjectId;
 
-    constructor(routeId: number, originId: number, destId: number) {
+    constructor(routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
         this.routeId = routeId;
         this.originId = originId;
         this.destId = destId;
     }
 
     equals(other: RouteSection) {
-        return this.routeId === other.routeId && this.originId === other.originId && this.destId === other.destId;
+        return this.routeId.equals(other.routeId) && this.originId.equals(other.originId) && this.destId.equals(other.destId);
     }
 
-    isValid() {
-        const route = getRouteById(this.routeId);
+    async isValid() {
+        const route = await getRouteById(this.routeId);
         const originIndex = route.stops.indexOf(this.originId);
         const destIndex = route.stops.indexOf(this.destId);
         if (0 <= originIndex && originIndex < destIndex) {
@@ -143,10 +148,10 @@ export class RouteSection {
         }
     }
 
-    asDisplayRouteSection() {
-        const route = getRouteById(this.routeId);
-        const origin = getStopById(this.originId);
-        const dest = getStopById(this.destId);
+    async asDisplayRouteSection() {
+        const route = await getRouteById(this.routeId);
+        const origin = await getStopById(this.originId);
+        const dest = await getStopById(this.destId);
 
         return {
             route: route,
@@ -159,52 +164,55 @@ export class RouteSection {
 }
 
 export class Trip {
-    tripId: number;
-    vehicleId: number;
-    routeId: number;
-    stopTimes: string[];					// array of ISO String
-    bookings: number[];
+    _id: ObjectId;
+    vehicleId: ObjectId;
+    routeId: ObjectId;
+    stopTimes: Date[];
+    bookings: ObjectId[];
 
-    constructor(tripId: number, vehicleId: number, routeId: number, stopTimes: Date[], bookings: number[] = []) {
-        this.tripId = tripId;
+    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = []) {
+        this._id = _id;
         this.vehicleId = vehicleId;
         this.routeId = routeId;
-        this.stopTimes = stopTimes.map((date: Date) => date.toISOString());
+        this.stopTimes = stopTimes;
         this.bookings = bookings;
     }
 }
 
 export class Booking {
-    bookingId: number;
-    userId: number;
-    tripId: number;
-    origin: number;
-    dest: number;
-    bookingTime: string;					// ISO String
+    _id: ObjectId;
+    userId: ObjectId;
+    tripId: ObjectId;
+    originId: ObjectId;
+    destId: ObjectId;
+    numTickets: number = 1;
+    numLuggage: number = 1;
+    bookingTime: Date;
 
-    constructor(bookingId: number, userId: number, tripId: number, origin: number, dest: number, bookingTime: Date = new Date()) {
-        this.bookingId = bookingId;
+    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number) {
+        this._id = _id;
         this.userId = userId;
         this.tripId = tripId;
-        this.origin = origin;
-        this.dest = dest;
-        this.bookingTime = bookingTime.toISOString();
+        this.originId = originId;
+        this.destId = destId;
+        if (typeof numTickets !== "undefined") this.numTickets = numTickets;
+        this.bookingTime = new Date();
     }
 
-    asDisplayBooking() {
-        const trip = getTripById(this.tripId);
-        const route = getRouteById(trip.routeId);
+    async asDisplayBooking() {
+        const trip = await getTripById(this.tripId);
+        const route = await getRouteById(trip.routeId);
 
-        const originName = getStopById(this.origin).name;
-        const destName = getStopById(this.dest).name;
-        const departureTime = trip.stopTimes[route.stops.indexOf(this.origin)];
+        const origin = await getStopById(this.originId);
+        const dest = await getStopById(this.destId);
+        const departureTime = trip.stopTimes[route.stops.indexOf(this.originId)];
 
         return {
-            bookingId: this.bookingId,
+            _id: this._id,
             userId: this.userId,
             tripId: this.tripId,
-            originName: originName,
-            destName: destName,
+            originName: origin.name,
+            destName: dest.name,
             departureTime: departureTime,
         };
     }
@@ -217,13 +225,26 @@ export interface TripList {
 }
 
 export interface TripBox {
-    tripId: number,
+    tripId: ObjectId,
+    departId: ObjectId,
+    arriveId: ObjectId,
     departureTime: Date,
     arrivalTime: Date,
     price: number,
     curCapacity: number, 
     maxCapacity: number,
+    curLuggageCapacity: number,
+    maxLuggageCapacity: number,
+    luggagePrice: number,
+    hasAssist: boolean, 
 }
+
+export interface TripInfo {
+    departName: string,
+    arriveName: string,
+    trip: TripBox,
+}
+
 export interface Promotion {
     title: string,
     description: string,
@@ -233,3 +254,11 @@ export interface Promotion {
     validTo: string
 }
 
+export interface Vehicle {
+    _id: ObjectId,
+    //driverId : ObjectId,
+    maxCapacity: number,
+    maxLuggageCapacity: number,
+    hasAssist: boolean,
+    numberPlate: string,
+}
