@@ -61,7 +61,7 @@ export default function Payment() {
 	const handleRemoveCard = async () => {
 		const token = await getItem('token');
 		try {
-			const response = await fetch('https://banana-bus.vercel.app/deleteCard', {
+			const response = await fetch('https://banana-bus-six.vercel.app/deleteCard', {
 				method: 'DELETE',
 				headers: {
 					'Authorization': `Bearer ${token}`,

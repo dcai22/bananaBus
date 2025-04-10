@@ -196,6 +196,11 @@ export async function deleteCard(token: string, cardId: ObjectId){
         throw HTTPError(403, 'invalid token');
     }
 
+    const cardtoDelete = user.cards.find((card: any) => card._id.equals(cardId));
+    if (!cardtoDelete) {
+        throw HTTPError(400, 'Card does not exist');
+    }
+
     const result = await collections.users?.updateOne(
         { _id: user._id },
         { $pull: { cards: { _id: cardId } } as any}
@@ -203,6 +208,16 @@ export async function deleteCard(token: string, cardId: ObjectId){
 
     if (!result || result.modifiedCount === 0) {
         throw HTTPError(400, 'Card does not exist');
+    }
+
+    if (cardtoDelete.isDefault) {
+        const remainingCards = user.cards.filter((card: any) => card._id.equals(cardId));
+        if (remainingCards.length > 0) {
+            await collections.users?.updateOne(
+                { _id: user._id, 'cards._id': remainingCards[0]._id },
+                { $set: { 'cards.$.isDefault': true } }
+            );
+        }
     }
 
     return {};
