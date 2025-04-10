@@ -8,7 +8,7 @@ import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, getAccountName, getUserDetails, updateUserDetails, updateUserPassword, sendEnquiry } from './account';
 import { getDeals } from './getDeals';
-import { RouteSection } from './interface';
+import { Route, RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
 import { collections, connectToDatabase } from './mongoUtil';
@@ -252,14 +252,16 @@ app.get('/getDeals', async (req: Request, res: Response, next) => {
 
 app.post('/createBooking', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const tripId = req.body.tripId as ObjectId;
-    const originId = req.body.originId as ObjectId;
-    const destId = req.body.destId as ObjectId;
+    const tripId = new ObjectId(req.body.tripId as string);
+    const originId = new ObjectId(req.body.originId as string);
+    const destId = new ObjectId(req.body.destId as string);
     const numTickets = req.body.numTickets as number;
+    const numLuggage = req.body.numLuggage as number;
 
     await connectToDatabase();
 
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
@@ -272,7 +274,12 @@ app.post('/createBooking', async (req: Request, res: Response, next) => {
             originId,
             destId,
             numTickets,
+            numLuggage,
         });
+        await collections.trips?.updateOne(
+            { _id: tripId },
+            { $push: { bookings: dbRes?.insertedId } } as any
+        )
         res.json({ insertedId: dbRes?.insertedId });
     } catch (err) {
         next(err);
@@ -284,7 +291,8 @@ app.post('/manager/createRoute', async (req: Request, res: Response, next) => {
     const stops = req.body.stops as ObjectId[];
 
     await connectToDatabase();
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
@@ -311,7 +319,8 @@ app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => 
     const routeId = req.body.routeId as ObjectId;
 
     await connectToDatabase();
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
@@ -332,7 +341,8 @@ app.delete('/manager/deleteRoute', async (req: Request, res: Response, next) => 
 app.get('/manager/allStops', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     await connectToDatabase();
-    const user = await findUserByToken(token);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
     if (!user) {
         res.status(403).json({ error: 'invalid token' });
         return;
@@ -342,7 +352,7 @@ app.get('/manager/allStops', async (req: Request, res: Response, next) => {
         return;
     }
     try {
-        const dbRes = collections.stops?.find().toArray();
+        const dbRes = await collections.stops?.find().toArray();
         res.json(dbRes);
     } catch (err) {
         next(err);
@@ -369,7 +379,7 @@ app.put('/manager/remove', async (req: Request, res: Response, next) => {
     }
 })
 
-app.post('/sendEnquiry', async (req: Request, res: Response) => {
+app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
     try {
         const heading = req.body.heading as string;
         const body = req.body.body as string;
@@ -379,6 +389,84 @@ app.post('/sendEnquiry', async (req: Request, res: Response) => {
         next(error);
     }
     return;
+})
+
+app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
+    await connectToDatabase();
+
+    const token = req.headers.authorization as string;
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: 'invalid token' });
+        return;
+    }
+
+    const fromId = new ObjectId(req.query.fromId as string);
+
+    try {
+        const routes = await collections.routes?.find<Route>({
+            stops: { $elemMatch: { $eq: fromId } }
+        }).toArray();
+
+        if (typeof routes === 'undefined') {
+            res.status(400).json({ error: 'unable to search routes' })
+            return;
+        }
+
+        const stops = new Set<ObjectId>();
+        for (const route of routes) {
+            const fromIndex = route.stops.indexOf(fromId);
+            route.stops.forEach((e, i, a) => {
+                if (i > fromIndex) {
+                    stops.add(e);
+                }
+            })
+        }
+
+        res.json({ stops: Array.from(stops) });
+    } catch (err) {
+        next(err);
+    }
+})
+
+app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
+    await connectToDatabase();
+
+    const token = req.headers.authorization as string;
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: 'invalid token' });
+        return;
+    }
+
+    const departId = new ObjectId(req.query.departId as string);
+    const arriveId = new ObjectId(req.query.arriveId as string);
+
+    try {
+        const allRoutes = await collections.routes?.find<Route>({
+            stops: {
+                $and: [
+                    { $elemMatch: { $eq: departId }},
+                    { $elemMatch: { $eq: arriveId }},
+                ],
+            }
+        }).toArray();
+
+        if (typeof allRoutes === 'undefined') {
+            res.status(400).json({ error: 'unable to search routes' })
+            return;
+        }
+
+        const routes = allRoutes.filter((route) => {
+            return route.stops.indexOf(arriveId) > route.stops.indexOf(departId);
+        })
+
+        res.json( { routes });
+    } catch (err) {
+        next(err);
+    }
 })
 
 app.use(errorHandler())

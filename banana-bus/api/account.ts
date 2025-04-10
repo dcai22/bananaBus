@@ -1,9 +1,15 @@
 import HTTPError from "http-errors";
 import { compareHash, findUserByToken, getHash } from "./helper";
-import { collections } from "./mongoUtil";
+import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 
 export async function getAccountName(token: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
     const strippedToken = token.replace('Bearer ', '');
     const user = await findUserByToken(strippedToken);
     if (!user) {
@@ -13,6 +19,12 @@ export async function getAccountName(token: string) {
 }
 
 export async function getUserDetails(token: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
     const strippedToken = token.replace('Bearer ', '');
     const user = await findUserByToken(strippedToken);
     if (!user) {
@@ -26,6 +38,11 @@ export async function getUserDetails(token: string) {
 }
 
 export async function updateUserDetails(token: string, firstName: string, lastName: string, email: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
     const strippedToken = token.replace('Bearer ', '');
     const user = await findUserByToken(strippedToken);
     if (!user) {
@@ -41,6 +58,11 @@ export async function updateUserDetails(token: string, firstName: string, lastNa
 }
 
 export async function updateUserPassword(token: string, oldPassword: string, newPassword: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
     const strippedToken = token.replace('Bearer ', '');
 
     const user = await findUserByToken(strippedToken);
@@ -57,6 +79,11 @@ export async function updateUserPassword(token: string, oldPassword: string, new
 }
 
 export async function deleteAccount(userId: ObjectId, token: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
     const strippedToken = token.replace('Bearer ', '');
     const userById = await collections.users?.findOne({ _id: new ObjectId(userId) });
     if (!userById) {
