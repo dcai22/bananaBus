@@ -31,6 +31,10 @@ export default function tripsList() {
             };
         }, [])
     )
+    
+    useEffect(() => {
+        setRefresh(true);
+    }, [date]);
 
     useEffect(() => {
         if (!refresh) return
@@ -61,7 +65,8 @@ export default function tripsList() {
         }
 
         fetchData();
-    }, [date, refresh])
+    }, [date, routeId, departId, arriveId, refresh])
+
 
     function Header() {
         return(
