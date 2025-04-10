@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "reac
 import { useNavigation } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { YesButton, NoButton } from "@/components/Buttons";
+import { set } from "date-fns";
 
 interface UserDetails {
     lastName: string;
@@ -82,11 +83,23 @@ export default function Settings() {
         setModalVisible(true);
     };
 
+    const closeModal = () => {
+        setFormData({
+            lastName: "",
+            firstName: "",
+            email: "",
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        });
+        setModalVisible(false);
+    }
+
     const handleSave = async () => {
         const token = await getItem('token');
         if (!token) {
             alert("Error fetching user data, returning to login screen.");
-            setModalVisible(false);
+            closeModal();
             saveItem('token', '');
             navigation.navigate("login");
             return;
@@ -145,11 +158,7 @@ export default function Settings() {
                 alert("Error updating password, please try again.");
             }
         }
-        setModalVisible(false);
-    };
-
-    const handleCancel = () => {
-        setModalVisible(false);
+        closeModal();
     };
 
     const handleLogout = async () => {
@@ -158,7 +167,7 @@ export default function Settings() {
         console.log(`Token: ${token}, UserId: ${userId}`);
         if (token === null || userId === null) {
             alert("Error fetching user data, returning to login screen.");
-            setModalVisible(false);
+            closeModal();
             navigation.navigate("login");
             return;
         }
@@ -186,7 +195,7 @@ export default function Settings() {
         }
         saveItem('token', '');
         saveItem('userId', '');
-        setModalVisible(false);
+        closeModal();
         navigation.navigate("login");
     };
 
@@ -197,7 +206,7 @@ export default function Settings() {
         const userId = await getItem('userId');
         if (token === null || userId === null) {
             alert("Error fetching user data, returning to login screen.");
-            setModalVisible(false);
+            closeModal();
             navigation.navigate("login");
             return;
         }
@@ -224,7 +233,7 @@ export default function Settings() {
 
         saveItem('token', '');
         saveItem('userId', '');
-        setModalVisible(false);
+        closeModal();
         navigation.navigate("login");
     };
 
@@ -253,7 +262,7 @@ export default function Settings() {
                 animationType="slide"
                 transparent={true}
                 visible={modalVisible}
-                onRequestClose={handleCancel}
+                onRequestClose={closeModal}
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
@@ -311,7 +320,7 @@ export default function Settings() {
                                 <Text style={styles.modalHeader}>Are you sure you want to logout?</Text>
                                 <View style={styles.modalButtons}>
                                     <NoButton text="Yes" onPress={handleLogout} style={styles.modalButton}/>
-                                    <YesButton text="No" onPress={handleCancel} style={styles.modalButton} />
+                                    <YesButton text="No" onPress={closeModal} style={styles.modalButton} />
                                 </View>
                             </>
                         )}
@@ -321,14 +330,14 @@ export default function Settings() {
                                 <Text style={styles.modalInfo}>This action is permanent.</Text>
                                 <View style={styles.modalButtons}>
                                     <NoButton text="Yes" onPress={handleDeleteAccount} style={styles.modalButton}/>
-                                    <YesButton text="No" onPress={handleCancel} style={styles.modalButton} />
+                                    <YesButton text="No" onPress={closeModal} style={styles.modalButton} />
                                 </View>
                             </>
                         )}
                         {(modalType !== "logout" && modalType !== "delete") && (
                             <View style={styles.modalButtons}>
                                 <YesButton text="Save" onPress={handleSave} style={styles.modalButton}/>
-                                <NoButton text="Cancel" onPress={handleCancel} style={styles.modalButton} />
+                                <NoButton text="Cancel" onPress={closeModal} style={styles.modalButton} />
                             </View>
                         )}
                     </View>
