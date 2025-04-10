@@ -20,7 +20,7 @@ export default function ForgotPasswordScreen() {
         const paramToken = await getItem("resetToken");
 
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/resetPassword" + `?token=${paramToken}`, {
+            const response = await fetch("https://banana-bus.vercel.app/resetPassword" + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

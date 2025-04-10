@@ -34,7 +34,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/getAccountDetails", {
+            const response = await fetch("https://banana-bus.vercel.app/getAccountDetails", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -94,7 +94,7 @@ export default function Settings() {
 
         if (modalType === "details") {
             try {
-                const response = await fetch("https://banana-psi-lemon.vercel.app/updateAccountDetails", {
+                const response = await fetch("https://banana-bus.vercel.app/updateAccountDetails", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -122,7 +122,7 @@ export default function Settings() {
                 return;
             }
             try {
-                const response = await fetch("https://banana-psi-lemon.vercel.app/updateAccountPassword", {
+                const response = await fetch("https://banana-bus.vercel.app/updateAccountPassword", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -164,7 +164,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/logout", {
+            const response = await fetch("https://banana-bus.vercel.app/logout", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -203,7 +203,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-psi-lemon.vercel.app/deleteAccount", {
+            const response = await fetch("https://banana-bus.vercel.app/deleteAccount", {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -327,8 +327,8 @@ export default function Settings() {
                         )}
                         {(modalType !== "logout" && modalType !== "delete") && (
                             <View style={styles.modalButtons}>
-                                <NoButton text="Cancel" onPress={handleCancel} style={styles.modalButton} />
                                 <YesButton text="Save" onPress={handleSave} style={styles.modalButton}/>
+                                <NoButton text="Cancel" onPress={handleCancel} style={styles.modalButton} />
                             </View>
                         )}
                     </View>
