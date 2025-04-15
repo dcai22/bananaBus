@@ -1,9 +1,11 @@
 import { Text, View, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, useFocusEffect, useNavigation } from "expo-router";
+import { Link, router, useFocusEffect, useNavigation } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton, YesButton } from '@/components/Buttons';
+import Header from '@/components/Header';
 import { getItem } from '../helper';
+import Container from '@/components/Container';
 
 interface Card {
 	_id: string;
@@ -110,11 +112,8 @@ export default function Payment() {
 	}
 
 	return (
-		<View style={styles.container}>
-			<View style={styles.headerBox}>
-				<Link href="/account" style={styles.goBack}>← go back</Link>
-				<Text style={styles.header}>My Wallet</Text>
-			</View>
+		<Container>
+			<Header title="My Wallet"/>
 			<View style={styles.cards}>
 				{cards.map(card => (
 						<TouchableOpacity
@@ -155,36 +154,11 @@ export default function Payment() {
 					</View>
 				</View>
 			</Modal>
-		</View>
+		</Container>
 	);
 };
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: '#e5f0fa',
-	},
-	goBack: {
-		color: '#74b9f1',
-		marginTop: 20,
-		fontWeight: 'bold',
-	},
-	headerBox: {
-		backgroundColor: '#fff',
-		marginBottom: 8,
-		padding: 35,
-		minHeight: 150,
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.5,
-		shadowRadius: 6,
-		elevation: 6,
-	},
-	header: {
-		fontSize: 36,
-		fontWeight: 'bold',
-		color: '#4399dc',
-	},
 	cards: {
 		flex: 1,
 		padding: 16,

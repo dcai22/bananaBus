@@ -9,6 +9,7 @@ import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
+import Container from "@/components/Container";
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -104,10 +105,10 @@ export default function booking() {
 
     if (loading) {
         return(
-            <View style={styles.screen}>
+            <Container>
                 <CheckoutHeader/>
                 <LoadingPage/>
-            </View>
+            </Container>
         )
     }
 
@@ -191,7 +192,7 @@ export default function booking() {
 
 
     return(
-        <View style={styles.screen}>
+        <Container>
             <CheckoutHeader/>
             <ScrollView style={styles.checkoutInfo}>
                 <View style={styles.tripDetails}>
@@ -292,15 +293,11 @@ export default function booking() {
                     )}
                 </TouchableOpacity>
             </View>
-        </View>
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        height: "100%",
-        backgroundColor: "#e5f0fa",
-    },
     header: {
         backgroundColor: "#060c40",
         height: "10%",

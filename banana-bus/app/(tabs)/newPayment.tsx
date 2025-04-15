@@ -5,6 +5,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
 import { set } from 'date-fns';
 import { getItem } from '../helper';
+import Container from '@/components/Container';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -103,7 +104,7 @@ export default function Payment() {
     }
 
     return (
-        <View style={styles.container}>
+        <Container>
             <View style={styles.header}>
                 <View style={styles.goBackContainer}>
                     <FontAwesome name="arrow-left" style={styles.goBackArrow} onPress={() => router.back()} />
@@ -179,15 +180,11 @@ export default function Payment() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#e5f0fa',
-    },
     header: {
         backgroundColor: "#060c40",
         height: "10%",

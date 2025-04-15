@@ -6,6 +6,8 @@ import { format } from "date-fns";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
 import { getItem } from "../helper";
+import Header from "@/components/Header";
+import Container from "@/components/Container";
 
 export default function Trips() {
     interface Trip {
@@ -171,12 +173,8 @@ export default function Trips() {
     };
 
     return (
-        <GestureHandlerRootView style={styles.container}>
-            <View style={styles.headerBox}>
-                <Text style={styles.header}>Saved Trips</Text>
-                {/* TODO change this icon */}
-                <Text style={styles.header}>🚌</Text>
-            </View>
+        <Container>
+            <Header title="My Trips" emoji="🚌" showGoBack={false} />
             <View style={styles.section}>
                 <View style={styles.sectionHeaderContainer}>
                     <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
@@ -223,33 +221,11 @@ export default function Trips() {
                     />
                 </View>
             </View>
-        </GestureHandlerRootView>
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#e5f0fa',
-    },
-    headerBox: {
-        backgroundColor: '#fff',
-        marginBottom: 24,
-        padding: 35,
-        minHeight: 150,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 6,
-        elevation: 6,
-    },
-    header: {
-        fontSize: 36,
-        fontWeight: 'bold',
-    },
     section: {
         flex: 1,
         paddingHorizontal: 30,

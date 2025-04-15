@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useFocusEffect, useNavigation } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
+import Container from '@/components/Container';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -53,7 +54,7 @@ export default function Account() {
     });
 
     return (
-        <View style={styles.container}>
+        <Container>
             <Image
                 source={{ uri: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F022%2F737%2F904%2Foriginal%2Fmodern-city-scape-silhouette-simple-minimalist-blue-city-skyline-background-urban-cityscape-silhouettes-illustration-vector.jpg&f=1&nofb=1&ipt=b867ca6f79e10846ab79381e8bc6910f4c9cd82e1a2553f4f9d03738d544d89c&ipo=images' }}
                 style={styles.backgroundImage}
@@ -76,7 +77,7 @@ export default function Account() {
                     <MenuItem title="Settings" icon="⚙️" onPress={() => navigation.navigate('settings')} />
                 </View>
             </View>
-        </View>
+        </Container>
     );
 }
 
@@ -89,9 +90,6 @@ function MenuItem({ title, icon, onPress }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
     backgroundImage: {
         width: '100%',
         height: '100%',

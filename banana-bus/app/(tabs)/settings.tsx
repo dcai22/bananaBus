@@ -4,6 +4,8 @@ import { useNavigation } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { YesButton, NoButton } from "@/components/Buttons";
 import { set } from "date-fns";
+import Header from "@/components/Header";
+import Container from "@/components/Container";
 
 interface UserDetails {
     lastName: string;
@@ -238,11 +240,8 @@ export default function Settings() {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.headerBox}>
-                <Text style={styles.header}>Settings</Text>
-                <Text style={styles.header}>⚙️</Text>
-            </View>
+        <Container>
+            <Header title="Settings" showGoBack={false} emoji="⚙️"/>
             <View style={styles.section}>
                 <TouchableOpacity style={styles.option} onPress={() => openModal("details")}>
                     <Text style={styles.optionText}>Change details</Text>
@@ -343,7 +342,7 @@ export default function Settings() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </Container>
     );
 }
 
