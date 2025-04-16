@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
+import { CustomModal } from '@/components/Modal';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -20,7 +21,7 @@ export default function LoginScreen() {
 
     const closeModal = () => {
         setModalType("sendCode");
-        setEmail("");
+        setRecoveryEmail("");
         setModalVisible(false);
     }
 
@@ -182,47 +183,21 @@ export default function LoginScreen() {
                         router.navigate("/register");
                     }} text="Register" />
                 </View>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
+                <CustomModal
                     visible={modalVisible}
-                    onRequestClose={closeModal}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalContent}>
-                            {modalType === "sendCode" && (
-                                <>
-                                    <Text style={styles.modalHeader}>Enter your email</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="email"
-                                        value={recoveryEmail}
-                                        onChangeText={setRecoveryEmail}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                    />
-                                    <YesButton onPress={sendResetMail} text="Send confirmation email" />
-                                    <NoButton onPress={closeModal} text="Close" />
-                                </>
-                            )}
-                            {modalType === "enterCode" && (
-                                <>
-                                    <Text style={styles.modalHeader}>Enter the code sent to your email</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="code"
-                                        value={emailCode}
-                                        onChangeText={setEmailCode}
-                                        autoCapitalize="none"
-                                    />
-                                    <YesButton onPress={checkEmailCode} text="Confirm" />
-                                    <NoButton onPress={closeModal} text="Cancel" />
-                                </>
-                            )}
-                        </View>
-                    </View>
-                    
-                </Modal>
+                    headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
+                    inputPlaceholders={modalType === "sendCode" ? ["email"] : ["code"]}
+                    inputValues={modalType === "sendCode" ? [recoveryEmail] : [emailCode]}
+                    onInputChange={(index, value) => {
+                        if (modalType === "sendCode") {
+                            setRecoveryEmail(value);
+                        } else {
+                            setEmailCode(value);
+                        }
+                    }}
+                    onConfirm={modalType === "sendCode" ? sendResetMail : checkEmailCode}
+                    onCancel={closeModal}
+                />
             </View>
         </ImageBackground>
     );
@@ -275,28 +250,5 @@ const styles = StyleSheet.create({
         alignSelf: "flex-end",
         color: "#c5e1ec",
         fontSize: 12
-    },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-    },
-    modalContent: {
-        width: "80%",
-        backgroundColor: "white",
-        borderRadius: 10,
-        padding: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        alignItems: "center",
-    },
-    modalHeader: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 16,
     },
 });
