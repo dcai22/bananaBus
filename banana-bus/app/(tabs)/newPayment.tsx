@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { router } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
-import { set } from 'date-fns';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
 
@@ -85,7 +84,6 @@ export default function Payment() {
             setCvv('');
             router.back();
         }
-        console.log('Card added:', { cardNumber, expiryMonth, expiryYear, cvv });
     };
 
     const openModal = (content: string) => {

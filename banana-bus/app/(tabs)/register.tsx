@@ -1,8 +1,8 @@
 import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import React, { useState } from 'react';
-import { useNavigation } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
-import { YesButton, NoButton } from '@/components/Buttons';
+import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
 
 export default function RegisterScreen() {
@@ -11,12 +11,9 @@ export default function RegisterScreen() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const navigation = useNavigation();
+    const router = useRouter();
 
     const handleRegister = async () => {
-        // TODO remove debug msg
-        console.log('Email:', email);
-        console.log('Password:', password);
         if (password !== confirmPassword) {
             Alert.alert('Error', 'Paswords don\'t match!');
             setConfirmPassword('');
@@ -37,7 +34,6 @@ export default function RegisterScreen() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log(`Registration successful, uid: ${data.userId}, token: ${data.token}`);
                 if (Device.deviceType === Device.DeviceType.PHONE) {
                     // This only works on mobile
                     saveItem('userId', data.userId.toString());
@@ -47,7 +43,7 @@ export default function RegisterScreen() {
                     localStorage.setItem('userId', data.userId);
                     localStorage.setItem('token', data.token);
                 }
-                navigation.navigate('index');
+                router.navigate('./home');
             } else {
                 const errorData = await response.json();
                 Alert.alert('Error', errorData.error || 'Registration failed');
@@ -71,7 +67,7 @@ export default function RegisterScreen() {
                         setEmail('');
                         setPassword('');
                         setConfirmPassword('');
-                        navigation.goBack();
+                        router.back();
                     }}
                 >
                     <Text style={styles.goBack}>← go back</Text>

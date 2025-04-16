@@ -1,9 +1,7 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground, Modal } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, ImageBackground, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { useNavigation, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import * as Device from "expo-device";
-import { router } from "expo-router";
-
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 
@@ -14,7 +12,7 @@ export default function LoginScreen() {
     const [modalType, setModalType] = useState("sendCode");
     const [recoveryEmail, setRecoveryEmail] = useState("");
     const [emailCode, setEmailCode] = useState("");
-    const navigation = useNavigation();
+    const router = useRouter();
 
     const openModal = () => {
         setModalVisible(true);
@@ -43,10 +41,7 @@ export default function LoginScreen() {
             });
 
             if (response.ok) {
-                console.log("Confirmation email sent successfully.");
                 const data = await response.json();
-                console.log("Token saved: ", data.token);
-                console.log("Message: ", data.message)
                 saveItem("resetToken", data.token);
             } else {
                 const errorData = await response.json();
@@ -76,7 +71,7 @@ export default function LoginScreen() {
                 alert("Email code is correct. Set your new password!");
                 closeModal();
                 saveItem("resetToken", data.token);
-                navigation.navigate("forgotPassword");
+                router.navigate("/forgotPassword");
             } else {
                 const errorData = await response.json();
                 Alert.alert("Error", errorData.error || "Invalid confirmation code");
@@ -88,42 +83,25 @@ export default function LoginScreen() {
 
     useEffect(() => {
         const autoLogin = async () => {
+            let token;
             if (Device.deviceType === Device.DeviceType.PHONE) {
-                const token = await getItem('token');
-                if (token !== null) {
-                    try {
-                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                            }
-                        });
-        
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log(`Auto-login successful, uid: ${data.userId}, token: ${data.token}`);
-                            navigation.navigate('index');
-                        }
-                    } catch {}
-                }
+                token = await getItem('token');
             } else {
-                const token = localStorage.getItem('token');
-                if (token !== null) {
-                    try {
-                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                            }
-                        });
-        
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log(`Auto-login successful, uid: ${data.userId}, token: ${data.token}`);
-                            navigation.navigate('index');
+                token = localStorage.getItem('token');
+            }
+            if (token !== null) {
+                try {
+                    const response = await fetch('https://banana-bus.vercel.app/autologin', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
                         }
-                    } catch {}
-                }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        router.navigate('./home');
+                    }
+                } catch {}
             }
         }
 
@@ -132,10 +110,6 @@ export default function LoginScreen() {
 
 
     const handleLogin = async () => {
-        // TODO remove debug msg
-        console.log("Email:", email);
-        console.log("Password:", password);
-
         try {
             const response = await fetch("https://banana-bus.vercel.app/login", {
                 method: "POST",
@@ -147,23 +121,18 @@ export default function LoginScreen() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log(
-                    `Login successful, uid: ${data.userId}, token: ${data.token}`
-                );
                 if (Device.deviceType === Device.DeviceType.PHONE) {
                     // This only works on mobile
-                    console.log("mobile");
                     saveItem("userId", data.userId.toString());
                     saveItem("token", data.token);
                 } else {
                     // Save to local storage on web for testing purposes
-                    console.log("web");
                     localStorage.setItem("userId", data.userId.toString());
                     localStorage.setItem("token", data.token);
                 }
                 setEmail("");
                 setPassword("");
-                navigation.navigate("index");
+                router.navigate("./home");
             } else {
                 const errorData = await response.json();
                 Alert.alert("Error", errorData.error || "Login failed");
@@ -210,7 +179,7 @@ export default function LoginScreen() {
                     <NoButton onPress={() => {
                         setEmail("");
                         setPassword("");
-                        navigation.navigate("register");
+                        router.navigate("/register");
                     }} text="Register" />
                 </View>
                 <Modal

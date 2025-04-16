@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, router, useFocusEffect, useNavigation } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton, YesButton } from '@/components/Buttons';
 import Header from '@/components/Header';
@@ -22,7 +22,7 @@ export default function Payment() {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [selectedCard, setSelectedCard] = useState<string | null>(null);
 	const [refresh, setRefresh] = useState(false);
-	const navigation = useNavigation();
+	const router = useRouter();
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -44,8 +44,6 @@ export default function Payment() {
 				if (response.ok) {
 					const data = await response.json();
 					setCards(data.cards);
-					console.log(data.cards);
-					console.log(cards);
 				}
 			} catch (error) {
 				console.error('Error fetching payment data:', error);
@@ -135,7 +133,7 @@ export default function Payment() {
 							<FontAwesome name="chevron-right" style={styles.editCard}/>
 						</TouchableOpacity>
 				))}
-				<TouchableOpacity style={styles.addCardButton} onPress={() => navigation.navigate('newPayment')}>
+				<TouchableOpacity style={styles.addCardButton} onPress={() => router.navigate('/newPayment')}>
 					<Text style={styles.addCardText}>Add payment method</Text>
 				</TouchableOpacity>
 			</View>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions, ActivityIndicator} from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
 import AnimatedDotsCarousel, { DecreasingDot, DotConfig } from "react-native-animated-dots-carousel";
 import PromoPage from "@/components/promoComponents/PromoPage";
 import PromoModal from "@/components/promoComponents/PromoModal";

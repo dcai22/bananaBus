@@ -1,6 +1,6 @@
 import HTTPError from "http-errors";
-import { findUserByToken, getRouteById, getStopById } from "./helper";
-import { Route, RouteSection, User } from "./interface";
+import { findUserByToken } from "./helper";
+import { Route, RouteSection } from "./interface";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 

@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams, router, useNavigation, useFocusEffect } from "expo-router";
-import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert, ActivityIndicator} from "react-native";
+import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
@@ -45,7 +45,7 @@ export default function booking() {
     
     const [isCheckout, setIsCheckout] = useState(false);
 
-    const navigation = useNavigation();
+    const router = useRouter();
     
     // TODO: backend to retrieve card details
     
@@ -177,10 +177,10 @@ export default function booking() {
             if (res.ok) {
                 const data = await res.json();
                 setIsCheckout(false)
-                console.log(`Created booking with id ${data.insertedId}`);
-                // probably change to something better
+                // console.log(`Created booking with id ${data.insertedId}`);
+                // TODO probably change to something better
                 Alert.alert("Booking confirmed")
-                navigation.navigate("index");
+                router.navigate("./home");
             } else {
                 const errorData = await res.json();
                 Alert.alert('Error', errorData.error || 'Booking failed');

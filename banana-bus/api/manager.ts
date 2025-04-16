@@ -1,7 +1,5 @@
 import HTTPError from "http-errors";
-import { ObjectId } from "mongodb";
 import { collections, connectToDatabase } from "./mongoUtil";
-import { User } from "./interface";
 import { findUserByToken } from "./helper";
 
 export async function addManager(token: string) {

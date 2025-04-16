@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "react-native";
-import { useNavigation } from "expo-router";
+import { useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { YesButton, NoButton } from "@/components/Buttons";
-import { set } from "date-fns";
 import Header from "@/components/Header";
 import Container from "@/components/Container";
 
@@ -24,7 +23,7 @@ export default function Settings() {
         newPassword: "",
         confirmPassword: "",
     });
-    const navigation = useNavigation();
+    const router = useRouter();
 
     const fetchUserDetails = async () => {
         const token = await getItem('token');
@@ -32,7 +31,7 @@ export default function Settings() {
             alert("Error fetching user data, returning to login screen.");
             setModalVisible(false);
             saveItem('token', '');
-            navigation.navigate("login");
+            router.navigate('/login');
             return;
         }
 
@@ -103,7 +102,7 @@ export default function Settings() {
             alert("Error fetching user data, returning to login screen.");
             closeModal();
             saveItem('token', '');
-            navigation.navigate("login");
+            router.navigate("/login");
             return;
         }
 
@@ -166,11 +165,10 @@ export default function Settings() {
     const handleLogout = async () => {
         const token = await getItem('token');
         const userId = await getItem('userId');
-        console.log(`Token: ${token}, UserId: ${userId}`);
         if (token === null || userId === null) {
             alert("Error fetching user data, returning to login screen.");
             closeModal();
-            navigation.navigate("login");
+            router.navigate("/login");
             return;
         }
 
@@ -184,7 +182,6 @@ export default function Settings() {
                 body: JSON.stringify({ userId }),
             });
             if (response.ok) {
-                console.log("Logout successful");
                 alert("You have been logged out.");
                 
             } else {
@@ -198,7 +195,7 @@ export default function Settings() {
         saveItem('token', '');
         saveItem('userId', '');
         closeModal();
-        navigation.navigate("login");
+        router.navigate("/login");
     };
 
     const handleDeleteAccount = async () => {
@@ -209,7 +206,7 @@ export default function Settings() {
         if (token === null || userId === null) {
             alert("Error fetching user data, returning to login screen.");
             closeModal();
-            navigation.navigate("login");
+            router.navigate("/login");
             return;
         }
 
@@ -223,7 +220,6 @@ export default function Settings() {
                 body: JSON.stringify({ userId }),
             });
             if (response.ok) {
-                console.log("Account deleted successfully");
                 alert("Your account has been deleted.");
             } else {
                 const errorData = await response.json();
@@ -236,7 +232,7 @@ export default function Settings() {
         saveItem('token', '');
         saveItem('userId', '');
         closeModal();
-        navigation.navigate("login");
+        router.navigate("/login");
     };
 
     return (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useFocusEffect, useNavigation } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
@@ -13,7 +13,7 @@ export default function Account() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [refresh, setRefresh] = useState(false);
 
-    const navigation = useNavigation();
+    const router = useRouter();
 
     useFocusEffect(
         React.useCallback(() => {
@@ -22,7 +22,6 @@ export default function Account() {
         }, [])
     )
     useEffect(() => {
-        // TODO Fetch user name from API
         const getAccountName = async () => {
             let token = null;
             if (Device.deviceType === Device.DeviceType.PHONE) {
@@ -40,7 +39,7 @@ export default function Account() {
                     setUserName(data.firstName);
                 }
             } catch {
-                console.log('Failed to fetch user name');
+                // console.log('Failed to fetch user name');
             }
         }
         getAccountName();
@@ -68,20 +67,20 @@ export default function Account() {
                 </View>
                 <View style={styles.menuContainer}>
                     {/* TODO do these pages */}
-                    <MenuItem title="Payment" icon="💳" onPress={() => navigation.navigate('payment')} />
-                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => navigation.navigate('pastBookings')} />
-                    <MenuItem title="Support" icon="📞" onPress={() => navigation.navigate('support')} />
+                    <MenuItem title="Payment" icon="💳" onPress={() => router.navigate('/payment')} />
+                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.navigate('/tripsList')} />
+                    <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')} />
                     { isAdmin && (
-                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => navigation.navigate('adminPanel')} />
+                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('adminPanel')} />
                     )}
-                    <MenuItem title="Settings" icon="⚙️" onPress={() => navigation.navigate('settings')} />
+                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.navigate('/settings')} />
                 </View>
             </View>
         </Container>
     );
 }
 
-function MenuItem({ title, icon, onPress }) {
+function MenuItem({ title, icon, onPress }: { title: string; icon: string; onPress: () => void }) {
     return (
         <TouchableOpacity style={styles.menuItem} onPress={onPress}>
             <Text style={styles.menuItemText}>{icon} {title}</Text>
