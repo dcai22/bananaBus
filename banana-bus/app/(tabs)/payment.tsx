@@ -1,11 +1,11 @@
-import { Text, View, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect, useRouter } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
-import { NoButton, YesButton } from '@/components/Buttons';
 import { Header } from '@/components/Header';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
+import { CustomModal } from '@/components/Modal';
 
 interface Card {
 	_id: string;
@@ -137,21 +137,28 @@ export default function Payment() {
 					<Text style={styles.addCardText}>Add payment method</Text>
 				</TouchableOpacity>
 			</View>
-			<Modal
+			<CustomModal
 				visible={modalVisible}
-				transparent={true}
-				animationType="slide"
-				onRequestClose={closeModal}
-			>
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>Card Options</Text>
-						<NoButton onPress={handleRemoveCard} text="Remove Card" />
-						<NoButton onPress={handleMakeDefault} text="Make Default" />
-						<YesButton onPress={closeModal} text="Cancel"/>
-					</View>
-				</View>
-			</Modal>
+				headerText="Card Options"
+				onCancel={closeModal}
+				buttons={[
+					{
+						text: 'Remove Card',
+						onPress: handleRemoveCard,
+						type: 'no',
+					},
+					{
+						text: 'Make Default',
+						onPress: handleMakeDefault,
+						type: 'no',
+					},
+					{
+						text: 'Cancel',
+						onPress: closeModal,
+						type: 'yes',
+					},
+				]}
+			/>
 		</Container>
 	);
 };

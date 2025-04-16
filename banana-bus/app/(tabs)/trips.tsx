@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { router, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
 import FontAwesome from "@expo/vector-icons/FontAwesome";

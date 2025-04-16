@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
-import { YesButton, NoButton } from "@/components/Buttons";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -75,60 +73,16 @@ export default function Settings() {
     };
 
     const openModal = async (type: string) => {
-        setModalType(type);
-
-        if (type === "details") {
-            const userDetails = await fetchUserDetails();
-            setFormData((prev) => ({
-                ...prev,
-                ...userDetails,
-            }));
-            setModalContent({
-                headerText: "Change Details",
-                inputPlaceholders: ["Email", "First Name", "Last Name"],
-                inputValues: [userDetails?.email || "", userDetails?.firstName || "", userDetails?.lastName || ""],
-                onInputChange: (index: number, value: string) => {
-                    const keys = ["email", "firstName", "lastName"];
-                    setFormData((prev) => ({ ...prev, [keys[index]]: value }));
-                },
-                onConfirm: handleSave,
-                onCancel: closeModal,
-            });
-        } else if (type === "password") {
-            setModalContent({
-                headerText: "Update Password",
-                inputPlaceholders: ["Old Password", "New Password", "Confirm New Password"],
-                inputValues: [formData.oldPassword, formData.newPassword, formData.confirmPassword],
-                onInputChange: (index: number, value: string) => {
-                    const keys = ["oldPassword", "newPassword", "confirmPassword"];
-                    setFormData((prev) => ({ ...prev, [keys[index]]: value }));
-                },
-                onConfirm: handleSave,
-                onCancel: closeModal,
-            });
-        } else if (type === "logout") {
-            setModalContent({
-                headerText: "Are you sure you want to logout?",
-                inputPlaceholders: [],
-                inputValues: [],
-                onInputChange: () => {},
-                onConfirm: handleLogout,
-                onCancel: closeModal,
-            });
-        } else if (type === "delete") {
-            setModalContent({
-                headerText: "Are you sure you want to delete your account?",
-                inputPlaceholders: [],
-                inputValues: [],
-                onInputChange: () => {},
-                onConfirm: handleDeleteAccount,
-                onCancel: closeModal,
-                info: "This action cannot be undone.",
-            });
-        }
-
-        setModalVisible(true);
-    };
+    setModalType(type);
+    if (type === "details") {
+        const userDetails = await fetchUserDetails();
+        setFormData((prev) => ({
+            ...prev,
+            ...userDetails,
+        }));
+    }
+    setModalVisible(true);
+};
 
     const closeModal = () => {
         setFormData({
@@ -280,6 +234,64 @@ export default function Settings() {
         router.navigate("/login");
     };
 
+    const getModalContent = () => {
+        switch (modalType) {
+            case "details":
+                return {
+                    headerText: "Change Details",
+                    inputPlaceholders: ["Email", "First Name", "Last Name"],
+                    inputValues: [formData.email, formData.firstName, formData.lastName],
+                    onInputChange: (index: number, value: string) => {
+                        const keys = ["email", "firstName", "lastName"];
+                        setFormData((prev) => ({ ...prev, [keys[index]]: value }));
+                    },
+                    onConfirm: handleSave,
+                    onCancel: closeModal,
+                };
+            case "password":
+                return {
+                    headerText: "Update Password",
+                    inputPlaceholders: ["Old Password", "New Password", "Confirm New Password"],
+                    inputValues: [formData.oldPassword, formData.newPassword, formData.confirmPassword],
+                    onInputChange: (index: number, value: string) => {
+                        const keys = ["oldPassword", "newPassword", "confirmPassword"];
+                        setFormData((prev) => ({ ...prev, [keys[index]]: value }));
+                    },
+                    onConfirm: handleSave,
+                    onCancel: closeModal,
+                };
+            case "logout":
+                return {
+                    headerText: "Are you sure you want to logout?",
+                    inputPlaceholders: [],
+                    inputValues: [],
+                    onInputChange: () => {},
+                    onConfirm: handleLogout,
+                    onCancel: closeModal,
+                };
+            case "delete":
+                return {
+                    headerText: "Are you sure you want to delete your account?",
+                    inputPlaceholders: [],
+                    inputValues: [],
+                    onInputChange: () => {},
+                    onConfirm: handleDeleteAccount,
+                    onCancel: closeModal,
+                    info: "This action cannot be undone.",
+                };
+            default:
+                return {
+                    headerText: "",
+                    inputPlaceholders: [],
+                    inputValues: [],
+                    onInputChange: () => {},
+                    onConfirm: () => {},
+                    onCancel: () => {},
+                    info: "",
+                };
+        }
+    }
+
     return (
         <Container>
             <Header title="Settings" showGoBack={false} emoji="⚙️"/>
@@ -299,13 +311,13 @@ export default function Settings() {
             </View>
             <CustomModal
                 visible={modalVisible}
-                headerText={ModalContent.headerText}
-                inputPlaceholders={ModalContent.inputPlaceholders}
-                inputValues={ModalContent.inputValues}
-                onInputChange={ModalContent.onInputChange}
-                onConfirm={ModalContent.onConfirm}
-                onCancel={ModalContent.onCancel}
-                info={ModalContent.info}
+                headerText={getModalContent().headerText}
+                inputPlaceholders={getModalContent().inputPlaceholders}
+                inputValues={getModalContent().inputValues}
+                onInputChange={getModalContent().onInputChange}
+                onConfirm={getModalContent().onConfirm}
+                onCancel={getModalContent().onCancel}
+                info={getModalContent().info}
             />
         </Container>
     );

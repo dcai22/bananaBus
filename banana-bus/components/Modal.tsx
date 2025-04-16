@@ -1,7 +1,13 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Button } from 'react-native';
 import Modal from 'react-native-modal';
 import { YesButton, NoButton } from '@/components/Buttons';
+
+interface ButtonConfig {
+    text: string;
+    onPress: () => void;
+    type: 'yes' | 'no';
+}
 
 interface CustomModalProps {
     visible: boolean;
@@ -9,9 +15,10 @@ interface CustomModalProps {
     inputPlaceholders?: string[];
     inputValues?: string[];
     onInputChange?: (index: number, value: string) => void;
-    onConfirm: () => void;
+    onConfirm?: () => void;
     onCancel: () => void;
     info?: string;
+    buttons?: ButtonConfig[];
 }
 
 export const CustomModal: React.FC<CustomModalProps> = ({
@@ -23,6 +30,7 @@ export const CustomModal: React.FC<CustomModalProps> = ({
     onConfirm,
     onCancel,
     info,
+    buttons,
 }) => {
     return (
         <Modal
@@ -44,8 +52,29 @@ export const CustomModal: React.FC<CustomModalProps> = ({
                             autoCapitalize="none"
                         />
                     ))}
-                    <YesButton onPress={onConfirm} text="Confirm" />
-                    <NoButton onPress={onCancel} text="Cancel" />
+                    <View style={styles.buttonContainer}>
+                        {buttons
+                            ? buttons.map((button, index) => (
+                                  button.type === 'yes' ? (
+                                      <YesButton
+                                          key={index}
+                                          onPress={button.onPress}
+                                          text={button.text}
+                                      />
+                                  ) : (
+                                      <NoButton
+                                          key={index}
+                                          onPress={button.onPress}
+                                          text={button.text}
+                                      />
+                                  )
+                              ))
+                            : // Default buttons if no custom buttons are provided
+                            <>
+                                <YesButton onPress={onConfirm || (() => {})} text="Confirm" />
+                                <NoButton onPress={onCancel} text="Cancel" />
+                            </>}
+                    </View>
                 </View>
             </View>
         </Modal>
@@ -61,7 +90,7 @@ const styles = StyleSheet.create({
         width: "80%",
         backgroundColor: "white",
         borderRadius: 10,
-        padding: 20,
+        padding: 14,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
@@ -70,14 +99,13 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     modalHeader: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: "bold",
         marginBottom: 16,
     },
     input: {
         width: "100%",
         padding: 10,
-        paddingHorizontal: 20,
         margin: 8,
         borderWidth: 1,
         borderColor: "#ccc",
@@ -87,5 +115,8 @@ const styles = StyleSheet.create({
     info: {
         fontSize: 14,
         marginBottom: 10,
-    }
+    },
+    buttonContainer: {
+        width: "100%",
+    },
 });

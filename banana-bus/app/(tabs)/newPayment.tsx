@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { router } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { NoButton } from '@/components/Buttons';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { CheckoutHeader } from '@/components/Header';
+import { CustomModal } from '@/components/Modal';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -160,20 +161,19 @@ export default function Payment() {
                     style={styles.addButton}
                 />
             </View>
-
-            <Modal
+            <CustomModal
                 visible={modalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalText}>{modalContent}</Text>
-                        <NoButton text="Close" onPress={closeModal} />
-                    </View>
-                </View>
-            </Modal>
+                headerText="Information"
+                info={modalContent}
+                onCancel={closeModal}
+                buttons={[
+                    {
+                        text: 'Close',
+                        onPress: closeModal,
+                        type: 'no',
+                    },
+                ]}
+            />
         </Container>
     );
 }

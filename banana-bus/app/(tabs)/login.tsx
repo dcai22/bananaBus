@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, Alert, ImageBackground, Modal } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, ImageBackground } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "expo-router";
 import * as Device from "expo-device";

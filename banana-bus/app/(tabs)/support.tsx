@@ -1,5 +1,6 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, Modal, FlatList, Keyboard } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, FlatList, Keyboard } from 'react-native';
 import React, { useState } from 'react';
+import Modal from 'react-native-modal';
 import { useFocusEffect } from '@react-navigation/native';
 import { NoButton } from '@/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
@@ -125,10 +126,9 @@ export default function Payment() {
                 <NoButton text="Send" onPress={handleSend} />
             </View>
             <Modal
-                visible={modalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={closeModal}
+                isVisible={modalVisible}
+                onBackdropPress={closeModal}
+                onBackButtonPress={closeModal}
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
@@ -208,10 +208,8 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
     },
     modalContainer: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
         width: '80%',
