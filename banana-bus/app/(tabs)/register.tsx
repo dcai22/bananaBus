@@ -43,7 +43,7 @@ export default function RegisterScreen() {
                     localStorage.setItem('userId', data.userId);
                     localStorage.setItem('token', data.token);
                 }
-                router.navigate('./home');
+                router.navigate('/(tabs)');
             } else {
                 const errorData = await response.json();
                 Alert.alert('Error', errorData.error || 'Registration failed');

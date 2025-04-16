@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
 import { getItem } from "../helper";
-import Header from "@/components/Header";
+import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 
 export default function Trips() {

@@ -10,6 +10,7 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
+import { CheckoutHeader } from "@/components/Header";
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -27,8 +28,6 @@ const tripBox  = {
     luggagePrice: 20,
     hasAssist: true, 
 }
-
-
 
 export default function booking() {
     const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
@@ -89,19 +88,6 @@ export default function booking() {
 
         fetchData();
     }, [tripId, departId, arriveId, refresh])
-    
-
-    function CheckoutHeader() {
-        return(
-            <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}/>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-                <Text style ={styles.headerText}>Secure Checkout</Text>
-            </View>
-        )
-    }
 
     if (loading) {
         return(
@@ -180,7 +166,7 @@ export default function booking() {
                 // console.log(`Created booking with id ${data.insertedId}`);
                 // TODO probably change to something better
                 Alert.alert("Booking confirmed")
-                router.navigate("./home");
+                router.navigate("/(tabs)");
             } else {
                 const errorData = await res.json();
                 Alert.alert('Error', errorData.error || 'Booking failed');

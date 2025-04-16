@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useFocusEffect, useRouter } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton, YesButton } from '@/components/Buttons';
-import Header from '@/components/Header';
+import { Header } from '@/components/Header';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
 

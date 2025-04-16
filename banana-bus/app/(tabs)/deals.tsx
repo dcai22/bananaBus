@@ -6,7 +6,7 @@ import PromoModal from "@/components/promoComponents/PromoModal";
 import { Promotion } from "@/api/interface";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
-import Header from "@/components/Header";
+import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 
 const { width } = Dimensions.get("window")

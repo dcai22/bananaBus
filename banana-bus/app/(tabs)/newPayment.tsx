@@ -5,6 +5,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
+import { CheckoutHeader } from '@/components/Header';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -103,12 +104,7 @@ export default function Payment() {
 
     return (
         <Container>
-            <View style={styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style={styles.goBackArrow} onPress={() => router.back()} />
-                    <Text style={styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-            </View>
+            <CheckoutHeader title="" showGoBack={true}/>
             <View style={styles.formContainer}>
                 <View style={styles.formSection}>
                     <Text style={styles.label}>Card Number</Text>

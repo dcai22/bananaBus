@@ -99,7 +99,7 @@ export default function LoginScreen() {
                     });
                     if (response.ok) {
                         const data = await response.json();
-                        router.navigate('./home');
+                        router.navigate('/(tabs)');
                     }
                 } catch {}
             }
@@ -132,7 +132,7 @@ export default function LoginScreen() {
                 }
                 setEmail("");
                 setPassword("");
-                router.navigate("./home");
+                router.navigate('/(tabs)');
             } else {
                 const errorData = await response.json();
                 Alert.alert("Error", errorData.error || "Login failed");

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "reac
 import { useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { YesButton, NoButton } from "@/components/Buttons";
-import Header from "@/components/Header";
+import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 
 interface UserDetails {
