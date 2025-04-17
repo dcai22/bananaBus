@@ -11,7 +11,7 @@ export const collections: {
     bookings?: mongoDB.Collection;
     routes?: mongoDB.Collection<Route>;
     stops?: mongoDB.Collection<Stop>;
-    vehicles?: mongoDB.Collection;
+    vehicles?: mongoDB.Collection<Vehicle>;
 } = {};
 
 let mongoClient: mongoDB.MongoClient | null = null;
