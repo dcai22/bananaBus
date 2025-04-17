@@ -8,13 +8,36 @@ interface HeaderProps {
     showGoBack?: boolean;
     emoji?: string;
     style?: ViewStyle
+    resetPage?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title = '', emoji, showGoBack = true, style }) => {
+/**
+ * Header Component
+ * 
+ * A reusable header component for displaying a title, optional emoji, and a "go back" button.
+ * 
+ * Props:
+ * - `title` (string, optional): The title text to display in the header. Defaults to an empty string to only show the goback.
+ * - `showGoBack` (boolean, optional): Whether to show the "go back" button. Defaults to `true`.
+ * - `emoji` (string, optional): An optional emoji to display alongside the title, positioned on the right.
+ * - `style` (ViewStyle, optional): Custom styles to apply to the header container.
+ * - `resetPage` (function, optional): A callback function to reset the page state when the "go back" button is pressed.
+ * 
+ * Example Usage:
+ * <Header title="Home" emoji="🏠" showGoBack={false} />
+ * 
+ */
+export const Header: React.FC<HeaderProps> = ({ title = '', emoji, showGoBack = true, style, resetPage }) => {
     return (
         <View style={[styles.headerBox, style]}>
             {showGoBack && (
-                <Text onPress={() => router.back()} style={styles.goBack}>
+                <Text
+                    onPress={() => {
+                        if (resetPage) resetPage();
+                        router.back();
+                    }}
+                    style={styles.goBack}
+                >
                     <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
                 </Text>
             )}
@@ -26,11 +49,32 @@ export const Header: React.FC<HeaderProps> = ({ title = '', emoji, showGoBack = 
     );
 };
 
-export const CheckoutHeader: React.FC<HeaderProps> = ({ title = 'Secure Checkout', showGoBack = true, style }) => {
+/**
+ * CheckoutHeader Component
+ * 
+ * A specialized header component for checkout screens, with a default title of "Secure Checkout".
+ * 
+ * Props:
+ * - `title` (string, optional): The title text to display in the header. Defaults to "Secure Checkout".
+ * - `showGoBack` (boolean, optional): Whether to show the "go back" button. Defaults to `true`.
+ * - `style` (ViewStyle, optional): Custom styles to apply to the header container.
+ * - `resetPage` (function, optional): A callback function to reset the page state when the "go back" button is pressed.
+ * 
+ * Example Usage:
+ * <CheckoutHeader title="Payment Details" />
+ * 
+ */
+export const CheckoutHeader: React.FC<HeaderProps> = ({ title = 'Secure Checkout', showGoBack = true, style, resetPage }) => {
     return (
         <View style= {styles.checkoutHeader}>
             {showGoBack && (
-                <Text onPress={() => router.back()} style={styles.goBack}>
+                <Text 
+                    onPress={() => {
+                        if (resetPage) resetPage();
+                        router.back();
+                    }}
+                    style={styles.goBack}
+                >
                     <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
                 </Text>
             )}

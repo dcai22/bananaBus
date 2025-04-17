@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { CustomModal } from '@/components/Modal';
+import { LoadingPage } from '@/components/LoadingPage';
 
 interface Card {
 	_id: string;
@@ -22,12 +23,15 @@ export default function Payment() {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [selectedCard, setSelectedCard] = useState<string | null>(null);
 	const [refresh, setRefresh] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const router = useRouter();
 
 	useFocusEffect(
 		React.useCallback(() => {
 			setRefresh(true);
-			return () => {};
+			return () => {
+				setLoading(true);
+			};
 		}, [])
 	)
 
@@ -47,6 +51,8 @@ export default function Payment() {
 				}
 			} catch (error) {
 				console.error('Error fetching payment data:', error);
+			} finally {
+				setLoading(false);
 			}
 		};
 		fetchData();
@@ -109,6 +115,15 @@ export default function Payment() {
 		setSelectedCard(null);
 	}
 
+	if (loading) {
+		return (
+			<Container>
+				<Header title="My Wallet" />
+				<LoadingPage/>
+			</Container>
+
+		)
+	}
 	return (
 		<Container>
 			<Header title="My Wallet"/>

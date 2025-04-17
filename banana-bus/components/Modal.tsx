@@ -21,6 +21,48 @@ interface CustomModalProps {
     buttons?: ButtonConfig[];
 }
 
+/**
+ * CustomModal Component
+ * 
+ * A reusable and customizable modal component for displaying information, input fields and/or action buttons.
+ * 
+ * Props:
+ * - `visible` (boolean): Controls the visibility of the modal. Pass the state for visibility.
+ * - `headerText` (string): The header text displayed at the top of the modal.
+ * - `inputPlaceholders` (string[], optional): An array of placeholder texts for input fields. If provided, input fields will be rendered.
+ * - `inputValues` (string[], optional): An array of the state values for input. MATCH THE ORDER of `inputPlaceholders`.
+ * - `onInputChange` (function, optional): Pass the setState for the data.
+ * - `onConfirm` (function, optional): A callback function triggered when the "Confirm" button is pressed. Defaults to a no-op if not provided.
+ * - `onCancel` (function): A callback function triggered when the modal is dismissed (via backdrop press, back button, or "Cancel" button).
+ * - `info` (string, optional): Additional small text displayed below the header.
+ * - `buttons` (ButtonConfig[], optional): An array of custom button configurations. Each button has the following properties:
+ *   - `text` (string): The text displayed on the button.
+ *   - `onPress` (function): A callback function triggered when the button is pressed.
+ *   - `type` ('yes' | 'no'): The type of button, determining its style (`YesButton` or `NoButton`).
+ * 
+ * Example Usage:
+ * <CustomModal
+ *     visible={isModalVisible}
+ *     headerText="Enter Details"
+ *     inputPlaceholders={["Name", "Email"]}
+ *     inputValues={[name, email]}
+ *     onInputChange={(index, value) => {
+ *         if (index === 0) setName(value);
+ *         if (index === 1) setEmail(value);
+ *     }}
+ *     onConfirm={() => console.log("Confirmed")}
+ *     onCancel={() => setModalVisible(false)}
+ *     info="Please fill out the required fields."
+ *     buttons={[
+ *         { text: "Submit", onPress: handleSubmit, type: "yes" },
+ *         { text: "Cancel", onPress: () => setModalVisible(false), type: "no" },
+ *     ]}
+ * />
+ * 
+ * Notes:
+ * - If `buttons` is not provided, default "Confirm" and "Cancel" buttons will be rendered.
+ * 
+ */
 export const CustomModal: React.FC<CustomModalProps> = ({
     visible,
     headerText,

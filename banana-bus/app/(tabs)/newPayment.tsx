@@ -1,6 +1,6 @@
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
 import { getItem } from '../helper';
@@ -15,6 +15,7 @@ export default function Payment() {
     const [cvv, setCvv] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState('');
+    const [refresh, setRefresh] = useState(false);
 
     const handleAddCard = async () => {
         let errorMessage = '';
@@ -103,9 +104,16 @@ export default function Payment() {
         setModalContent('');
     }
 
+    const resetPage = () => {
+        setCardNumber('');
+        setExpiryMonth('');
+        setExpiryYear('');
+        setCvv('');
+    }
+
     return (
         <Container>
-            <CheckoutHeader title="" showGoBack={true}/>
+            <CheckoutHeader title="" showGoBack={true} resetPage={resetPage}/>
             <View style={styles.formContainer}>
                 <View style={styles.formSection}>
                     <Text style={styles.label}>Card Number</Text>
@@ -114,8 +122,10 @@ export default function Payment() {
                         placeholder="Enter card number"
                         keyboardType="numeric"
                         value={cardNumber}
-                        onChangeText={setCardNumber}
-                        maxLength={16}
+                        onChangeText={(text) => {
+                            setCardNumber(text.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1-'));
+                        }}
+                        maxLength={19}
                     />
                 </View>
                 
@@ -126,7 +136,9 @@ export default function Payment() {
                         placeholder="MM"
                         keyboardType="numeric"
                         value={expiryMonth}
-                        onChangeText={setExpiryMonth}
+                        onChangeText={(text) => {
+                            setExpiryMonth(text.replace(/\D/g, ''));
+                        }}
                         maxLength={2}
                     />
                     <Text style={{ marginHorizontal: 5 }}>/</Text>
@@ -135,7 +147,9 @@ export default function Payment() {
                         placeholder="YY"
                         keyboardType="numeric"
                         value={expiryYear}
-                        onChangeText={setExpiryYear}
+                        onChangeText={(text) => {
+                            setExpiryYear(text.replace(/\D/g, ''));
+                        }}
                         maxLength={2}
                     />
                     <TouchableOpacity onPress={() => openModal('EXP')}>

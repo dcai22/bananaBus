@@ -100,6 +100,7 @@ export default function RegisterScreen() {
                         value={password}
                         onChangeText={setPassword}
                         secureTextEntry
+                        autoCapitalize='none'
                     />
                     <TextInput
                         style={styles.input}
@@ -107,6 +108,7 @@ export default function RegisterScreen() {
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                         secureTextEntry
+                        autoCapitalize='none'
                     />
                     <YesButton
                         text="Register"

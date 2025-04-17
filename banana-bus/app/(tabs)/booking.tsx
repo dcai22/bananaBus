@@ -148,6 +148,10 @@ export default function booking() {
     
     async function handleCheckout() {
         // TODO: handle payment
+        if (numPassenger === 0) {
+            Alert.alert("Please select at least 1 passenger");
+            return
+        }
         setIsCheckout(true)
         const token = await getItem("token");
         try {
@@ -162,10 +166,10 @@ export default function booking() {
 
             if (res.ok) {
                 const data = await res.json();
-                setIsCheckout(false)
+                setIsCheckout(false);
                 // console.log(`Created booking with id ${data.insertedId}`);
                 // TODO probably change to something better
-                Alert.alert("Booking confirmed")
+                Alert.alert("Booking confirmed");
                 router.navigate("/(tabs)");
             } else {
                 const errorData = await res.json();

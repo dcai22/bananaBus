@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
@@ -11,6 +11,7 @@ export default function Account() {
     const [windSpeed, setWindSpeed] = useState(0);
     const [humidity, setHumidity] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
 
     const router = useRouter();
@@ -18,9 +19,12 @@ export default function Account() {
     useFocusEffect(
         React.useCallback(() => {
             setRefresh(true);
-            return () => {};
+            return () => {
+                setLoading(true);
+            };
         }, [])
     )
+
     useEffect(() => {
         const getAccountName = async () => {
             let token = null;
@@ -40,6 +44,8 @@ export default function Account() {
                 }
             } catch {
                 // console.log('Failed to fetch user name');
+            } finally {
+                setLoading(false);
             }
         }
         getAccountName();
@@ -50,7 +56,7 @@ export default function Account() {
         // TODO Fetch user role from API
         setIsAdmin(true);
         setRefresh(false);
-    });
+    }, [refresh]);
 
     return (
         <Container>
@@ -59,7 +65,7 @@ export default function Account() {
                 style={styles.backgroundImage}
             />
             <View style={styles.overlay}>
-                <Text style={styles.greeting}>Good Morning, {userName}</Text>
+                <Text style={styles.greeting}>Good Morning, {loading ? <ActivityIndicator size="small" color="#ffffff"/> : userName}</Text>
                 <View style={styles.weatherContainer}>
                     <Text style={styles.weatherText}>☀️ {temperature}°C</Text>
                     <Text style={styles.weatherText}>💨 {windSpeed} km/h</Text>
