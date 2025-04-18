@@ -18,7 +18,7 @@ import { deleteAccount,
             getUserCards, 
             sendEnquiry} from './account';
 import { getDeals } from './getDeals';
-import { Route, RouteSection } from './interface';
+import { Route, RouteSection, Trip } from './interface';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
 import { collections, connectToDatabase } from './mongoUtil';
@@ -566,6 +566,33 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
         console.log('routes ' + routes);
 
         res.json( { routes });
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.get('/driver/getUpcomingTrips', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isDriver) {
+        res.status(403).json({ error: "user is not a driver" });
+        return;
+    }
+
+    try {
+        const now = new Date();
+        const allTrips = await collections.trips?.find<Trip>({
+            driverId: user._id,
+            "stopTimes.0": { "$gte": now },
+        }).toArray();
+        res.json({ allTrips });
     } catch (err) {
         next(err);
     }
