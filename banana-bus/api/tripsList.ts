@@ -115,6 +115,7 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
         trips.push({
             _id: new ObjectId(),
             vehicleId: vehicle._id,
+            driverId: null,
             routeId: routeId,
             stopTimes: stopTimes,					
             bookings: [],

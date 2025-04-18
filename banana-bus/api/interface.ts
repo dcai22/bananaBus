@@ -184,13 +184,15 @@ export class RouteSection {
 export class Trip {
     _id: ObjectId;
     vehicleId: ObjectId;
+    driverId: ObjectId | null;
     routeId: ObjectId;
     stopTimes: Date[];
     bookings: ObjectId[];
 
-    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = []) {
+    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = [], driverId?: ObjectId) {
         this._id = _id;
         this.vehicleId = vehicleId;
+        this.driverId = driverId ?? null;
         this.routeId = routeId;
         this.stopTimes = stopTimes;
         this.bookings = bookings;
