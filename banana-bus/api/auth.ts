@@ -37,6 +37,7 @@ export async function authRegister(email: string, password: string, firstName: s
         bookings: [],
         savedRoutes: [],
         isManager: false,
+        isDriver: false,
         cards: [],
     }
 
