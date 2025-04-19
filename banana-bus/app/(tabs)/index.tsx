@@ -4,7 +4,7 @@ import Mapbox, { Camera } from "@rnmapbox/maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapSearch from "@/components/MapSearch";
 import * as ExpoLocation from "expo-location";
-import { Link, useNavigation, useLocalSearchParams } from "expo-router";
+import { useNavigation } from "expo-router";
 import { router } from "expo-router";
 
 // Icons
@@ -121,7 +121,7 @@ export default function Index() {
                     timeInterval: 1000,
                 },
                 (newLocation) => {
-                    console.log("Location updated:", newLocation.coords);
+                    // TODO console.log("Location updated:", newLocation.coords);
                     setLocation({
                         lat: newLocation.coords.latitude,
                         lng: newLocation.coords.longitude,
@@ -180,7 +180,7 @@ export default function Index() {
         }
     };
 
-    const onCameraChange = (event) => {
+    const onCameraChange = (event : any) => {
         if (event.properties.heading !== undefined) {
             setCompassHeading(event.properties.heading);
         }
@@ -273,7 +273,7 @@ export default function Index() {
                         },
                     }
                 );
-                console.log(response.data.routes[0]);
+                // TODO console.log(response.data.routes[0]);
                 setRouteId(response.data.routes[0]._id); // TODO: Fix this later to use more than one route
             } catch (error) {
                 console.error("Error fetching route id:", error);
@@ -292,14 +292,14 @@ export default function Index() {
     }, [fromLoc, toLoc]);
 
     useEffect(() => {
-        console.log("Starting location tracking");
+        // TODO console.log("Starting location tracking");
         startLocationTracking();
 
         return () => {
             if (locationWatcherRef.current) {
                 locationWatcherRef.current.remove();
                 locationWatcherRef.current = null;
-                console.log("Location tracking stopped");
+                // TODO console.log("Location tracking stopped");
             }
         };
     }, []);
@@ -389,7 +389,7 @@ export default function Index() {
                                             right: 20,
                                         }}
                                         onPressIn={() => {
-                                            console.log("Button pressed!");
+                                            // TODO console.log("Button pressed!");
                                             router.push({
                                                 pathname: "/tripsList",
                                                 params: {

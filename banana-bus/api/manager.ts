@@ -71,10 +71,17 @@ export async function addVehicle(maxCapacity: number, maxLuggageCapacity: number
 export async function deleteVehicle(vehicleId: ObjectId) {
     await connectToDatabase();
 
-    if (!collections.vehicles) {
+    if (!collections.vehicles || !collections.trips) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
+    const now = new Date();
+
+    const conflictingTrip = await collections.trips.findOne({ vehicleId, stopTimes: { $gt: now }});
+
+    if (conflictingTrip) {
+        throw HTTPError(409, 'Vehicle is currently assigned to a trip');
+    }
     const result: DeleteResult = await collections.vehicles.deleteOne({ _id: vehicleId });
     
     if (result.deletedCount === 0) {
