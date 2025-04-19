@@ -144,12 +144,13 @@ export async function authPasswordResetEmail(email: string) {
     const nodemailer = require('nodemailer');
     // for now just use ethereal email
     const transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
+        host: 'smtp.gmail.com',
         port: 587,
+        secure: false,
         auth: {
-            user: 'delphine.batz@ethereal.email',
-            pass: 'djexbJqVg88mr4u38u'
-        }
+            user: 'bananabus846@gmail.com',
+            pass: 'evfxaenltbgvfvzk'
+        },
     });
 
     await new Promise((resolve, reject) => {
