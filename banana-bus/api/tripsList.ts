@@ -191,3 +191,7 @@ async function calcCurrentLuggageCapacity(trip: Trip) {
   // could probs calc through max of the interval
   return bookings.reduce((sum, b) => sum + b.numLuggage, 0)
 }
+
+async function getPrice(){
+
+}
