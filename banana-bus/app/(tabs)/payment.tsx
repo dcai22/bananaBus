@@ -1,9 +1,12 @@
-import { Text, View, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { Link, useFocusEffect, useNavigation } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
-import { NoButton, YesButton } from '@/components/Buttons';
+import { Header } from '@/components/Header';
 import { getItem } from '../helper';
+import Container from '@/components/Container';
+import { CustomModal } from '@/components/Modal';
+import { LoadingPage } from '@/components/LoadingPage';
 
 interface Card {
 	_id: string;
@@ -20,12 +23,15 @@ export default function Payment() {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [selectedCard, setSelectedCard] = useState<string | null>(null);
 	const [refresh, setRefresh] = useState(false);
-	const navigation = useNavigation();
+	const [loading, setLoading] = useState(true);
+	const router = useRouter();
 
 	useFocusEffect(
 		React.useCallback(() => {
 			setRefresh(true);
-			return () => {};
+			return () => {
+				setLoading(true);
+			};
 		}, [])
 	)
 
@@ -42,11 +48,11 @@ export default function Payment() {
 				if (response.ok) {
 					const data = await response.json();
 					setCards(data.cards);
-					console.log(data.cards);
-					console.log(cards);
 				}
 			} catch (error) {
 				console.error('Error fetching payment data:', error);
+			} finally {
+				setLoading(false);
 			}
 		};
 		fetchData();
@@ -109,12 +115,18 @@ export default function Payment() {
 		setSelectedCard(null);
 	}
 
+	if (loading) {
+		return (
+			<Container>
+				<Header title="My Wallet" />
+				<LoadingPage/>
+			</Container>
+
+		)
+	}
 	return (
-		<View style={styles.container}>
-			<View style={styles.headerBox}>
-				<Link href="/account" style={styles.goBack}>← go back</Link>
-				<Text style={styles.header}>My Wallet</Text>
-			</View>
+		<Container>
+			<Header title="My Wallet"/>
 			<View style={styles.cards}>
 				{cards.map(card => (
 						<TouchableOpacity
@@ -136,55 +148,37 @@ export default function Payment() {
 							<FontAwesome name="chevron-right" style={styles.editCard}/>
 						</TouchableOpacity>
 				))}
-				<TouchableOpacity style={styles.addCardButton} onPress={() => navigation.navigate('newPayment')}>
+				<TouchableOpacity style={styles.addCardButton} onPress={() => router.navigate('/newPayment')}>
 					<Text style={styles.addCardText}>Add payment method</Text>
 				</TouchableOpacity>
 			</View>
-			<Modal
+			<CustomModal
 				visible={modalVisible}
-				transparent={true}
-				animationType="slide"
-				onRequestClose={closeModal}
-			>
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>Card Options</Text>
-						<NoButton onPress={handleRemoveCard} text="Remove Card" />
-						<NoButton onPress={handleMakeDefault} text="Make Default" />
-						<YesButton onPress={closeModal} text="Cancel"/>
-					</View>
-				</View>
-			</Modal>
-		</View>
+				headerText="Card Options"
+				onCancel={closeModal}
+				buttons={[
+					{
+						text: 'Remove Card',
+						onPress: handleRemoveCard,
+						type: 'no',
+					},
+					{
+						text: 'Make Default',
+						onPress: handleMakeDefault,
+						type: 'no',
+					},
+					{
+						text: 'Cancel',
+						onPress: closeModal,
+						type: 'yes',
+					},
+				]}
+			/>
+		</Container>
 	);
 };
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: '#e5f0fa',
-	},
-	goBack: {
-		color: '#74b9f1',
-		marginTop: 20,
-		fontWeight: 'bold',
-	},
-	headerBox: {
-		backgroundColor: '#fff',
-		marginBottom: 8,
-		padding: 35,
-		minHeight: 150,
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.5,
-		shadowRadius: 6,
-		elevation: 6,
-	},
-	header: {
-		fontSize: 36,
-		fontWeight: 'bold',
-		color: '#4399dc',
-	},
 	cards: {
 		flex: 1,
 		padding: 16,

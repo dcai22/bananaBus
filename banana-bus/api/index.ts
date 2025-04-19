@@ -498,7 +498,6 @@ app.put('/editCard', async (req: Request, res: Response, next) => {
 app.put('/makeDefaultCard', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     const cardId = new ObjectId(req.body.cardId as string);
-    console.log(cardId);
     try{
         res.json(await makeDefaultCard(token, cardId));
     } catch ( err ) {
@@ -541,8 +540,6 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
 
     const departId = new ObjectId(req.query.departId as string);
     const arriveId = new ObjectId(req.query.arriveId as string);
-    console.log('departId ' + departId);
-    console.log('arriveId ' + arriveId);
 
     try {
         const allRoutes = await collections.routes?.find<Route>({
@@ -552,8 +549,6 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
             ]
         }).toArray();
 
-        console.log('allRoutes ' + allRoutes);
-
         if (typeof allRoutes === 'undefined') {
             res.status(400).json({ error: 'unable to search routes' })
             return;
@@ -562,8 +557,6 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
         const routes = allRoutes.filter((route) => {
             return route.stops.findIndex(s => s.equals(arriveId)) > route.stops.findIndex(s => s.equals(departId));
         })
-
-        console.log('routes ' + routes);
 
         res.json( { routes });
     } catch (err) {

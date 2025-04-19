@@ -1,11 +1,10 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground, Modal } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, ImageBackground } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { useNavigation, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 import * as Device from "expo-device";
-import { router } from "expo-router";
-
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
+import { CustomModal } from '@/components/Modal';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -14,7 +13,7 @@ export default function LoginScreen() {
     const [modalType, setModalType] = useState("sendCode");
     const [recoveryEmail, setRecoveryEmail] = useState("");
     const [emailCode, setEmailCode] = useState("");
-    const navigation = useNavigation();
+    const router = useRouter();
 
     const openModal = () => {
         setModalVisible(true);
@@ -22,7 +21,7 @@ export default function LoginScreen() {
 
     const closeModal = () => {
         setModalType("sendCode");
-        setEmail("");
+        setRecoveryEmail("");
         setModalVisible(false);
     }
 
@@ -43,10 +42,7 @@ export default function LoginScreen() {
             });
 
             if (response.ok) {
-                console.log("Confirmation email sent successfully.");
                 const data = await response.json();
-                console.log("Token saved: ", data.token);
-                console.log("Message: ", data.message)
                 saveItem("resetToken", data.token);
             } else {
                 const errorData = await response.json();
@@ -76,7 +72,7 @@ export default function LoginScreen() {
                 alert("Email code is correct. Set your new password!");
                 closeModal();
                 saveItem("resetToken", data.token);
-                navigation.navigate("forgotPassword");
+                router.navigate("/forgotPassword");
             } else {
                 const errorData = await response.json();
                 Alert.alert("Error", errorData.error || "Invalid confirmation code");
@@ -88,42 +84,25 @@ export default function LoginScreen() {
 
     useEffect(() => {
         const autoLogin = async () => {
+            let token;
             if (Device.deviceType === Device.DeviceType.PHONE) {
-                const token = await getItem('token');
-                if (token !== null) {
-                    try {
-                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                            }
-                        });
-        
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log(`Auto-login successful, uid: ${data.userId}, token: ${data.token}`);
-                            navigation.navigate('index');
-                        }
-                    } catch {}
-                }
+                token = await getItem('token');
             } else {
-                const token = localStorage.getItem('token');
-                if (token !== null) {
-                    try {
-                        const response = await fetch('https://banana-bus.vercel.app/autologin', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                            }
-                        });
-        
-                        if (response.ok) {
-                            const data = await response.json();
-                            console.log(`Auto-login successful, uid: ${data.userId}, token: ${data.token}`);
-                            navigation.navigate('index');
+                token = localStorage.getItem('token');
+            }
+            if (token !== null) {
+                try {
+                    const response = await fetch('https://banana-bus.vercel.app/autologin', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
                         }
-                    } catch {}
-                }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        router.navigate('/(tabs)');
+                    }
+                } catch {}
             }
         }
 
@@ -132,10 +111,6 @@ export default function LoginScreen() {
 
 
     const handleLogin = async () => {
-        // TODO remove debug msg
-        console.log("Email:", email);
-        console.log("Password:", password);
-
         try {
             const response = await fetch("https://banana-bus.vercel.app/login", {
                 method: "POST",
@@ -147,23 +122,18 @@ export default function LoginScreen() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log(
-                    `Login successful, uid: ${data.userId}, token: ${data.token}`
-                );
                 if (Device.deviceType === Device.DeviceType.PHONE) {
                     // This only works on mobile
-                    console.log("mobile");
                     saveItem("userId", data.userId.toString());
                     saveItem("token", data.token);
                 } else {
                     // Save to local storage on web for testing purposes
-                    console.log("web");
                     localStorage.setItem("userId", data.userId.toString());
                     localStorage.setItem("token", data.token);
                 }
                 setEmail("");
                 setPassword("");
-                navigation.navigate("index");
+                router.navigate('/(tabs)');
             } else {
                 const errorData = await response.json();
                 Alert.alert("Error", errorData.error || "Login failed");
@@ -210,50 +180,24 @@ export default function LoginScreen() {
                     <NoButton onPress={() => {
                         setEmail("");
                         setPassword("");
-                        navigation.navigate("register");
+                        router.navigate("/register");
                     }} text="Register" />
                 </View>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
+                <CustomModal
                     visible={modalVisible}
-                    onRequestClose={closeModal}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalContent}>
-                            {modalType === "sendCode" && (
-                                <>
-                                    <Text style={styles.modalHeader}>Enter your email</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="email"
-                                        value={recoveryEmail}
-                                        onChangeText={setRecoveryEmail}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                    />
-                                    <YesButton onPress={sendResetMail} text="Send confirmation email" />
-                                    <NoButton onPress={closeModal} text="Close" />
-                                </>
-                            )}
-                            {modalType === "enterCode" && (
-                                <>
-                                    <Text style={styles.modalHeader}>Enter the code sent to your email</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="code"
-                                        value={emailCode}
-                                        onChangeText={setEmailCode}
-                                        autoCapitalize="none"
-                                    />
-                                    <YesButton onPress={checkEmailCode} text="Confirm" />
-                                    <NoButton onPress={closeModal} text="Cancel" />
-                                </>
-                            )}
-                        </View>
-                    </View>
-                    
-                </Modal>
+                    headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
+                    inputPlaceholders={modalType === "sendCode" ? ["email"] : ["code"]}
+                    inputValues={modalType === "sendCode" ? [recoveryEmail] : [emailCode]}
+                    onInputChange={(index, value) => {
+                        if (modalType === "sendCode") {
+                            setRecoveryEmail(value);
+                        } else {
+                            setEmailCode(value);
+                        }
+                    }}
+                    onConfirm={modalType === "sendCode" ? sendResetMail : checkEmailCode}
+                    onCancel={closeModal}
+                />
             </View>
         </ImageBackground>
     );
@@ -306,28 +250,5 @@ const styles = StyleSheet.create({
         alignSelf: "flex-end",
         color: "#c5e1ec",
         fontSize: 12
-    },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-    },
-    modalContent: {
-        width: "80%",
-        backgroundColor: "white",
-        borderRadius: 10,
-        padding: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        alignItems: "center",
-    },
-    modalHeader: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 16,
     },
 });

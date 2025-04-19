@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions, ActivityIndicator} from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
 import AnimatedDotsCarousel, { DecreasingDot, DotConfig } from "react-native-animated-dots-carousel";
 import PromoPage from "@/components/promoComponents/PromoPage";
 import PromoModal from "@/components/promoComponents/PromoModal";
 import { Promotion } from "@/api/interface";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
+import { Header } from "@/components/Header";
+import Container from "@/components/Container";
 
 const { width } = Dimensions.get("window")
 
@@ -33,18 +35,16 @@ export default function Deals() {
 
     function DealsHeader() {
         return (
-            <View style={styles.header}>
-                <Text style={styles.headerText}>Deals for you</Text>
-            </View>
+            <Header title="Deals" showGoBack={false} style={styles.header}/>
         )
     }
         
     if (loading) {
         return(
-            <View style={styles.screen}>
+            <Container>
                 <DealsHeader/>
                 <LoadingPage/>
-            </View>
+            </Container>
         )
     }
 
@@ -62,7 +62,7 @@ export default function Deals() {
     const pageDataArray = [...Array(numPages)].map((_, i) => promos.slice(i * itemsPerPage, (i + 1) * itemsPerPage))
     
     return (
-        <View style={styles.screen}>
+        <Container>
             <DealsHeader/>
             <View style={styles.promoPages}>
                 <FlatList
@@ -97,27 +97,14 @@ export default function Deals() {
                     decreasingDots={pageIndicatorConfig.decreasingDots}
                 /> 
             </View>
-      </View>
+        </Container>
   );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        height: "100%",
-        backgroundColor: "lightblue",
-    },
     header: {
-        backgroundColor: "white",
-        height: 70,
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        justifyContent: "center",
-        boxShadow: "0px 0px 5px grey"
-    },
-    headerText: {
-        fontSize: 30,
-        fontWeight: "bold",
-        color: "#009cff"
+        paddingTop: 24,
+        minHeight: 50,
     },
     promoPages: {
         flex: 1

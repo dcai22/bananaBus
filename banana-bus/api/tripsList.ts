@@ -3,7 +3,7 @@ import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { findUserByToken, getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
-import { Booking, Trip, TripBox, TripInfo, TripList, Vehicle } from "./interface";
+import { Booking, Trip, TripInfo, TripList, Vehicle } from "./interface";
 
 const timezone = "Australia/Sydney"
 

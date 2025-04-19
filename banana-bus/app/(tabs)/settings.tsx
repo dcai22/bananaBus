@@ -1,15 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from "react-native";
-import { useNavigation } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
-import { YesButton, NoButton } from "@/components/Buttons";
-import { set } from "date-fns";
-
-interface UserDetails {
-    lastName: string;
-    firstName: string;
-    email: string;
-}
+import { Header } from "@/components/Header";
+import Container from "@/components/Container";
+import { CustomModal } from "@/components/Modal";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -22,7 +17,24 @@ export default function Settings() {
         newPassword: "",
         confirmPassword: "",
     });
-    const navigation = useNavigation();
+    const [ModalContent, setModalContent] = useState<{
+        headerText: string;
+        inputPlaceholders: string[];
+        inputValues: string[];
+        onInputChange: (index: number, value: string) => void;
+        onConfirm: () => void;
+        onCancel: () => void;
+        info?: string;
+    }>({
+        headerText: "",
+        inputPlaceholders: [],
+        inputValues: [],
+        onInputChange: () => {},
+        onConfirm: () => {},
+        onCancel: () => {},
+    });
+
+    const router = useRouter();
 
     const fetchUserDetails = async () => {
         const token = await getItem('token');
@@ -30,7 +42,7 @@ export default function Settings() {
             alert("Error fetching user data, returning to login screen.");
             setModalVisible(false);
             saveItem('token', '');
-            navigation.navigate("login");
+            router.navigate('/login');
             return;
         }
 
@@ -61,27 +73,16 @@ export default function Settings() {
     };
 
     const openModal = async (type: string) => {
-        setModalType(type);
-
-        if (type === "details") {
-            const userDetails = await fetchUserDetails();
-            setFormData((prev) => ({
-                ...prev,
-                ...userDetails,
-            }));
-        } else {
-            setFormData({
-                lastName: "",
-                firstName: "",
-                email: "",
-                oldPassword: "",
-                newPassword: "",
-                confirmPassword: "",
-            });
-        }
-
-        setModalVisible(true);
-    };
+    setModalType(type);
+    if (type === "details") {
+        const userDetails = await fetchUserDetails();
+        setFormData((prev) => ({
+            ...prev,
+            ...userDetails,
+        }));
+    }
+    setModalVisible(true);
+};
 
     const closeModal = () => {
         setFormData({
@@ -101,7 +102,7 @@ export default function Settings() {
             alert("Error fetching user data, returning to login screen.");
             closeModal();
             saveItem('token', '');
-            navigation.navigate("login");
+            router.navigate("/login");
             return;
         }
 
@@ -164,11 +165,10 @@ export default function Settings() {
     const handleLogout = async () => {
         const token = await getItem('token');
         const userId = await getItem('userId');
-        console.log(`Token: ${token}, UserId: ${userId}`);
         if (token === null || userId === null) {
             alert("Error fetching user data, returning to login screen.");
             closeModal();
-            navigation.navigate("login");
+            router.navigate("/login");
             return;
         }
 
@@ -182,7 +182,6 @@ export default function Settings() {
                 body: JSON.stringify({ userId }),
             });
             if (response.ok) {
-                console.log("Logout successful");
                 alert("You have been logged out.");
                 
             } else {
@@ -196,18 +195,17 @@ export default function Settings() {
         saveItem('token', '');
         saveItem('userId', '');
         closeModal();
-        navigation.navigate("login");
+        router.navigate("/login");
     };
 
     const handleDeleteAccount = async () => {
         // TODO Send most likely send an email to account to confirm
-        // sendEmail()
         const token = await getItem('token');
         const userId = await getItem('userId');
         if (token === null || userId === null) {
             alert("Error fetching user data, returning to login screen.");
             closeModal();
-            navigation.navigate("login");
+            router.navigate("/login");
             return;
         }
 
@@ -221,7 +219,6 @@ export default function Settings() {
                 body: JSON.stringify({ userId }),
             });
             if (response.ok) {
-                console.log("Account deleted successfully");
                 alert("Your account has been deleted.");
             } else {
                 const errorData = await response.json();
@@ -234,15 +231,70 @@ export default function Settings() {
         saveItem('token', '');
         saveItem('userId', '');
         closeModal();
-        navigation.navigate("login");
+        router.navigate("/login");
     };
 
+    const getModalContent = () => {
+        switch (modalType) {
+            case "details":
+                return {
+                    headerText: "Change Details",
+                    inputPlaceholders: ["Email", "First Name", "Last Name"],
+                    inputValues: [formData.email, formData.firstName, formData.lastName],
+                    onInputChange: (index: number, value: string) => {
+                        const keys = ["email", "firstName", "lastName"];
+                        setFormData((prev) => ({ ...prev, [keys[index]]: value }));
+                    },
+                    onConfirm: handleSave,
+                    onCancel: closeModal,
+                };
+            case "password":
+                return {
+                    headerText: "Update Password",
+                    inputPlaceholders: ["Old Password", "New Password", "Confirm New Password"],
+                    inputValues: [formData.oldPassword, formData.newPassword, formData.confirmPassword],
+                    onInputChange: (index: number, value: string) => {
+                        const keys = ["oldPassword", "newPassword", "confirmPassword"];
+                        setFormData((prev) => ({ ...prev, [keys[index]]: value }));
+                    },
+                    onConfirm: handleSave,
+                    onCancel: closeModal,
+                };
+            case "logout":
+                return {
+                    headerText: "Are you sure you want to logout?",
+                    inputPlaceholders: [],
+                    inputValues: [],
+                    onInputChange: () => {},
+                    onConfirm: handleLogout,
+                    onCancel: closeModal,
+                };
+            case "delete":
+                return {
+                    headerText: "Are you sure you want to delete your account?",
+                    inputPlaceholders: [],
+                    inputValues: [],
+                    onInputChange: () => {},
+                    onConfirm: handleDeleteAccount,
+                    onCancel: closeModal,
+                    info: "This action cannot be undone.",
+                };
+            default:
+                return {
+                    headerText: "",
+                    inputPlaceholders: [],
+                    inputValues: [],
+                    onInputChange: () => {},
+                    onConfirm: () => {},
+                    onCancel: () => {},
+                    info: "",
+                };
+        }
+    }
+
     return (
-        <View style={styles.container}>
-            <View style={styles.headerBox}>
-                <Text style={styles.header}>Settings</Text>
-                <Text style={styles.header}>⚙️</Text>
-            </View>
+        <Container>
+            <Header title="Settings" showGoBack={false} emoji="⚙️"/>
             <View style={styles.section}>
                 <TouchableOpacity style={styles.option} onPress={() => openModal("details")}>
                     <Text style={styles.optionText}>Change details</Text>
@@ -257,93 +309,17 @@ export default function Settings() {
                     <Text style={[styles.optionText, styles.deleteOptionText]}>Delete Account</Text>
                 </TouchableOpacity>
             </View>
-
-            <Modal
-                animationType="slide"
-                transparent={true}
+            <CustomModal
                 visible={modalVisible}
-                onRequestClose={closeModal}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        {modalType === "details" && (
-                            <>
-                                <Text style={styles.modalHeader}>Change Details</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Last Name"
-                                    value={formData.lastName}
-                                    onChangeText={(text) => setFormData({ ...formData, lastName: text })}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="First Name"
-                                    value={formData.firstName}
-                                    onChangeText={(text) => setFormData({ ...formData, firstName: text })}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Email"
-                                    value={formData.email}
-                                    onChangeText={(text) => setFormData({ ...formData, email: text })}
-                                />
-                            </>
-                        )}
-                        {modalType === "password" && (
-                            <>
-                                <Text style={styles.modalHeader}>Update Password</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Old Password"
-                                    secureTextEntry={true}
-                                    value={formData.oldPassword}
-                                    onChangeText={(text) => setFormData({ ...formData, oldPassword: text })}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="New Password"
-                                    secureTextEntry={true}
-                                    value={formData.newPassword}
-                                    onChangeText={(text) => setFormData({ ...formData, newPassword: text })}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Confirm Password"
-                                    secureTextEntry={true}
-                                    value={formData.confirmPassword}
-                                    onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
-                                />
-                            </>
-                        )}
-                        {modalType === "logout" && (
-                            <>
-                                <Text style={styles.modalHeader}>Are you sure you want to logout?</Text>
-                                <View style={styles.modalButtons}>
-                                    <NoButton text="Yes" onPress={handleLogout} style={styles.modalButton}/>
-                                    <YesButton text="No" onPress={closeModal} style={styles.modalButton} />
-                                </View>
-                            </>
-                        )}
-                        {modalType === "delete" && (
-                            <>
-                                <Text style={styles.modalHeader}>Are you sure you want to delete your account?</Text>
-                                <Text style={styles.modalInfo}>This action is permanent.</Text>
-                                <View style={styles.modalButtons}>
-                                    <NoButton text="Yes" onPress={handleDeleteAccount} style={styles.modalButton}/>
-                                    <YesButton text="No" onPress={closeModal} style={styles.modalButton} />
-                                </View>
-                            </>
-                        )}
-                        {(modalType !== "logout" && modalType !== "delete") && (
-                            <View style={styles.modalButtons}>
-                                <YesButton text="Save" onPress={handleSave} style={styles.modalButton}/>
-                                <NoButton text="Cancel" onPress={closeModal} style={styles.modalButton} />
-                            </View>
-                        )}
-                    </View>
-                </View>
-            </Modal>
-        </View>
+                headerText={getModalContent().headerText}
+                inputPlaceholders={getModalContent().inputPlaceholders}
+                inputValues={getModalContent().inputValues}
+                onInputChange={getModalContent().onInputChange}
+                onConfirm={getModalContent().onConfirm}
+                onCancel={getModalContent().onCancel}
+                info={getModalContent().info}
+            />
+        </Container>
     );
 }
 
@@ -390,49 +366,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-    },
-    modalOverlay: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-    },
-    modalContent: {
-        width: "80%",
-        backgroundColor: "white",
-        borderRadius: 10,
-        padding: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    modalHeader: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 16,
-    },
-    modalInfo: {
-        fontSize: 12,
-        marginBottom: 16,
-    },
-    input: {
-        width: "100%",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-        padding: 10,
-        marginBottom: 20,
-    },
-    modalButtons: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%",
-    },
-    modalButton: {
-        flex: 1,
-        marginHorizontal: 5,
     },
     deleteOption: {
         backgroundColor: "#FF3B30",

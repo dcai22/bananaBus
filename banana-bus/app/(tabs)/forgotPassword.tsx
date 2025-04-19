@@ -1,13 +1,12 @@
 import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigation, useLocalSearchParams } from "expo-router";
-
-import { saveItem, getItem } from '../helper';
+import React, { useState } from 'react';
+import { useRouter } from "expo-router";
+import { getItem } from '../helper';
 
 export default function ForgotPasswordScreen() {
     const [pass, setPass] = useState("");
     const [confirmPass, setConfirmPass] = useState("");
-    const navigation = useNavigation();
+    const router = useRouter();
 
     const handleReset = async () => {
         // TODO remove debug msg
@@ -30,7 +29,7 @@ export default function ForgotPasswordScreen() {
 
             if (response.ok) {
                 alert("Password reset. Login with new password!");
-                navigation.navigate("login");
+                router.navigate("/login");
             } else {
                 const errorData = await response.json();
                 console.error("Error resetting password:", errorData);
@@ -49,7 +48,7 @@ export default function ForgotPasswordScreen() {
             <View style={styles.container}>
                 <TouchableOpacity
                     style={styles.goBack} onPress={() => {
-                        navigation.goBack();
+                        router.back();
                     }}
                 >
                     <Text style={styles.goBack}>← go back</Text>
