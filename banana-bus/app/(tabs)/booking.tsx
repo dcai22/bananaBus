@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { useLocalSearchParams, router, useNavigation, useFocusEffect } from "expo-router";
-import { View, Text, StyleSheet, Touchable, TouchableOpacity, TextInput, ScrollView, Dimensions, Image, Alert, ActivityIndicator} from "react-native";
+import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator} from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import { useEffect, useState } from "react";
@@ -9,6 +9,8 @@ import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
+import Container from "@/components/Container";
+import { CheckoutHeader } from "@/components/Header";
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -27,8 +29,6 @@ const tripBox  = {
     hasAssist: true, 
 }
 
-
-
 export default function booking() {
     const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
     const [ numPassenger, setNumPassenger ] = useState<number>(0)
@@ -44,7 +44,7 @@ export default function booking() {
     
     const [isCheckout, setIsCheckout] = useState(false);
 
-    const navigation = useNavigation();
+    const router = useRouter();
     
     // TODO: backend to retrieve card details
     
@@ -88,26 +88,13 @@ export default function booking() {
 
         fetchData();
     }, [tripId, departId, arriveId, refresh])
-    
-
-    function CheckoutHeader() {
-        return(
-            <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}/>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-                <Text style ={styles.headerText}>Secure Checkout</Text>
-            </View>
-        )
-    }
 
     if (loading) {
         return(
-            <View style={styles.screen}>
+            <Container>
                 <CheckoutHeader/>
                 <LoadingPage/>
-            </View>
+            </Container>
         )
     }
 
@@ -161,6 +148,10 @@ export default function booking() {
     
     async function handleCheckout() {
         // TODO: handle payment
+        if (numPassenger === 0) {
+            Alert.alert("Please select at least 1 passenger");
+            return
+        }
         setIsCheckout(true)
         const token = await getItem("token");
         try {
@@ -175,11 +166,11 @@ export default function booking() {
 
             if (res.ok) {
                 const data = await res.json();
-                setIsCheckout(false)
-                console.log(`Created booking with id ${data.insertedId}`);
-                // probably change to something better
-                Alert.alert("Booking confirmed")
-                navigation.navigate("index");
+                setIsCheckout(false);
+                // console.log(`Created booking with id ${data.insertedId}`);
+                // TODO probably change to something better
+                Alert.alert("Booking confirmed");
+                router.navigate("/(tabs)");
             } else {
                 const errorData = await res.json();
                 Alert.alert('Error', errorData.error || 'Booking failed');
@@ -191,7 +182,7 @@ export default function booking() {
 
 
     return(
-        <View style={styles.screen}>
+        <Container>
             <CheckoutHeader/>
             <ScrollView style={styles.checkoutInfo}>
                 <View style={styles.tripDetails}>
@@ -292,15 +283,11 @@ export default function booking() {
                     )}
                 </TouchableOpacity>
             </View>
-        </View>
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        height: "100%",
-        backgroundColor: "#e5f0fa",
-    },
     header: {
         backgroundColor: "#060c40",
         height: "10%",

@@ -288,7 +288,6 @@ export async function deleteCard(token: string, cardId: ObjectId){
 
 export async function makeDefaultCard(token: string, cardId: ObjectId){
     await connectToDatabase();
-    console.log(cardId);
 
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');

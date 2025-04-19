@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Touchable, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
@@ -54,7 +54,6 @@ export default function tripsList() {
             }).then((res) => {
                 setDepartName(res.data.departName)
                 setArriveName(res.data.arriveName)
-                console.log(res.data.trips)
                 setTrips(res.data.trips)
             }).catch((err) => {
                 setError(err.response.data.error)

@@ -1,10 +1,12 @@
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Modal, Alert } from 'react-native';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
-import { set } from 'date-fns';
 import { getItem } from '../helper';
+import Container from '@/components/Container';
+import { CheckoutHeader } from '@/components/Header';
+import { CustomModal } from '@/components/Modal';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -13,6 +15,7 @@ export default function Payment() {
     const [cvv, setCvv] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState('');
+    const [refresh, setRefresh] = useState(false);
 
     const handleAddCard = async () => {
         let errorMessage = '';
@@ -84,7 +87,6 @@ export default function Payment() {
             setCvv('');
             router.back();
         }
-        console.log('Card added:', { cardNumber, expiryMonth, expiryYear, cvv });
     };
 
     const openModal = (content: string) => {
@@ -102,14 +104,16 @@ export default function Payment() {
         setModalContent('');
     }
 
+    const resetPage = () => {
+        setCardNumber('');
+        setExpiryMonth('');
+        setExpiryYear('');
+        setCvv('');
+    }
+
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style={styles.goBackArrow} onPress={() => router.back()} />
-                    <Text style={styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-            </View>
+        <Container>
+            <CheckoutHeader title="" showGoBack={true} resetPage={resetPage}/>
             <View style={styles.formContainer}>
                 <View style={styles.formSection}>
                     <Text style={styles.label}>Card Number</Text>
@@ -118,8 +122,10 @@ export default function Payment() {
                         placeholder="Enter card number"
                         keyboardType="numeric"
                         value={cardNumber}
-                        onChangeText={setCardNumber}
-                        maxLength={16}
+                        onChangeText={(text) => {
+                            setCardNumber(text.replace(/\D/g, '').replace(/(\d{4})(?=\d)/g, '$1-'));
+                        }}
+                        maxLength={19}
                     />
                 </View>
                 
@@ -130,7 +136,9 @@ export default function Payment() {
                         placeholder="MM"
                         keyboardType="numeric"
                         value={expiryMonth}
-                        onChangeText={setExpiryMonth}
+                        onChangeText={(text) => {
+                            setExpiryMonth(text.replace(/\D/g, ''));
+                        }}
                         maxLength={2}
                     />
                     <Text style={{ marginHorizontal: 5 }}>/</Text>
@@ -139,7 +147,9 @@ export default function Payment() {
                         placeholder="YY"
                         keyboardType="numeric"
                         value={expiryYear}
-                        onChangeText={setExpiryYear}
+                        onChangeText={(text) => {
+                            setExpiryYear(text.replace(/\D/g, ''));
+                        }}
                         maxLength={2}
                     />
                     <TouchableOpacity onPress={() => openModal('EXP')}>
@@ -165,29 +175,24 @@ export default function Payment() {
                     style={styles.addButton}
                 />
             </View>
-
-            <Modal
+            <CustomModal
                 visible={modalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalText}>{modalContent}</Text>
-                        <NoButton text="Close" onPress={closeModal} />
-                    </View>
-                </View>
-            </Modal>
-        </View>
+                headerText="Information"
+                info={modalContent}
+                onCancel={closeModal}
+                buttons={[
+                    {
+                        text: 'Close',
+                        onPress: closeModal,
+                        type: 'no',
+                    },
+                ]}
+            />
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#e5f0fa',
-    },
     header: {
         backgroundColor: "#060c40",
         height: "10%",
