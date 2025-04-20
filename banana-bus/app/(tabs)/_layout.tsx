@@ -145,7 +145,13 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="driverView"
+                    name="driverPanel"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
+                    name="driverTrip"
                     options={{
                         href: null,
                     }}

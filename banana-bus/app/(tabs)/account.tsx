@@ -11,6 +11,7 @@ export default function Account() {
     const [windSpeed, setWindSpeed] = useState(0);
     const [humidity, setHumidity] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isDriver, setIsDriver] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
 
@@ -55,6 +56,7 @@ export default function Account() {
         setHumidity(80);
         // TODO Fetch user role from API
         setIsAdmin(true);
+        setIsDriver(true);
         setRefresh(false);
     }, [refresh]);
 
@@ -78,6 +80,9 @@ export default function Account() {
                     <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')} />
                     { isAdmin && (
                         <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('adminPanel')} />
+                    )}
+                    { isDriver && (
+                        <MenuItem title="Driver Panel" icon="🚖" onPress={() => router.navigate('/driverPanel')} />
                     )}
                     <MenuItem title="Settings" icon="⚙️" onPress={() => router.navigate('/settings')} />
                 </View>

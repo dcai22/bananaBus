@@ -177,19 +177,6 @@ export default function Trips() {
     return (
         <Container>
             <Header title="My Trips" emoji="🚌" showGoBack={false} />
-
-            {/*
-                TODO:
-                 - Add button to all pages (except login/register)
-                 - Hide button if user is not a driver (or manager)
-            */}
-            <TouchableOpacity style={styles.topLeftButton} onPress={() => {
-                console.log('Top-left button pressed');
-                router.navigate("/driverView");
-            }}>
-
-                <Text style={styles.topLeftButtonText}>Driver view</Text>
-            </TouchableOpacity>
             <View style={styles.section}>
                 <View style={styles.sectionHeaderContainer}>
                     <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
@@ -294,17 +281,4 @@ const styles = StyleSheet.create({
     arrow: {
         fontSize: 18,
     },
-    topLeftButton: {
-        position: 'absolute',
-        top: 20,
-        left: 20,
-        padding: 10,
-        backgroundColor: '#007aff',
-        borderRadius: 10,
-        elevation: 20,
-    },
-    topLeftButtonText: {
-        color: 'white',
-        fontSize: 12,
-    }
 });

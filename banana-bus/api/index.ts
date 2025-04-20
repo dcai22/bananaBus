@@ -1,4 +1,4 @@
-import express, { json, Request, Response } from "express";
+import express, { json, request, Request, Response } from "express";
 import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
@@ -18,11 +18,12 @@ import { deleteAccount,
             getUserCards, 
             sendEnquiry} from './account';
 import { getDeals } from './getDeals';
-import { Route, RouteSection, Trip } from './interface';
+import { Booking, Route, RouteSection, Trip } from './interface';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
 import { collections, connectToDatabase } from './mongoUtil';
 import { findUserByToken } from './helper';
+import { driverGetTrip } from "./driver";
 
 const app = express();
 
@@ -586,6 +587,17 @@ app.get('/driver/getUpcomingTrips', async (req: Request, res: Response, next) =>
             "stopTimes.0": { "$gte": now },
         }).toArray();
         res.json({ allTrips });
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.get('/driver/getTrip', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const tripId = new ObjectId(req.query.tripId as string);
+
+    try {
+        res.json(await driverGetTrip(token, tripId));
     } catch (err) {
         next(err);
     }
