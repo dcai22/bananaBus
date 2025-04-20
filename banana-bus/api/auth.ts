@@ -5,6 +5,9 @@ import crypto from "crypto";
 import { collections } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { connectToDatabase } from "./mongoUtil";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
     await connectToDatabase();
@@ -148,8 +151,8 @@ export async function authPasswordResetEmail(email: string) {
         port: 587,
         secure: false,
         auth: {
-            user: 'bananabus846@gmail.com',
-            pass: 'evfxaenltbgvfvzk'
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
         },
     });
 
