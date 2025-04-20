@@ -28,8 +28,7 @@ export default function driverTrip() {
         // needAssist: boolean,
     }
 
-    // const { tripId } = useLocalSearchParams<{tripId: string}>();
-    const tripId = '680501b70817a695a46a9fd6';
+    const { tripId } = useLocalSearchParams<{tripId: string}>();
 
     const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);

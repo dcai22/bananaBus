@@ -1,78 +1,53 @@
 import Container from "@/components/Container";
 import { Header } from "@/components/Header";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import axios from "axios";
 import { format } from "date-fns";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { getItem } from "expo-secure-store";
+import React, { useCallback, useEffect, useState } from "react";
 import { Text, FlatList, TouchableOpacity, View, StyleSheet } from "react-native";
 
 export default function driverPanel() {
     interface Trip {
-        vehicleId: number,
-        route: {
-            routeId: number,
-            stops: number[],
-        },
+        _id: string,
         stopTimes: Date[],
-        bookings: number[],
-        originIndex: number,
         originName: string,
-        destIndex: number,
         destName: string,
     }
-    interface Route {
-        route: {
-            routeId: number;
-            stops: number[];
-            trips: number[];
-        };
-        originIndex: number;
-        originName: string;
-        destIndex: number;
-        destName: string;
-    }
-
+    
     const router = useRouter();
-
+    
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
-
+    
     const handlePress = (trip: Trip) => {
         router.push({
             pathname: '/driverTrip',
             params: {
-                routeId: trip.route.routeId,
-                originName: trip.originName,
-                destName: trip.destName,
-            }
+                routeId: trip._id,
+            },
         });
     };
-
+    
     // TODO: fetch trips from database
     const fetchUpcomingTrips = () => {
         return [
             {
-                vehicleId: 0,
-                route: {
-                    routeId: 0,
-                    stops: [0, 1],
-                },
+                _id: '680501b70817a695a46a9fd6',
                 stopTimes: [new Date(0), new Date(1)],
-                bookings: [0, 1, 2],
-                originIndex: 0,
                 originName: '1utama Shopping Mall',
-                destIndex: 1,
                 destName: 'Kuala Lumpur Intl. T1',
             },
         ];
     }
-
+    
     useEffect(() => {
         function init() {
             setUpcomingTrips(fetchUpcomingTrips());
         }
         init();
     }, []);
-
+    
     return (
         <Container>
             <Header title="Driver Panel" showGoBack={false} />
