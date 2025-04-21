@@ -172,7 +172,11 @@ export async function authPasswordResetEmail(email: string) {
         from: 'Banana Bus 2025',
         to: email,
         subject: 'Banana Bus Password Reset',
-        text: `This is your one time passcode: ${code}. It will expire in 15 minutes.`
+        html: `
+            <p>This is your one-time passcode:</p>
+            <h1 style="font-size: 24px; font-weight: bold;">${code}</h1>
+            <p>It will expire in 15 minutes.</p>
+        `,
     }
 
     await new Promise((resolve, reject) => {
