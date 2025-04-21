@@ -5,6 +5,8 @@ import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
+import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import { set } from 'date-fns';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -13,6 +15,7 @@ export default function LoginScreen() {
     const [modalType, setModalType] = useState("sendCode");
     const [recoveryEmail, setRecoveryEmail] = useState("");
     const [emailCode, setEmailCode] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
     const openModal = () => {
@@ -143,6 +146,57 @@ export default function LoginScreen() {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        try {
+            setIsSubmitting(true);
+            await GoogleSignin.hasPlayServices();
+            const response = await GoogleSignin.signIn();
+            if (isSuccessResponse(response)) {
+                const { user } = response.data;
+                const { email, givenName, familyName } = user;
+                console.log(user);
+                const loginResponse = await fetch("https://banana-bus.vercel.app/googleLogin", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, givenName, familyName }),
+                });
+                if (loginResponse.ok) {
+                    const data = await loginResponse.json();
+                    saveItem("userId", data.userId.toString());
+                    saveItem("token", data.token);
+                    router.navigate('/(tabs)');
+                } else {
+                    const errorData = await loginResponse.json();
+                    Alert.alert("Error", errorData.error || "Login failed");
+                }
+                setIsSubmitting(false);
+            } else {
+                Alert.alert("Error", "Google sign-in failed. Please try again.");
+            }
+        } catch (error) {
+            setIsSubmitting(false);
+            if (isErrorWithCode(error)) {
+                switch (error.code) {
+                    case statusCodes.SIGN_IN_CANCELLED:
+                        Alert.alert("Error", "Sign-in cancelled by user.");
+                        break;
+                    case statusCodes.IN_PROGRESS:
+                        Alert.alert("Error", "Sign-in is in progress.");
+                        break;
+                    case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+                        Alert.alert("Error", "Play services not available or outdated.");
+                        break;
+                    default:
+                        Alert.alert("Error", "An unknown error occurred. Please try again.");
+                }
+            } else {
+                Alert.alert("Error", "An unknown error occurred. Please try again.");
+            }
+        }
+    }
+
     return (
         <ImageBackground
             source={{
@@ -182,6 +236,12 @@ export default function LoginScreen() {
                         setPassword("");
                         router.navigate("/register");
                     }} text="Register" />
+                    <GoogleSigninButton
+                        size={GoogleSigninButton.Size.Wide}
+                        color={GoogleSigninButton.Color.Light}
+                        onPress={(handleGoogleLogin)}
+                        disabled={isSubmitting}
+                    />
                 </View>
                 <CustomModal
                     visible={modalVisible}
