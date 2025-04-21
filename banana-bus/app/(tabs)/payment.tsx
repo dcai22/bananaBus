@@ -7,6 +7,7 @@ import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { CustomModal } from '@/components/Modal';
 import { LoadingPage } from '@/components/LoadingPage';
+import { NoButton, YesButton } from '@/components/Buttons';
 
 interface Card {
 	_id: string;
@@ -152,7 +153,7 @@ export default function Payment() {
 					<Text style={styles.addCardText}>Add payment method</Text>
 				</TouchableOpacity>
 			</View>
-			<CustomModal
+			{/* <CustomModal
 				visible={modalVisible}
 				headerText="Card Options"
 				onCancel={closeModal}
@@ -173,7 +174,16 @@ export default function Payment() {
 						type: 'yes',
 					},
 				]}
-			/>
+			/> */}
+			<CustomModal
+				visible={modalVisible}
+				onCancel={closeModal}
+				headerText="Card Options"
+			>
+				<NoButton text="Remove Card" onPress={handleRemoveCard}/>
+				<NoButton text="Make Default" onPress={handleMakeDefault}/>
+				<YesButton text="Cancel" onPress={closeModal} />
+			</CustomModal>
 		</Container>
 	);
 };
