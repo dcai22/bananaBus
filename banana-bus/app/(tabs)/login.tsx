@@ -129,6 +129,7 @@ export default function LoginScreen() {
                     // This only works on mobile
                     saveItem("userId", data.userId.toString());
                     saveItem("token", data.token);
+                    saveItem("isExternal", "false");
                 } else {
                     // Save to local storage on web for testing purposes
                     localStorage.setItem("userId", data.userId.toString());
@@ -164,6 +165,7 @@ export default function LoginScreen() {
                 if (loginResponse.ok) {
                     const data = await loginResponse.json();
                     saveItem("userId", data.userId.toString());
+                    saveItem("isExternal", "true");
                     saveItem("token", data.token);
                     router.navigate('/(tabs)');
                 } else {
@@ -233,9 +235,15 @@ export default function LoginScreen() {
                         setPassword("");
                         router.navigate("/register");
                     }} text="Register" />
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separatorLine} />
+                        <Text style={styles.separatorText}>or</Text>
+                        <View style={styles.separatorLine} />
+                    </View>
                     <GoogleSigninButton
-                        size={GoogleSigninButton.Size.Standard}
+                        size={GoogleSigninButton.Size.Wide}
                         color={GoogleSigninButton.Color.Light}
+                        style={styles.googleSignin}
                         onPress={(handleGoogleLogin)}
                     />
                 </View>
@@ -306,5 +314,30 @@ const styles = StyleSheet.create({
         alignSelf: "flex-end",
         color: "#c5e1ec",
         fontSize: 12
+    },
+    googleSignin: {
+        width: "100%",
+        padding: 12,
+        marginVertical: 4,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    separatorContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginVertical: 12,
+    },
+    separatorLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: "#fff",
+    },
+    separatorText: {
+        color: "#fff",
+        fontSize: 16,
+        marginHorizontal: 8,
+        lineHeight: 16,
     },
 });
