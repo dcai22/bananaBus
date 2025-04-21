@@ -54,15 +54,19 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
     const tripBoxes = await Promise.all(
         trips.map(async (t) => {
             const vehicle = await getVehicleById(t.vehicleId);
-        
+            
+            const departTime = new Date(t.stopTimes[departIndex]);
+            const arriveTime = new Date(t.stopTimes[arriveIndex]);
+            const curCapacity = await calcCurrentCapacity(t);
+
             return {
             tripId: t._id,
             departId: departId,
             arriveId: arriveId,
-            departureTime: new Date(t.stopTimes[departIndex]),
-            arrivalTime: new Date(t.stopTimes[arriveIndex]),
-            price: 20,
-            curCapacity: await calcCurrentCapacity(t),
+            departureTime: departTime,
+            arrivalTime: arriveTime,
+            price: getPrice(vehicle.maxCapacity, curCapacity, departTime),
+            curCapacity: curCapacity,
             maxCapacity: vehicle.maxCapacity,
             curLuggageCapacity: await calcCurrentLuggageCapacity(t),
             maxLuggageCapacity: vehicle.maxLuggageCapacity,
@@ -141,10 +145,10 @@ async function getPrice(maxCapacity: number, curCapacity: number, timeOfDepartur
     const k = 10;
     const pSpot = pMin + (pMaxSpot - pMin) /(1 + Math.exp(-k * (f - 0.5)));
 
-    // linear price - increases with time to departure
-    const t = Math.max(0, (timeOfDeparture.getTime() - now.getTime()) / 36e5);
-    const alpha = 0.1;
-    const pTime = alpha*Math.max(0, 24 - t);
+    // // linear price - increases with time to departure
+    // const t = Math.max(0, (timeOfDeparture.getTime() - now.getTime()) / 36e5);
+    // const alpha = 0.1;
+    // const pTime = alpha*Math.max(0, 24 - t);
 
     // Time of day pricing - increases smoothly with peak hours
     const peakPrice = 3;
@@ -182,6 +186,7 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
     const arriveName = arriveStop.name
     const departName = departStop.name
 
+    const curCapacity = await calcCurrentCapacity(trip);
 
     const tripBox = {
         tripId: tripId,
@@ -189,8 +194,8 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
         arriveId: arriveId,
         departureTime: trip.stopTimes[departIndex],
         arrivalTime: trip.stopTimes[arriveIndex],
-        price: getPrice(),
-        curCapacity: await calcCurrentCapacity(trip), 
+        price: getPrice(vehicle.maxCapacity, curCapacity, trip.stopTimes[departIndex]),
+        curCapacity: curCapacity, 
         maxCapacity: vehicle.maxCapacity,
         curLuggageCapacity: await calcCurrentLuggageCapacity(trip),
         maxLuggageCapacity: vehicle.maxLuggageCapacity,
