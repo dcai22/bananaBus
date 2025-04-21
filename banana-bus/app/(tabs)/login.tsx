@@ -235,6 +235,11 @@ export default function LoginScreen() {
                         setPassword("");
                         router.navigate("/register");
                     }} text="Register" />
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separatorLine} />
+                        <Text style={styles.separatorText}>or</Text>
+                        <View style={styles.separatorLine} />
+                    </View>
                     <GoogleSigninButton
                         size={GoogleSigninButton.Size.Wide}
                         color={GoogleSigninButton.Color.Light}
@@ -313,9 +318,26 @@ const styles = StyleSheet.create({
     googleSignin: {
         width: "100%",
         padding: 12,
-        marginVertical: 12,
+        marginVertical: 4,
         borderRadius: 8,
         justifyContent: "center",
         alignItems: "center",
+    },
+    separatorContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginVertical: 12,
+    },
+    separatorLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: "#fff",
+    },
+    separatorText: {
+        color: "#fff",
+        fontSize: 16,
+        marginHorizontal: 8,
+        lineHeight: 16,
     },
 });
