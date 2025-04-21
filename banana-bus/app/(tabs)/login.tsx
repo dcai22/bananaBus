@@ -182,19 +182,38 @@ export default function LoginScreen() {
                 </View>
                 <CustomModal
                     visible={modalVisible}
-                    headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
-                    inputPlaceholders={modalType === "sendCode" ? ["email"] : ["code"]}
-                    inputValues={modalType === "sendCode" ? [recoveryEmail] : [emailCode]}
-                    onInputChange={(index, value) => {
-                        if (modalType === "sendCode") {
-                            setRecoveryEmail(value);
-                        } else {
-                            setEmailCode(value);
-                        }
-                    }}
-                    onConfirm={modalType === "sendCode" ? sendResetMail : checkEmailCode}
                     onCancel={closeModal}
-                />
+                    headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
+                >
+                    
+                    {modalType === "sendCode" && (
+                        <>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="email"
+                                value={recoveryEmail}
+                                onChangeText={setRecoveryEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                            />
+                            <YesButton onPress={sendResetMail} text="Send confirmation email" />
+                            <NoButton onPress={closeModal} text="Close" />
+                        </>
+                    )}
+                    {modalType === "enterCode" && (
+                        <>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="code"
+                                value={emailCode}
+                                onChangeText={setEmailCode}
+                                autoCapitalize="none"
+                            />
+                            <YesButton onPress={checkEmailCode} text="Confirm" />
+                            <NoButton onPress={closeModal} text="Cancel" />
+                        </>
+                    )}
+                </CustomModal>
             </View>
         </ImageBackground>
     );
