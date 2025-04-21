@@ -5,6 +5,9 @@ import crypto from "crypto";
 import { collections } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { connectToDatabase } from "./mongoUtil";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
     await connectToDatabase();
@@ -144,12 +147,13 @@ export async function authPasswordResetEmail(email: string) {
     const nodemailer = require('nodemailer');
     // for now just use ethereal email
     const transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
+        host: 'smtp.gmail.com',
         port: 587,
+        secure: false,
         auth: {
-            user: 'delphine.batz@ethereal.email',
-            pass: 'djexbJqVg88mr4u38u'
-        }
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
     });
 
     await new Promise((resolve, reject) => {
@@ -168,7 +172,11 @@ export async function authPasswordResetEmail(email: string) {
         from: 'Banana Bus 2025',
         to: email,
         subject: 'Banana Bus Password Reset',
-        text: `This is your one time passcode: ${code}. It will expire in 15 minutes.`
+        html: `
+            <p>This is your one-time passcode:</p>
+            <h1 style="font-size: 24px; font-weight: bold;">${code}</h1>
+            <p>It will expire in 15 minutes.</p>
+        `,
     }
 
     await new Promise((resolve, reject) => {
