@@ -14,7 +14,7 @@ export async function authRegister(email: string, password: string, firstName: s
     }
 
     const checkUser = await collections.users?.findOne({ email: email });
-    if (checkUser && !checkUser.isExternal) {
+    if (checkUser) {
         throw HTTPError(400, 'email address already in use');
     }
 
@@ -57,7 +57,7 @@ export async function authLogin(email: string, password: string) {
     }
 
     const user = await collections.users.findOne({ email: email });
-    if (!user || user.isExternal) {
+    if (!user) {
         throw HTTPError(400, 'email not found');
     }
 
@@ -100,25 +100,31 @@ export async function authLogout(userId: ObjectId, token: string) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const userById = await collections.users.findOne({ _id: new ObjectId(userId) });
-    if (!userById) {
-        throw HTTPError(400, 'invalid userId ' + userId);
-    }
     const strippedToken = token.replace('Bearer ', '');
-    const userByToken = await findUserByToken(strippedToken);
-    if (!userByToken) {
-        throw HTTPError(403, 'invalid token');
-    }
-    if (!userById._id.equals(userByToken._id)) {
-        throw HTTPError(403, 'invalid data');
+
+    // Find the user by ID
+    const user = await collections.users.findOne({ _id: new ObjectId(userId) });
+    if (!user) {
+        throw HTTPError(403, 'invalid userId');
     }
 
-    for (const userToken of userById.tokens) {
-        if (compareHash(strippedToken, userToken)) {
-            await collections.users.updateOne({ _id: new ObjectId(userId) }, { $pull: { tokens: userToken } } as any);
-            return { message: 'logged out' };
-        }
+    // Verify the token using compareHash
+    const validToken = user.tokens.find((storedToken: string) => compareHash(strippedToken, storedToken));
+    if (!validToken) {
+        throw HTTPError(403, 'invalid token');
     }
+
+    // Remove the token from the user's tokens array
+    const result = await collections.users.updateOne(
+        { _id: new ObjectId(userId) },
+        { $pull: { tokens: validToken } }
+    );
+
+    if (result.modifiedCount === 0) {
+        throw HTTPError(500, 'Failed to log out');
+    }
+
+    return { message: 'logged out' };
 }
 
 export async function authPasswordResetEmail(email: string) {
