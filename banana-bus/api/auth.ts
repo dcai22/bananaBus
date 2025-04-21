@@ -14,9 +14,10 @@ export async function authRegister(email: string, password: string, firstName: s
     }
 
     const checkUser = await collections.users?.findOne({ email: email });
-    if (checkUser) {
+    if (checkUser && !checkUser.isExternal) {
         throw HTTPError(400, 'email address already in use');
     }
+
 
     const hashedPassword = getHash(password);
     const token = crypto.randomBytes(64).toString('hex')
@@ -37,6 +38,7 @@ export async function authRegister(email: string, password: string, firstName: s
         bookings: [],
         savedRoutes: [],
         isManager: false,
+        isExternal: false,
         cards: [],
     }
 
@@ -55,7 +57,7 @@ export async function authLogin(email: string, password: string) {
     }
 
     const user = await collections.users.findOne({ email: email });
-    if (!user) {
+    if (!user || user.isExternal) {
         throw HTTPError(400, 'email not found');
     }
 
@@ -125,11 +127,11 @@ export async function authPasswordResetEmail(email: string) {
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
-    const user = await collections.users.findOne({ email: email });
+    const user = await collections.users.findOne({ email: email, isExternal: false });
     const code = Math.floor(Math.random() * 899999 + 100000).toString();
     const token = crypto.randomBytes(64).toString('hex');
     // even if the email is invalid, act as if the email is, for security reasons
-    if (!user) {
+    if (!user || user.isExternal) {
         return {
             message: 'Email not found ' + email,
             token
@@ -234,4 +236,51 @@ export async function authPasswordReset(token: string, password: string) {
     return {
         message: 'password reset',
     }
+}
+
+export async function authGoogleLogin(email: string, firstName: string, lastName: string) {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    const checkUser = await collections.users?.findOne({ email: email });
+    if (checkUser && checkUser.isExternal) {
+        const token = crypto.randomBytes(64).toString('hex');
+        const hashedToken = getHash(token);
+        await collections.users.updateOne({ email: email }, { $push: { tokens: hashedToken } } as any);
+        return {
+            userId: checkUser._id,
+            token: token
+        };
+    }
+
+    const token = crypto.randomBytes(64).toString('hex');
+    const hashedToken = getHash(token);
+
+    // note: google members should not have a password, and cannot reset email or password
+    const newUser = {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: '',
+        tokens: [ hashedToken ],
+        resetToken: {
+            token: '',
+            code: '',
+            expiry: new Date(),
+        },
+        bookings: [],
+        savedRoutes: [],
+        isManager: false,
+        isExternal: true,
+        cards: [],
+    }
+
+    const userId = await collections.users.insertOne(newUser);
+    return {
+        userId: userId.insertedId,
+        token: token
+    };
 }
