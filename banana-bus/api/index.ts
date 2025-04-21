@@ -2,7 +2,7 @@ import express, { json, Request, Response } from "express";
 import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
-import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode } from './auth';
+import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode, authGoogleLogin } from './auth';
 import { getTrip, tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
@@ -54,6 +54,18 @@ app.post("/register", async (req: Request, res: Response, next) => {
         const firstName = req.body.firstName as string;
         const lastName = req.body.lastName as string;
         res.json(await authRegister(email, password, firstName, lastName));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
+app.post("/googleLogin", async (req: Request, res: Response, next) => {
+    try {
+        const email = req.body.email as string;
+        const firstName = req.body.firstName as string;
+        const lastName = req.body.lastName as string;
+        res.json(await authGoogleLogin(email, firstName, lastName));
     } catch (error) {
         next(error);
     }

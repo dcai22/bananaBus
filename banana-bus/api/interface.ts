@@ -16,6 +16,7 @@ export interface User {
     bookings: ObjectId[];
     savedRoutes: RouteSection[];
     isManager: boolean;
+    isExternal: boolean;
     cards: Card[];
 }
 
@@ -40,6 +41,7 @@ export class UserBuilder implements Partial<User> {
     bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
     isManager: boolean = false;
+    isExternal: boolean = false;
     cards: Card[] = [];
 
     withFirstName(firstName: string) {
