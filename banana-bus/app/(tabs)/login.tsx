@@ -1,10 +1,11 @@
-import { Text, View, StyleSheet, TextInput, Alert, ImageBackground } from 'react-native';
+import { Text, View, StyleSheet, TextInput, Alert, ImageBackground, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -26,7 +27,8 @@ export default function LoginScreen() {
     }
 
     const sendResetMail = async () => {
-        // TODO send code to email
+        setModalType("enterCode");
+        alert("Confirmation email sent. Check your email!");
         if (recoveryEmail === "") {
             alert("Please enter your email!");
             return;
@@ -51,9 +53,7 @@ export default function LoginScreen() {
         } catch (error) {
             Alert.alert("Error", "An error occurred. Please try again.");
         }
-        // Send confirmation email
-        setModalType("enterCode");
-        alert("Confirmation email sent. Check your email!");
+        
     }
 
     const checkEmailCode = async () => {
@@ -164,12 +164,9 @@ export default function LoginScreen() {
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="password"
+                    <PasswordInput
                         value={password}
                         onChangeText={setPassword}
-                        secureTextEntry
                     />
                     <Text
                         style={styles.forgotPassword}
@@ -238,7 +235,7 @@ const styles = StyleSheet.create({
     input: {
         width: "100%",
         padding: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         margin: 8,
         borderWidth: 1,
         borderColor: "#ccc",
