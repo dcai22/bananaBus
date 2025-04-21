@@ -38,6 +38,7 @@ export default function RegisterScreen() {
                     // This only works on mobile
                     saveItem('userId', data.userId.toString());
                     saveItem('token', data.token);
+                    saveItem('isExternal', 'false');
                 } else {
                     // Save to local storage on web for testing purposes
                     localStorage.setItem('userId', data.userId);
