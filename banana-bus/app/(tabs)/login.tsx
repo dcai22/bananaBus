@@ -148,7 +148,6 @@ export default function LoginScreen() {
 
     const handleGoogleLogin = async () => {
         try {
-            setIsSubmitting(true);
             await GoogleSignin.hasPlayServices();
             const response = await GoogleSignin.signIn();
             if (isSuccessResponse(response)) {
@@ -160,7 +159,7 @@ export default function LoginScreen() {
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ email, givenName, familyName }),
+                    body: JSON.stringify({ email, firstName: givenName, lastName: familyName }),
                 });
                 if (loginResponse.ok) {
                     const data = await loginResponse.json();
@@ -171,12 +170,10 @@ export default function LoginScreen() {
                     const errorData = await loginResponse.json();
                     Alert.alert("Error", errorData.error || "Login failed");
                 }
-                setIsSubmitting(false);
             } else {
                 Alert.alert("Error", "Google sign-in failed. Please try again.");
             }
         } catch (error) {
-            setIsSubmitting(false);
             if (isErrorWithCode(error)) {
                 switch (error.code) {
                     case statusCodes.SIGN_IN_CANCELLED:
@@ -237,10 +234,9 @@ export default function LoginScreen() {
                         router.navigate("/register");
                     }} text="Register" />
                     <GoogleSigninButton
-                        size={GoogleSigninButton.Size.Wide}
+                        size={GoogleSigninButton.Size.Standard}
                         color={GoogleSigninButton.Color.Light}
                         onPress={(handleGoogleLogin)}
-                        disabled={isSubmitting}
                     />
                 </View>
                 <CustomModal

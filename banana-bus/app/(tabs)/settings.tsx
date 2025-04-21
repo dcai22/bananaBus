@@ -36,6 +36,7 @@ export default function Settings() {
 
     const router = useRouter();
 
+    // TODO: prevent external user from changing email
     const fetchUserDetails = async () => {
         const token = await getItem('token');
         if (!token) {
@@ -60,6 +61,7 @@ export default function Settings() {
                     lastName: data.lastName,
                     firstName: data.firstName,
                     email: data.email,
+                    isExternal: data.isExternal,
                 }
             } else {
                 const errorData = await response.json();
