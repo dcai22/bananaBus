@@ -51,7 +51,12 @@ export async function updateUserDetails(token: string, firstName: string, lastNa
         throw HTTPError(403, 'invalid token');
     }
 
-    await collections.users?.updateOne({ _id: user._id }, { $set: { firstName: firstName, lastName: lastName, email: email } } as any);
+    let newEmail = email;
+    if (email === null) {
+        newEmail = user.email;
+    }
+
+    await collections.users?.updateOne({ _id: user._id }, { $set: { firstName: firstName, lastName: lastName, email: newEmail } } as any);
 
     return {
         firstName: firstName,

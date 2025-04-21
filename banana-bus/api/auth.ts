@@ -89,7 +89,7 @@ export async function authAutoLogin(token: string) {
     }
     return {
         userId: user._id,
-        token: strippedToken
+        token: strippedToken,
     }
 }
 
@@ -252,7 +252,7 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         await collections.users.updateOne({ email: email }, { $push: { tokens: hashedToken } } as any);
         return {
             userId: checkUser._id,
-            token: token
+            token: token,
         };
     }
 
@@ -281,6 +281,6 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
     const userId = await collections.users.insertOne(newUser);
     return {
         userId: userId.insertedId,
-        token: token
+        token: token,
     };
 }
