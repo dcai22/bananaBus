@@ -35,6 +35,7 @@ export async function getUserDetails(token: string) {
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
+        isExternal: user?.isExternal,
     };
 }
 
@@ -49,6 +50,7 @@ export async function updateUserDetails(token: string, firstName: string, lastNa
     if (!user) {
         throw HTTPError(403, 'invalid token');
     }
+
     await collections.users?.updateOne({ _id: user._id }, { $set: { firstName: firstName, lastName: lastName, email: email } } as any);
 
     return {
