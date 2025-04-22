@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
-import { useFocusEffect, useRouter } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
@@ -29,8 +29,6 @@ export default function Trips() {
         destIndex: number;
         destName: string;
     }
-
-    const router = useRouter();
 
     const [error, setError] = useState("")
     const [refresh, setRefresh] = useState(true);

@@ -2,7 +2,7 @@ import Container from "@/components/Container";
 import { Header } from "@/components/Header";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format } from "date-fns";
-import { router, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { Text, FlatList, TouchableOpacity, View, StyleSheet } from "react-native";
 import { getItem } from "../helper";

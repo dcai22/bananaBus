@@ -3,7 +3,7 @@ import { Header } from "@/components/Header";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
 import { format } from "date-fns";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, router } from "expo-router";
 import { getItem } from "expo-secure-store";
 import React, { useCallback, useEffect, useState } from "react";
 import { Text, FlatList, TouchableOpacity, View, StyleSheet } from "react-native";
@@ -15,8 +15,6 @@ export default function driverPanel() {
         originName: string,
         destName: string,
     }
-    
-    const router = useRouter();
     
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
     
