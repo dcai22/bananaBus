@@ -139,7 +139,7 @@ export default function Payment() {
 							<View>
 								<View style={styles.cardType}>
 									<FontAwesome 
-										name={card.type === 'Visa' ? 'cc-visa' : card.type === 'MasterCard' ? 'cc-mastercard' : 'credit-card'} 
+										name={card.type === 'visa' ? 'cc-visa' : card.type === 'masterCard' ? 'cc-mastercard' : 'credit-card'} 
 										style={styles.cardIcon} 
 									/>
 									<Text style={styles.cardTypeText}>{card.type}	••••{card.last4}</Text>
@@ -153,28 +153,6 @@ export default function Payment() {
 					<Text style={styles.addCardText}>Add payment method</Text>
 				</TouchableOpacity>
 			</View>
-			{/* <CustomModal
-				visible={modalVisible}
-				headerText="Card Options"
-				onCancel={closeModal}
-				buttons={[
-					{
-						text: 'Remove Card',
-						onPress: handleRemoveCard,
-						type: 'no',
-					},
-					{
-						text: 'Make Default',
-						onPress: handleMakeDefault,
-						type: 'no',
-					},
-					{
-						text: 'Cancel',
-						onPress: closeModal,
-						type: 'yes',
-					},
-				]}
-			/> */}
 			<CustomModal
 				visible={modalVisible}
 				onCancel={closeModal}
