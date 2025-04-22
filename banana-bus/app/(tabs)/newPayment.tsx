@@ -15,7 +15,6 @@ export default function Payment() {
     const [cvv, setCvv] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState('');
-    const [refresh, setRefresh] = useState(false);
 
     const handleAddCard = async () => {
         let errorMessage = '';
@@ -177,17 +176,12 @@ export default function Payment() {
             </View>
             <CustomModal
                 visible={modalVisible}
-                headerText="Information"
-                info={modalContent}
                 onCancel={closeModal}
-                buttons={[
-                    {
-                        text: 'Close',
-                        onPress: closeModal,
-                        type: 'no',
-                    },
-                ]}
-            />
+                headerText="Information"
+            >
+                <Text style={styles.modalText}>{modalContent}</Text>
+                <NoButton text="Close" onPress={closeModal} />
+            </CustomModal>
         </Container>
     );
 }

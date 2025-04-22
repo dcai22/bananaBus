@@ -1,79 +1,39 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, Button } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import Modal from 'react-native-modal';
-import { YesButton, NoButton } from '@/components/Buttons';
-
-interface ButtonConfig {
-    text: string;
-    onPress: () => void;
-    type: 'yes' | 'no';
-}
 
 interface CustomModalProps {
     visible: boolean;
-    headerText: string;
-    inputPlaceholders?: string[];
-    inputValues?: string[];
-    onInputChange?: (index: number, value: string) => void;
-    onConfirm?: () => void;
     onCancel: () => void;
-    info?: string;
-    buttons?: ButtonConfig[];
+    children: React.ReactNode;
+    headerText?: string;
+    infoText?: string;
 }
 
 /**
  * CustomModal Component
  * 
- * A reusable and customizable modal component for displaying information, input fields and/or action buttons.
+ * A reusable modal component that accepts children for custom content and an optional header text.
  * 
  * Props:
- * - `visible` (boolean): Controls the visibility of the modal. Pass the state for visibility.
- * - `headerText` (string): The header text displayed at the top of the modal.
- * - `inputPlaceholders` (string[], optional): An array of placeholder texts for input fields. If provided, input fields will be rendered.
- * - `inputValues` (string[], optional): An array of the state values for input. MATCH THE ORDER of `inputPlaceholders`.
- * - `onInputChange` (function, optional): Pass the setState for the data.
- * - `onConfirm` (function, optional): A callback function triggered when the "Confirm" button is pressed. Defaults to a no-op if not provided.
- * - `onCancel` (function): A callback function triggered when the modal is dismissed (via backdrop press, back button, or "Cancel" button).
- * - `info` (string, optional): Additional small text displayed below the header.
- * - `buttons` (ButtonConfig[], optional): An array of custom button configurations. Each button has the following properties:
- *   - `text` (string): The text displayed on the button.
- *   - `onPress` (function): A callback function triggered when the button is pressed.
- *   - `type` ('yes' | 'no'): The type of button, determining its style (`YesButton` or `NoButton`).
+ * - `visible` (boolean): Controls the visibility of the modal.
+ * - `onCancel` (function): A callback function triggered when the modal is dismissed.
+ * - `children` (React.ReactNode): Custom content to render inside the modal.
+ * - `headerText` (string, optional): Text to display as the modal's header.
+ * - `infoText` (string, optional): Additional information text to display inside the modal.
  * 
  * Example Usage:
  * <CustomModal
  *     visible={isModalVisible}
- *     headerText="Enter Details"
- *     inputPlaceholders={["Name", "Email"]}
- *     inputValues={[name, email]}
- *     onInputChange={(index, value) => {
- *         if (index === 0) setName(value);
- *         if (index === 1) setEmail(value);
- *     }}
- *     onConfirm={() => console.log("Confirmed")}
  *     onCancel={() => setModalVisible(false)}
- *     info="Please fill out the required fields."
- *     buttons={[
- *         { text: "Submit", onPress: handleSubmit, type: "yes" },
- *         { text: "Cancel", onPress: () => setModalVisible(false), type: "no" },
- *     ]}
- * />
- * 
- * Notes:
- * - If `buttons` is not provided, default "Confirm" and "Cancel" buttons will be rendered.
- * 
+ *     headerText="My Modal Header"
+ *     infoText="This is some additional information."
+ * >
+ *     <Text>Custom Content Here</Text>
+ *     <Button title="Close" onPress={() => setModalVisible(false)} />
+ * </CustomModal>
  */
-export const CustomModal: React.FC<CustomModalProps> = ({
-    visible,
-    headerText,
-    inputPlaceholders,
-    inputValues,
-    onInputChange,
-    onConfirm,
-    onCancel,
-    info,
-    buttons,
-}) => {
+export const CustomModal: React.FC<CustomModalProps> = ({ visible, onCancel, children, headerText, infoText }) => {
     return (
         <Modal
             isVisible={visible}
@@ -82,41 +42,9 @@ export const CustomModal: React.FC<CustomModalProps> = ({
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
-                    <Text style={styles.modalHeader}>{headerText}</Text>
-                    {info && <Text style={styles.info}>{info}</Text>}
-                    {(inputPlaceholders ?? []).map((placeholder, index) => (
-                        <TextInput
-                            key={index}
-                            style={styles.input}
-                            placeholder={placeholder}
-                            value={inputValues?.[index] || ''}
-                            onChangeText={(value) => onInputChange?.(index, value)}
-                            autoCapitalize="none"
-                        />
-                    ))}
-                    <View style={styles.buttonContainer}>
-                        {buttons
-                            ? buttons.map((button, index) => (
-                                  button.type === 'yes' ? (
-                                      <YesButton
-                                          key={index}
-                                          onPress={button.onPress}
-                                          text={button.text}
-                                      />
-                                  ) : (
-                                      <NoButton
-                                          key={index}
-                                          onPress={button.onPress}
-                                          text={button.text}
-                                      />
-                                  )
-                              ))
-                            : // Default buttons if no custom buttons are provided
-                            <>
-                                <YesButton onPress={onConfirm || (() => {})} text="Confirm" />
-                                <NoButton onPress={onCancel} text="Cancel" />
-                            </>}
-                    </View>
+                    {headerText && <Text style={styles.headerText}>{headerText}</Text>}
+                    {infoText && <Text style={styles.infoText}>{infoText}</Text>}
+                    {children}
                 </View>
             </View>
         </Modal>
@@ -140,25 +68,15 @@ const styles = StyleSheet.create({
         elevation: 5,
         alignItems: "center",
     },
-    modalHeader: {
+    headerText: {
         fontSize: 24,
         fontWeight: "bold",
         marginBottom: 16,
+        textAlign: "center",
     },
-    input: {
-        width: "100%",
-        padding: 10,
-        margin: 8,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        backgroundColor: "#fff",
-    },
-    info: {
+    infoText: {
         fontSize: 14,
-        marginBottom: 10,
-    },
-    buttonContainer: {
-        width: "100%",
+        marginBottom: 6,
+        textAlign: "center",
     },
 });
