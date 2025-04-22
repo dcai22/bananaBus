@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
+import { NoButton, YesButton } from "@/components/Buttons";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -17,22 +19,6 @@ export default function Settings() {
         newPassword: "",
         confirmPassword: "",
         isExternal: false,
-    });
-    const [ModalContent, setModalContent] = useState<{
-        headerText: string;
-        inputPlaceholders: string[];
-        inputValues: string[];
-        onInputChange: (index: number, value: string) => void;
-        onConfirm: () => void;
-        onCancel: () => void;
-        info?: string;
-    }>({
-        headerText: "",
-        inputPlaceholders: [],
-        inputValues: [],
-        onInputChange: () => {},
-        onConfirm: () => {},
-        onCancel: () => {},
     });
     const [isExternal, setIsExternal] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -97,16 +83,28 @@ export default function Settings() {
     };
 
     const openModal = async (type: string) => {
-    setModalType(type);
-    if (type === "details") {
-        const userDetails = await fetchUserDetails();
-        setFormData((prev) => ({
-            ...prev,
-            ...userDetails,
-        }));
-    }
-    setModalVisible(true);
-};
+        setModalType(type);
+
+        if (type === "details") {
+            const userDetails = await fetchUserDetails();
+            setFormData((prev) => ({
+                ...prev,
+                ...userDetails,
+            }));
+        } else {
+            setFormData({
+                lastName: "",
+                firstName: "",
+                email: "",
+                oldPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+                isExternal: false,
+            });
+        }
+
+        setModalVisible(true);
+    };
 
     const closeModal = () => {
         setFormData({
@@ -261,77 +259,6 @@ export default function Settings() {
         router.navigate("/login");
     };
 
-    const getModalContent = () => {
-        switch (modalType) {
-            case "details":
-                if (formData.isExternal) {
-                    return {
-                        headerText: "Change Details",
-                        inputPlaceholders: ["First Name", "Last Name"],
-                        inputValues: [formData.firstName, formData.lastName],
-                        onInputChange: (index: number, value: string) => {
-                            const keys = ["firstName", "lastName"];
-                            setFormData((prev) => ({ ...prev, [keys[index]]: value }));
-                        },
-                        onConfirm: handleSave,
-                        onCancel: closeModal,
-                    }
-                }
-                return {
-                    headerText: "Change Details",
-                    inputPlaceholders: ["Email", "First Name", "Last Name"],
-                    inputValues: [formData.email, formData.firstName, formData.lastName],
-                    onInputChange: (index: number, value: string) => {
-                        const keys = ["email", "firstName", "lastName"];
-                        setFormData((prev) => ({ ...prev, [keys[index]]: value }));
-                    },
-                    onConfirm: handleSave,
-                    onCancel: closeModal,
-                };
-            case "password":
-                return {
-                    headerText: "Update Password",
-                    inputPlaceholders: ["Old Password", "New Password", "Confirm New Password"],
-                    inputValues: [formData.oldPassword, formData.newPassword, formData.confirmPassword],
-                    onInputChange: (index: number, value: string) => {
-                        const keys = ["oldPassword", "newPassword", "confirmPassword"];
-                        setFormData((prev) => ({ ...prev, [keys[index]]: value }));
-                    },
-                    onConfirm: handleSave,
-                    onCancel: closeModal,
-                };
-            case "logout":
-                return {
-                    headerText: "Are you sure you want to logout?",
-                    inputPlaceholders: [],
-                    inputValues: [],
-                    onInputChange: () => {},
-                    onConfirm: handleLogout,
-                    onCancel: closeModal,
-                };
-            case "delete":
-                return {
-                    headerText: "Are you sure you want to delete your account?",
-                    inputPlaceholders: [],
-                    inputValues: [],
-                    onInputChange: () => {},
-                    onConfirm: handleDeleteAccount,
-                    onCancel: closeModal,
-                    info: "This action cannot be undone.",
-                };
-            default:
-                return {
-                    headerText: "",
-                    inputPlaceholders: [],
-                    inputValues: [],
-                    onInputChange: () => {},
-                    onConfirm: () => {},
-                    onCancel: () => {},
-                    info: "",
-                };
-        }
-    }
-
     return (
         <Container>
             <Header title="Settings" showGoBack={false} emoji="⚙️"/>
@@ -353,14 +280,80 @@ export default function Settings() {
             </View>
             <CustomModal
                 visible={modalVisible}
-                headerText={getModalContent().headerText}
-                inputPlaceholders={getModalContent().inputPlaceholders}
-                inputValues={getModalContent().inputValues}
-                onInputChange={getModalContent().onInputChange}
-                onConfirm={getModalContent().onConfirm}
-                onCancel={getModalContent().onCancel}
-                info={getModalContent().info}
-            />
+                onCancel={closeModal}
+                headerText={modalType === "details" ? "Change Details" : modalType === "password" ? "Update Password" : modalType === "logout" ? "Logout" : "Delete Account"}
+                infoText={modalType === "delete" ? "Are you sure you want to delete your account? This action cannot be undone." : ""}
+            >
+                {modalType === "details" && (
+                    <>
+                        <Text style={styles.info}>Last name:</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Last Name"
+                            value={formData.lastName}
+                            onChangeText={(text) => setFormData({ ...formData, lastName: text })}
+                        />
+                        <Text style={styles.info}>First name:</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="First Name"
+                            value={formData.firstName}
+                            onChangeText={(text) => setFormData({ ...formData, firstName: text })}
+                        />
+                        <Text style={styles.info}>Email:</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Email"
+                            value={formData.email}
+                            onChangeText={(text) => setFormData({ ...formData, email: text })}
+                            autoCapitalize="none"
+                        />
+                    </>
+                )}
+                {modalType === "password" && (
+                    <>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Old Password"
+                            secureTextEntry={true}
+                            value={formData.oldPassword}
+                            onChangeText={(text) => setFormData({ ...formData, oldPassword: text })}
+                        />
+                        <PasswordInput
+                            placeholder="New Password"
+                            value={formData.newPassword}
+                            onChangeText={(text) => setFormData({ ...formData, newPassword: text })}
+                        />
+                        <PasswordInput
+                            placeholder="Confirm Password"
+                            value={formData.confirmPassword}
+                            onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
+                        />
+                    </>
+                )}
+                {modalType === "logout" && (
+                    <>
+                        <View style={styles.modalButtons}>
+                            <YesButton text="Yes" onPress={handleLogout} style={styles.modalButton}/>
+                            <NoButton text="No" onPress={closeModal} style={styles.modalButton} />
+                        </View>
+                    </>
+                )}
+                {modalType === "delete" && (
+                    <>
+                        <View style={styles.modalButtons}>
+                            <YesButton text="Yes" onPress={handleDeleteAccount} style={styles.modalButton}/>
+                            <NoButton text="No" onPress={closeModal} style={styles.modalButton} />
+                        </View>
+                    </>
+                )}
+                {(modalType !== "logout" && modalType !== "delete") && (
+                    <View style={styles.modalButtons}>
+                        <YesButton text="Save" onPress={handleSave} style={styles.modalButton}/>
+                        <NoButton text="Cancel" onPress={closeModal} style={styles.modalButton} />
+                    </View>
+                )}
+            </CustomModal>
         </Container>
     );
 }
@@ -415,5 +408,29 @@ const styles = StyleSheet.create({
     deleteOptionText: {
         color: "white",
         fontWeight: "bold",
+    },
+    input: {
+        width: "100%",
+        borderWidth: 1,
+        borderColor: "#ccc",
+        borderRadius: 5,
+        padding: 10,
+        paddingHorizontal: 16,
+        marginBottom: 8,
+    },
+    modalButtons: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+    },
+    modalButton: {
+        flex: 1,
+        marginHorizontal: 5,
+    },
+    info: {
+        fontSize: 14,
+        textAlign: "left",
+        width: "100%",
+
     },
 });

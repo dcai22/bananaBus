@@ -1,12 +1,13 @@
 import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react';
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
 import { NoButton } from '@/components/Buttons';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { CheckoutHeader } from '@/components/Header';
 import { CustomModal } from '@/components/Modal';
+import valid from 'card-validator';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -15,44 +16,34 @@ export default function Payment() {
     const [cvv, setCvv] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [modalContent, setModalContent] = useState('');
-    const [refresh, setRefresh] = useState(false);
 
     const handleAddCard = async () => {
         let errorMessage = '';
-
-        switch (true) {
-            case !cardNumber || !expiryMonth || !expiryYear || !cvv:
-                errorMessage = 'Please fill in all fields.';
-                break;
-
-            case cardNumber.length !== 16:
-                errorMessage = 'Card number must be 16 digits long.';
-                break;
-
-            case expiryMonth.length !== 2 || expiryYear.length !== 2:
-                errorMessage = 'Expiry date must be in MM/YY format.';
-                break;
-
-            case parseInt(expiryMonth) < 1 || parseInt(expiryMonth) > 12:
-                errorMessage = 'Expiry month must be between 01 and 12.';
-                break;
-
-            case cvv.length !== 3:
-                errorMessage = 'CVV must be a 3-digit number.';
-                break;
-
-            case parseInt(expiryYear) < new Date().getFullYear() % 100:
-                errorMessage = 'Expiry year must be greater than the current year.';
-                break;
-
-            default:
-                break;
+        // Validate card number
+        const cardNumberValidation = valid.number(cardNumber);
+        if (!cardNumberValidation.isValid) {
+            errorMessage = 'Invalid card number.';
         }
 
-        if (errorMessage) {
-            Alert.alert('Error', errorMessage);
-            return;
+        // Detect card type
+        const type = cardNumberValidation.card ? cardNumberValidation.card.type : 'Unknown';
+
+        // Validate expiry date
+        const expiryValidation = valid.expirationDate(`${expiryMonth}/${expiryYear}`);
+        if (!expiryValidation.isValid) {
+            errorMessage = 'Invalid expiry date.';
         }
+
+        // Validate CVV
+        const cvvValidation = valid.cvv(cvv, cardNumberValidation.card ? cardNumberValidation.card.code.size : 3);
+        if (!cvvValidation.isValid) {
+            errorMessage = 'Invalid CVV.';
+        }
+
+        // TODO uncomment for production
+        // if (errorMessage) {
+        //     Alert.alert('Error', errorMessage + ' However, adding card for demonstration purposes.');
+        // }
 
         const token = await getItem('token');
         try {
@@ -63,8 +54,7 @@ export default function Payment() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    // TODO CHANGE BACKEND CARD TYPE
-                    type: 'Visa',
+                    type,
                     cardNumber,
                     expiryMonth,
                     expiryYear,
@@ -72,22 +62,22 @@ export default function Payment() {
                 }),
             });
             if (response.ok) {
-				Alert.alert('Success', 'Card added successfully!');
-                setCardNumber('');
-                setExpiryMonth('');
-                setExpiryYear('');
-                setCvv('');
-                router.back();
+                // TODO uncomment for production + remove error message
+				// Alert.alert('Success', 'Card added successfully!');
+                if (errorMessage) {
+                    Alert.alert('Error', errorMessage + ' However, adding card for demonstration purposes.');
+                }
 			}
         } catch (error) {
             Alert.alert('Error', 'Failed to add card. Please try again.');
+        } finally {
             setCardNumber('');
             setExpiryMonth('');
             setExpiryYear('');
             setCvv('');
             router.back();
         }
-    };
+};
 
     const openModal = (content: string) => {
         if (content === 'EXP') {
@@ -177,17 +167,12 @@ export default function Payment() {
             </View>
             <CustomModal
                 visible={modalVisible}
-                headerText="Information"
-                info={modalContent}
                 onCancel={closeModal}
-                buttons={[
-                    {
-                        text: 'Close',
-                        onPress: closeModal,
-                        type: 'no',
-                    },
-                ]}
-            />
+                headerText="Information"
+            >
+                <Text style={styles.modalText}>{modalContent}</Text>
+                <NoButton text="Close" onPress={closeModal} />
+            </CustomModal>
         </Container>
     );
 }
@@ -245,7 +230,7 @@ const styles = StyleSheet.create({
     },
     addButton: {
         margin: 12,
-        width: '75%'
+        width: '100%'
     },
     icon: {
         fontSize: 20,

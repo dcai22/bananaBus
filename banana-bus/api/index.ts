@@ -2,7 +2,7 @@ import express, { json, Request, Response } from "express";
 import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
-import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode, authGoogleLogin } from './auth';
+import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode, authGoogleLogin, removeExpiredSessions } from './auth';
 import { getTrip, tripsList } from './tripsList';
 import { searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
@@ -574,6 +574,15 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
     } catch (err) {
         next(err);
     }
+});
+
+app.get('/removeExpiredSessions', async (req: Request, res: Response, next) => {
+    try {
+        res.json(await removeExpiredSessions());
+    } catch (error) {
+        next(error);
+    }
+    return;
 });
 
 app.use(errorHandler());
