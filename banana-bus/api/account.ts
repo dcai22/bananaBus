@@ -35,6 +35,7 @@ export async function getUserDetails(token: string) {
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
+        isExternal: user?.isExternal,
     };
 }
 

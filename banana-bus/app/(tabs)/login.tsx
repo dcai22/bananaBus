@@ -5,6 +5,8 @@ import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
+import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import { set } from 'date-fns';
 import PasswordInput from '@/components/PasswordInput';
 
 export default function LoginScreen() {
@@ -14,6 +16,7 @@ export default function LoginScreen() {
     const [modalType, setModalType] = useState("sendCode");
     const [recoveryEmail, setRecoveryEmail] = useState("");
     const [emailCode, setEmailCode] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
     const openModal = () => {
@@ -126,6 +129,7 @@ export default function LoginScreen() {
                     // This only works on mobile
                     saveItem("userId", data.userId.toString());
                     saveItem("token", data.token);
+                    saveItem("isExternal", "false");
                 } else {
                     // Save to local storage on web for testing purposes
                     localStorage.setItem("userId", data.userId.toString());
@@ -142,6 +146,55 @@ export default function LoginScreen() {
             Alert.alert("Error", "An error occurred. Please try again.");
         }
     };
+
+    const handleGoogleLogin = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+            const response = await GoogleSignin.signIn();
+            if (isSuccessResponse(response)) {
+                const { user } = response.data;
+                const { email, givenName, familyName } = user;
+                console.log(user);
+                const loginResponse = await fetch("https://banana-bus.vercel.app/googleLogin", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, firstName: givenName, lastName: familyName }),
+                });
+                if (loginResponse.ok) {
+                    const data = await loginResponse.json();
+                    saveItem("userId", data.userId.toString());
+                    saveItem("isExternal", "true");
+                    saveItem("token", data.token);
+                    router.navigate('/(tabs)');
+                } else {
+                    const errorData = await loginResponse.json();
+                    Alert.alert("Error", errorData.error || "Login failed");
+                }
+            } else {
+                Alert.alert("Error", "Google sign-in failed. Please try again.");
+            }
+        } catch (error) {
+            if (isErrorWithCode(error)) {
+                switch (error.code) {
+                    case statusCodes.SIGN_IN_CANCELLED:
+                        Alert.alert("Error", "Sign-in cancelled by user.");
+                        break;
+                    case statusCodes.IN_PROGRESS:
+                        Alert.alert("Error", "Sign-in is in progress.");
+                        break;
+                    case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+                        Alert.alert("Error", "Play services not available or outdated.");
+                        break;
+                    default:
+                        Alert.alert("Error", "An unknown error occurred. Please try again.");
+                }
+            } else {
+                Alert.alert("Error", "An unknown error occurred. Please try again.");
+            }
+        }
+    }
 
     return (
         <ImageBackground
@@ -179,6 +232,17 @@ export default function LoginScreen() {
                         setPassword("");
                         router.navigate("/register");
                     }} text="Register" />
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separatorLine} />
+                        <Text style={styles.separatorText}>or</Text>
+                        <View style={styles.separatorLine} />
+                    </View>
+                    <GoogleSigninButton
+                        size={GoogleSigninButton.Size.Wide}
+                        color={GoogleSigninButton.Color.Light}
+                        style={styles.googleSignin}
+                        onPress={(handleGoogleLogin)}
+                    />
                 </View>
                 <CustomModal
                     visible={modalVisible}
@@ -266,5 +330,30 @@ const styles = StyleSheet.create({
         alignSelf: "flex-end",
         color: "#c5e1ec",
         fontSize: 12
+    },
+    googleSignin: {
+        width: "100%",
+        padding: 12,
+        marginVertical: 4,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    separatorContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginVertical: 12,
+    },
+    separatorLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: "#fff",
+    },
+    separatorText: {
+        color: "#fff",
+        fontSize: 16,
+        marginHorizontal: 8,
+        lineHeight: 16,
     },
 });

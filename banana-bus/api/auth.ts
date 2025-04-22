@@ -43,6 +43,7 @@ export async function authRegister(email: string, password: string, firstName: s
         bookings: [],
         savedRoutes: [],
         isManager: false,
+        isExternal: false,
         cards: [],
     }
 
@@ -97,7 +98,7 @@ export async function authAutoLogin(token: string) {
     }
     return {
         userId: user._id,
-        token: strippedToken
+        token: strippedToken,
     }
 }
 
@@ -125,9 +126,8 @@ export async function authLogout(userId: ObjectId, token: string) {
     }
 
     await collections.users.updateOne({ _id: userId }, { $pull: { sessions: { sessionId: sessionId } } } as any);
-    return {
-        message: 'logged out',
-    }
+
+    return { message: 'logged out' };
 }
 
 export async function authPasswordResetEmail(email: string) {
@@ -136,11 +136,11 @@ export async function authPasswordResetEmail(email: string) {
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
-    const user = await collections.users.findOne({ email: email });
+    const user = await collections.users.findOne({ email: email, isExternal: false });
     const code = Math.floor(Math.random() * 899999 + 100000).toString();
     const token = crypto.randomBytes(64).toString('hex');
     // even if the email is invalid, act as if the email is, for security reasons
-    if (!user) {
+    if (!user || user.isExternal) {
         return {
             message: 'Email not found ' + email,
             token
@@ -251,13 +251,65 @@ export async function authPasswordReset(token: string, password: string) {
     }
 }
 
-export async function removeExpiredSessions() {
+export async function authGoogleLogin(email: string, firstName: string, lastName: string) {
     await connectToDatabase();
 
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
+    const checkUser = await collections.users?.findOne({ email: email });
+    if (checkUser && checkUser.isExternal) {
+        const sessionId = crypto.randomBytes(64).toString('hex');
+        const expiry = new Date(Date.now() + 120 * 60 * 1000);
+        const token = jwt.sign({ userId: checkUser._id.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
+        await collections.users.updateOne({ email: email }, { $push: { sessions: { sessionId, expiry } } } as any);
+        return {
+            userId: checkUser._id,
+            token: token,
+        };
+    }
+
+    const sessionId = crypto.randomBytes(64).toString('hex');
+    const expiry = new Date(Date.now() + 120 * 60 * 1000);
+
+    // note: google members should not have a password, and cannot reset email or password
+    const newUser = {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: '',
+        sessions: [{
+            sessionId,
+            expiry
+        }],
+        resetToken: {
+            token: '',
+            code: '',
+            expiry: new Date(),
+        },
+        bookings: [],
+        savedRoutes: [],
+        isManager: false,
+        isExternal: true,
+        cards: [],
+    }
+
+    const userId = await collections.users?.insertOne(newUser);
+    const token = jwt.sign({ userId: userId.insertedId.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
+    return {
+        userId: userId.insertedId,
+        token: token,
+    }
+}
+
+
+export async function removeExpiredSessions() {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
     const now = new Date();
 
     // Remove expired sessions from all users
