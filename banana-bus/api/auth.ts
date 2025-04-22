@@ -260,17 +260,18 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
 
     const checkUser = await collections.users?.findOne({ email: email });
     if (checkUser && checkUser.isExternal) {
-        const token = crypto.randomBytes(64).toString('hex');
-        const hashedToken = getHash(token);
-        await collections.users.updateOne({ email: email }, { $push: { tokens: hashedToken } } as any);
+        const sessionId = crypto.randomBytes(64).toString('hex');
+        const expiry = new Date(Date.now() + 120 * 60 * 1000);
+        const token = jwt.sign({ userId: checkUser._id.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
+        await collections.users.updateOne({ email: email }, { $push: { sessions: { sessionId, expiry } } } as any);
         return {
             userId: checkUser._id,
             token: token,
         };
     }
 
-    const token = crypto.randomBytes(64).toString('hex');
-    const hashedToken = getHash(token);
+    const sessionId = crypto.randomBytes(64).toString('hex');
+    const expiry = new Date(Date.now() + 120 * 60 * 1000);
 
     // note: google members should not have a password, and cannot reset email or password
     const newUser = {
@@ -278,7 +279,10 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         lastName: lastName,
         email: email,
         password: '',
-        tokens: [ hashedToken ],
+        sessions: [{
+            sessionId,
+            expiry
+        }],
         resetToken: {
             token: '',
             code: '',
@@ -291,7 +295,8 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         cards: [],
     }
 
-    const userId = await collections.users.insertOne(newUser);
+    const userId = await collections.users?.insertOne(newUser);
+    const token = jwt.sign({ userId: userId.insertedId.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
     return {
         userId: userId.insertedId,
         token: token,
