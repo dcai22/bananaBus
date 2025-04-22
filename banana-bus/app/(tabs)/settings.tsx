@@ -256,23 +256,27 @@ export default function Settings() {
             >
                 {modalType === "details" && (
                     <>
+                        <Text style={styles.info}>Last name:</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Last Name"
                             value={formData.lastName}
                             onChangeText={(text) => setFormData({ ...formData, lastName: text })}
                         />
+                        <Text style={styles.info}>First name:</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="First Name"
                             value={formData.firstName}
                             onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                         />
+                        <Text style={styles.info}>Email:</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Email"
                             value={formData.email}
                             onChangeText={(text) => setFormData({ ...formData, email: text })}
+                            autoCapitalize="none"
                         />
                     </>
                 )}
@@ -392,5 +396,11 @@ const styles = StyleSheet.create({
     modalButton: {
         flex: 1,
         marginHorizontal: 5,
+    },
+    info: {
+        fontSize: 14,
+        textAlign: "left",
+        width: "100%",
+
     },
 });
