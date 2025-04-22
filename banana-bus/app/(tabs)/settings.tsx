@@ -7,6 +7,7 @@ import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
 import { NoButton, YesButton } from "@/components/Buttons";
 import PasswordInput from "@/components/PasswordInput";
+import StyledTextInput from "@/components/StyledTextInput";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -256,24 +257,18 @@ export default function Settings() {
             >
                 {modalType === "details" && (
                     <>
-                        <Text style={styles.info}>Last name:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Last Name"
+                        <StyledTextInput
+                            label="Last Name"
                             value={formData.lastName}
                             onChangeText={(text) => setFormData({ ...formData, lastName: text })}
                         />
-                        <Text style={styles.info}>First name:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="First Name"
+                        <StyledTextInput
+                            label="First Name"
                             value={formData.firstName}
                             onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                         />
-                        <Text style={styles.info}>Email:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Email"
+                        <StyledTextInput
+                            label="Email"
                             value={formData.email}
                             onChangeText={(text) => setFormData({ ...formData, email: text })}
                             autoCapitalize="none"
@@ -282,19 +277,20 @@ export default function Settings() {
                 )}
                 {modalType === "password" && (
                     <>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Old Password"
+                        <StyledTextInput
+                            label="Old Password"
                             secureTextEntry={true}
                             value={formData.oldPassword}
                             onChangeText={(text) => setFormData({ ...formData, oldPassword: text })}
                         />
-                        <PasswordInput
-                            placeholder="New Password"
+                        <StyledTextInput
+                            password={true}
+                            label="New Password"
                             value={formData.newPassword}
                             onChangeText={(text) => setFormData({ ...formData, newPassword: text })}
                         />
-                        <PasswordInput
+                        <StyledTextInput
+                            password={true}
                             placeholder="Confirm Password"
                             value={formData.confirmPassword}
                             onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}

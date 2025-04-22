@@ -13,8 +13,7 @@ import { LoadingPage } from "@/components/LoadingPage";
 export default function manageVehicles() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // TODO: replace with backend fetch
-  // using mock data 
+
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [searchResult, setSearchResult] = useState<Vehicle[]>([]);
   const [search, setSearch] = useState('');
@@ -41,6 +40,7 @@ export default function manageVehicles() {
 
 
   useEffect(() => {
+    if (vehicles.length === 0) return
     const filtered = vehicles.filter(v =>
       v.model.toLowerCase().includes(search.toLowerCase()) ||
       v.numberPlate.toLowerCase().includes(search.toLowerCase())
@@ -61,6 +61,7 @@ export default function manageVehicles() {
           />
           <AddVehicleButton
             onAddVehicle={(newVehicle) => {
+              //adds vehicle to state rather than refetch
               setVehicles(prev => [...prev, newVehicle])
             }}
           />

@@ -40,7 +40,6 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
     setEditMode(false)
   }
 
-
   async function handleEdit() {
     const token = await getItem("token");
     setEditLoading(true)

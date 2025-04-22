@@ -6,6 +6,7 @@ import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
 import PasswordInput from '@/components/PasswordInput';
+import StyledTextInput from '@/components/StyledTextInput';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -156,15 +157,16 @@ export default function LoginScreen() {
                     <Text style={styles.title}>banana bus 🚌</Text>
                 </View>
                 <View style={styles.form}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="email"
+                    <StyledTextInput
+                        label="email"
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-                    <PasswordInput
+                    <StyledTextInput
+                        password={true}
+                        label="password"
                         value={password}
                         onChangeText={setPassword}
                     />
@@ -188,9 +190,8 @@ export default function LoginScreen() {
                     
                     {modalType === "sendCode" && (
                         <>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="email"
+                            <StyledTextInput
+                                label="email"
                                 value={recoveryEmail}
                                 onChangeText={setRecoveryEmail}
                                 keyboardType="email-address"
@@ -202,8 +203,7 @@ export default function LoginScreen() {
                     )}
                     {modalType === "enterCode" && (
                         <>
-                            <TextInput
-                                style={styles.input}
+                            <StyledTextInput
                                 placeholder="code"
                                 value={emailCode}
                                 onChangeText={setEmailCode}
