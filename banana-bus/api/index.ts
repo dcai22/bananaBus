@@ -414,6 +414,7 @@ app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
 
 app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     try {
+        await connectToDatabase();
         const allVehicles = await collections.vehicles?.find().toArray();
         res.json({ vehicles: allVehicles });
     } catch (err) {
@@ -429,6 +430,7 @@ app.post('/manager/addVehicle', async (req: Request, res: Response, next) => {
     const maxLuggageCapacity = req.body.maxLuggageCapacity as number;
     const hasAssist = req.body.hasAssist as boolean;
     const numberPlate = req.body.numberPlate as string;
+    const model = req.body.model;
 
     await connectToDatabase();
 
@@ -444,7 +446,7 @@ app.post('/manager/addVehicle', async (req: Request, res: Response, next) => {
     }
 
     try {   
-        res.json(await addVehicle(maxCapacity, maxLuggageCapacity, hasAssist, numberPlate));
+        res.json(await addVehicle(maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
     } catch (err) {
         next(err);
     }
@@ -454,11 +456,12 @@ app.post('/manager/addVehicle', async (req: Request, res: Response, next) => {
 
 app.put('/manager/editVehicle', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const vehicleId = req.body.vehicleId as ObjectId;
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
     const maxCapacity = req.body.maxCapacity as number;
     const maxLuggageCapacity = req.body.maxLuggageCapacity as number;
     const hasAssist = req.body.hasAssist as boolean;
     const numberPlate = req.body.numberPlate as string;
+    const model = req.body.model;
 
     await connectToDatabase();
 
@@ -474,7 +477,7 @@ app.put('/manager/editVehicle', async (req: Request, res: Response, next) => {
     }
 
     try {   
-        res.json(await editVehicle(vehicleId, maxCapacity, maxLuggageCapacity, hasAssist, numberPlate));
+        res.json(await editVehicle(vehicleId, maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
     } catch (err) {
         next(err);
     }
@@ -483,7 +486,7 @@ app.put('/manager/editVehicle', async (req: Request, res: Response, next) => {
 
 app.delete('/manager/deleteVehicle', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string; 
-    const vehicleId = req.body.vehicleId as ObjectId;
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
 
     await connectToDatabase();
     const strippedToken = token.replace("Bearer ", "");

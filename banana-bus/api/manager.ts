@@ -37,7 +37,7 @@ export async function removeManager(token: string) {
 }
 
 
-export async function addVehicle(maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean, numberPlate: string): Promise<Vehicle> {
+export async function addVehicle(maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean, numberPlate: string, model: string): Promise<Vehicle> {
     await connectToDatabase();
 
     if (!collections.vehicles) {
@@ -54,7 +54,8 @@ export async function addVehicle(maxCapacity: number, maxLuggageCapacity: number
         maxCapacity: maxCapacity,
         maxLuggageCapacity: maxLuggageCapacity,
         hasAssist: hasAssist,
-        numberPlate: numberPlate
+        numberPlate: numberPlate,
+        model,
     };
 
     const added_vehicle = await collections.vehicles.insertOne(newVehicle);
@@ -91,7 +92,7 @@ export async function deleteVehicle(vehicleId: ObjectId) {
     return {};
 }
 
-export async function editVehicle( vehicleId: ObjectId, maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean,numberPlate: string): Promise<Vehicle>{
+export async function editVehicle( vehicleId: ObjectId, maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean, numberPlate: string, model: string): Promise<Vehicle>{
     await connectToDatabase();
 
     if (!collections.vehicles) {
@@ -111,7 +112,7 @@ export async function editVehicle( vehicleId: ObjectId, maxCapacity: number, max
     const result = await collections.vehicles.findOneAndUpdate(
         { _id: vehicleId },
         {
-          $set: { maxCapacity, maxLuggageCapacity, hasAssist, numberPlate }
+          $set: { maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model }
         },
         { returnDocument: 'after' }
       );

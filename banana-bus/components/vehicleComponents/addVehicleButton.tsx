@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {View, Text, TouchableOpacity, StyleSheet, Switch, Alert } from "react-native";
+import {View, Text, TouchableOpacity, StyleSheet, Switch, Alert, ActivityIndicator } from "react-native";
 import Modal from "react-native-modal"
 import StyledTextInput from "../StyledTextInput";
 import { getItem } from "expo-secure-store";
@@ -13,7 +13,7 @@ interface addVehicleButtonProps {
 export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) {
   const [visible, setVisible] = useState(false)
   
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [model, setModel] = useState("");
@@ -33,12 +33,15 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
 
   async function handleAdd() {
     const token = await getItem("token");
-    /* axios.post("https://banana-bus.vercel.app/manager/addVehicle", 
+    setLoading(true)
+    console.log("hi")
+    axios.post("https://banana-bus.vercel-nine.app/manager/addVehicle", 
       {
         maxCapacity: capacity,
         maxLuggageCapacity: luggage,
         hasAssist: hasAssist,
-        numberPlate: numberPlate
+        numberPlate: numberPlate,
+        model: model,
       },
       {
         headers: {
@@ -47,16 +50,23 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
       }
     ).then((res) => {
       Alert.alert(`Vehicle ${numberPlate} successfully added`);
-      setVisible(false);
-      onAddVehicle?.(res.data.vehicles)
+      onAddVehicle?.(res.data)
     }).catch((err) => {
+      console.error(err)
+      console.error(err.response.data.error)
       setError(err.response.data.error)
     }).finally(() => {
       setLoading(false)
-    }) */
-    Alert.alert(`Vehicle ${numberPlate} successfully added`);
-    setVisible(false)
+      setVisible(false);
+    })
   };
+
+  function handleModalClose() {
+    // prevents closing of modal when adding vehicle
+    if (loading) return
+    
+    setVisible(false)
+  }
 
   return (
     <View>
@@ -66,8 +76,8 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
 
       <Modal 
         isVisible={visible}
-        onBackButtonPress={() => setVisible(false)}
-        onBackdropPress={() => setVisible(false)}
+        onBackButtonPress={handleModalClose}
+        onBackdropPress={handleModalClose}
       >
           <View style={styles.modalContainer}>
             <Text style={styles.title}>Add Vehicle</Text>
@@ -107,14 +117,22 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
               />
               <Text style={styles.assistText}>Wheelchair Accessible</Text>
             </View>
-            <View style={styles.buttonsContainer}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setVisible(false)}>
-                <Text style={{ color: '#2A8AE4' }}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalAddBtn} onPress={handleAdd}>
-                <Text style={{ color: 'white' }}>Add</Text>
-              </TouchableOpacity>
-            </View>
+            { loading ? (
+              <View style={styles.buttonsContainer}>
+                <TouchableOpacity style={styles.modalAddBtn} disabled={true}>
+                  <ActivityIndicator size="small" color="white"/>
+                </TouchableOpacity>
+              </View>
+            ): (
+              <View style={styles.buttonsContainer}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={handleModalClose}>
+                  <Text style={{ color: '#2A8AE4' }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalAddBtn} onPress={handleAdd}>
+                  <Text style={{ color: 'white' }}>Add</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
       </Modal>
     </View>

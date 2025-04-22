@@ -8,28 +8,28 @@ import VehicleBox from "@/components/vehicleComponents/vehicleBox";
 import { getItem } from "expo-secure-store";
 import axios from "axios";
 import { Vehicle } from "@/api/interface";
+import { LoadingPage } from "@/components/LoadingPage";
 
 export default function manageVehicles() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   // TODO: replace with backend fetch
   // using mock data 
-  const [vehicles, setVehicles] = useState(vs);
-  const [searchResult, setSearchResult] = useState(vs);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [searchResult, setSearchResult] = useState<Vehicle[]>([]);
   const [search, setSearch] = useState('');
 
-
-  /* useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
         const token = await getItem("token");
         setLoading(true)
-        axios.get("https://banana-bus.vercel.app/manager/getVehicles", {
+        axios.get("https://banana-bus.vercel.app/manager/allVehicles", {
             headers: {
                 "Authorization": `Bearer ${token}`,
             }
         }).then((res) => {
-            setVehicles(res.data.Vehicles)
-            setSearchResult(res.data.Vehicles)
+            setVehicles(res.data.vehicles)
+            setSearchResult(res.data.vehicles)
         }).catch((err) => {
             setError(err.response.data.error)
         }).finally(() => {
@@ -37,7 +37,7 @@ export default function manageVehicles() {
         })
     }
     fetchData();
-  }, []) */
+  }, [])
 
 
   useEffect(() => {
@@ -61,22 +61,35 @@ export default function manageVehicles() {
           />
           <AddVehicleButton
             onAddVehicle={(newVehicle) => {
-              //adds vehicle to state rather than refetch
               setVehicles(prev => [...prev, newVehicle])
             }}
           />
         </View>
         <View style ={styles.listContainer}>
-          <FlatList
-            data={searchResult}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => <VehicleBox vehicle={item} />}
-            ListEmptyComponent={
-            <View style= {styles.emptyListContainer}>
-              <Text style={styles.emptyListText}>No vehicles found</Text>
-            </View>
-            }
-          />
+          { loading ? (
+            <LoadingPage/>
+          ): (
+            <FlatList
+              data={searchResult}
+              keyExtractor={(item) => item._id.toString()}
+              renderItem={({ item }) => 
+                <VehicleBox 
+                  vehicle={item}
+                  onEditVehicle={(edited) => {
+                    setVehicles(prev => prev.map(v => v._id.toString() === edited._id.toString() ? edited : v));
+                  }}
+                  onDeleteVehicle={(deleted) => {
+                    setVehicles(prev => prev.filter(v => v._id.toString() !== deleted._id.toString()))
+                  }}
+                />
+              }
+              ListEmptyComponent={
+              <View style= {styles.emptyListContainer}>
+                <Text style={styles.emptyListText}>No vehicles found</Text>
+              </View>
+              }
+            />
+          )}
         </View>
       </View>
     </Container>
@@ -121,55 +134,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   }
 });
-
-// mock data
-const vs = [
-  {
-    _id: "123",
-    maxCapacity: 20,
-    maxLuggageCapacity: 20,
-    hasAssist: true,
-    model: "Toyota",
-    numberPlate: "abc123"
-  },
-  {
-    _id: "124",
-    maxCapacity: 22,
-    maxLuggageCapacity: 34,
-    hasAssist: false,
-    model: "Audi",
-    numberPlate: "123abc"
-  },
-  {
-    _id: "121",
-    maxCapacity: 20,
-    maxLuggageCapacity: 20,
-    hasAssist: true,
-    model: "Ford",
-    numberPlate: "pesadnsadsagufain"
-  },
-  {
-    _id: "1232",
-    maxCapacity: 20,
-    maxLuggageCapacity: 20,
-    hasAssist: true,
-    model: "Fordd",
-    numberPlate: "pedsadnguin"
-  },
-  {
-    _id: "121222",
-    maxCapacity: 201,
-    maxLuggageCapacity: 20,
-    hasAssist: true,
-    model: "Fordd",
-    numberPlate: "pdsadenguin"
-  },
-  {
-    _id: "1212223",
-    maxCapacity: 20,
-    maxLuggageCapacity: 201,
-    hasAssist: true,
-    model: "Forsddd",
-    numberPlate: "psad"
-  },
-]
