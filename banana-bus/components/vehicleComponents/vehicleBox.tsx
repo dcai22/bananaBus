@@ -66,7 +66,7 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
       Alert.alert(`Error: ${err.response.data.error}`)
       setError(err.response.data.error)
     }).finally(() => {
-      setEditMode(false);
+      resetModal()
       setVisible(false);
       setEditLoading(false)
     })
