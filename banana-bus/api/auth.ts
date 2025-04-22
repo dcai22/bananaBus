@@ -1,12 +1,12 @@
 import HTTPError from "http-errors";
-import { AuthUserId, DataStore, Error, UserBuilder } from "./interface";
+import { AuthUserId, DataStore, Error, User, UserBuilder, UserPayload } from "./interface";
 import { getHash, compareHash, findUserByToken, findUserByResetToken } from "./helper";
 import crypto from "crypto";
 import { collections } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { connectToDatabase } from "./mongoUtil";
 import dotenv from "dotenv";
-
+var jwt = require('jsonwebtoken');
 dotenv.config();
 
 export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
@@ -21,17 +21,20 @@ export async function authRegister(email: string, password: string, firstName: s
         throw HTTPError(400, 'email address already in use');
     }
 
-    const hashedPassword = getHash(password);
-    const token = crypto.randomBytes(64).toString('hex')
-    const hashedToken = getHash(token);
-
+    const hashedPassword = await getHash(password);
+    const sessionId = crypto.randomBytes(64).toString('hex');
 
     const newUser = {
         firstName: firstName,
         lastName: lastName,
         email: email,
         password: hashedPassword,
-        tokens: [ hashedToken ],
+        sessions: [
+            {
+                sessionId: sessionId,
+                expiry: new Date(Date.now() + 120 * 60 * 1000),
+            },
+        ],
         resetToken: {
             token: '',
             code: '',
@@ -44,9 +47,12 @@ export async function authRegister(email: string, password: string, firstName: s
     }
 
     const userId = await collections.users.insertOne(newUser);
+
+    const jwtToken = jwt.sign({ userId: userId.insertedId.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
+
     return {
         userId: userId.insertedId,
-        token: token
+        token: jwtToken
     };
 }
 
@@ -62,14 +68,15 @@ export async function authLogin(email: string, password: string) {
         throw HTTPError(400, 'email not found');
     }
 
-    if (!compareHash(password, user.password)) {
+    if (!(await compareHash(password, user.password))) {
         throw HTTPError(400, 'incorrect password');
     }
 
-    const token = crypto.randomBytes(64).toString('hex');
-    const hashedToken = getHash(token);
-
-    await collections.users.updateOne({ email: email }, { $push: { tokens: hashedToken } } as any);
+    
+    const sessionId = crypto.randomBytes(64).toString('hex');
+    const expiry = new Date(Date.now() + 120 * 60 * 1000);
+    await collections.users.updateOne({ _id: user._id }, { $push: { sessions: { sessionId, expiry } } } as any);
+    const token = jwt.sign({ userId: user._id.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
     return {
         userId: user._id,
@@ -101,24 +108,25 @@ export async function authLogout(userId: ObjectId, token: string) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const userById = await collections.users.findOne({ _id: new ObjectId(userId) });
-    if (!userById) {
-        throw HTTPError(400, 'invalid userId ' + userId);
-    }
     const strippedToken = token.replace('Bearer ', '');
     const userByToken = await findUserByToken(strippedToken);
     if (!userByToken) {
         throw HTTPError(403, 'invalid token');
     }
-    if (!userById._id.equals(userByToken._id)) {
-        throw HTTPError(403, 'invalid data');
+
+
+    const decoded = jwt.verify(strippedToken, process.env.JWT_SECRET);
+    
+    const sessionId = decoded.sessionId;
+    const tokenUserId = decoded.userId;
+
+    if (userId.toString() !== tokenUserId) {
+        throw HTTPError(403, 'invalid token');
     }
 
-    for (const userToken of userById.tokens) {
-        if (compareHash(strippedToken, userToken)) {
-            await collections.users.updateOne({ _id: new ObjectId(userId) }, { $pull: { tokens: userToken } } as any);
-            return { message: 'logged out' };
-        }
+    await collections.users.updateOne({ _id: userId }, { $pull: { sessions: { sessionId: sessionId } } } as any);
+    return {
+        message: 'logged out',
     }
 }
 
@@ -139,13 +147,12 @@ export async function authPasswordResetEmail(email: string) {
         }
     }
 
-    const hashedCode = getHash(code);
-    const hashedToken = getHash(token);
+    const hashedCode = await getHash(code);
+    const hashedToken = await getHash(token);
     const expiry = new Date(Date.now() + 15 * 60 * 1000);
     await collections.users.updateOne({ email: email }, { $set: { resetToken: { token: hashedToken, code: hashedCode, expiry: expiry } } } as any);
 
     const nodemailer = require('nodemailer');
-    // for now just use ethereal email
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
@@ -211,11 +218,11 @@ export async function authPasswordVerifyCode(token: string, code: string) {
     if (user.resetToken.expiry < new Date()) {
         throw HTTPError(400, 'token expired');
     }
-    if (!compareHash(code, user.resetToken.code)) {
+    if (!(await compareHash(code, user.resetToken.code))) {
         throw HTTPError(400, 'incorrect code');
     }
     const newToken = crypto.randomBytes(64).toString('hex');
-    const hashedToken = getHash(newToken);
+    const hashedToken = await getHash(newToken);
     user.resetToken.token = hashedToken;
     user.resetToken.expiry = new Date(Date.now() + 15 * 60 * 1000);
     await collections.users.updateOne({ _id: user._id }, { $set: { resetToken: user.resetToken } } as any);
@@ -237,7 +244,7 @@ export async function authPasswordReset(token: string, password: string) {
     if (user.resetToken.expiry < new Date()) {
         throw HTTPError(400, 'token expired');
     }
-    const hashedPassword = getHash(password);
+    const hashedPassword = await getHash(password);
     await collections.users.updateOne({ _id: user._id }, { $set: { password: hashedPassword } } as any);
     return {
         message: 'password reset',

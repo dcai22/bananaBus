@@ -71,10 +71,10 @@ export async function updateUserPassword(token: string, oldPassword: string, new
         throw HTTPError(403, 'invalid token');
     }
 
-    if (!compareHash(oldPassword, user.password)) {
+    if (!(await compareHash(oldPassword, user.password))) {
         throw HTTPError(400, 'incorrect password');
     }
-    const newHashedPassword = getHash(newPassword);
+    const newHashedPassword = await getHash(newPassword);
     await collections.users?.updateOne({ _id: user._id }, { $set: { password: newHashedPassword } } as any);
     return {};
 }
@@ -210,8 +210,8 @@ export async function addCard(token: string, type: string, cardNumber: string, c
         throw HTTPError(400, "Card is expired");
     }
 
-    const hashedCardNumber = getHash(cardNumber);
-    const hashedCvv = getHash(cvv);
+    const hashedCardNumber = await getHash(cardNumber);
+    const hashedCvv = await getHash(cvv);
     const last4 = cardNumber.slice(-4);
     
     let isDefault = false;
