@@ -49,6 +49,13 @@ export async function updateUserDetails(token: string, firstName: string, lastNa
     if (!user) {
         throw HTTPError(403, 'invalid token');
     }
+
+    const originalEmail = user.email;
+    const userByEmail = await collections.users?.findOne({ email : email });
+    if (userByEmail && userByEmail.email !== originalEmail) {
+        throw HTTPError(400, 'cannot use this email');
+    }
+
     await collections.users?.updateOne({ _id: user._id }, { $set: { firstName: firstName, lastName: lastName, email: email } } as any);
 
     return {

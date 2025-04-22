@@ -250,3 +250,23 @@ export async function authPasswordReset(token: string, password: string) {
         message: 'password reset',
     }
 }
+
+export async function removeExpiredSessions() {
+    await connectToDatabase();
+
+    if (!collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    const now = new Date();
+
+    // Remove expired sessions from all users
+    const result = await collections.users.updateMany(
+        { "sessions.expiry": { $lte: now } }, // Match users with expired sessions
+        { $pull: { sessions: { expiry: { $lte: now } } } } as any // Remove expired sessions
+    );
+
+    return {
+        message: `Removed expired sessions from ${result.modifiedCount} user(s).`,
+    };
+}
