@@ -5,12 +5,9 @@ import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
-<<<<<<< HEAD
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { set } from 'date-fns';
-=======
 import PasswordInput from '@/components/PasswordInput';
->>>>>>> be823c9eaed7afbb03dfb37b977bde2e4aa493dc
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");

@@ -300,14 +300,14 @@ export default function Settings() {
                             value={formData.firstName}
                             onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                         />
-                        <Text style={styles.info}>Email:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Email"
-                            value={formData.email}
-                            onChangeText={(text) => setFormData({ ...formData, email: text })}
-                            autoCapitalize="none"
-                        />
+                        {!isExternal && (
+                            <><Text style={styles.info}>Email:</Text><TextInput
+                                style={styles.input}
+                                placeholder="Email"
+                                value={formData.email}
+                                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                                autoCapitalize="none" /></>
+                        )}
                     </>
                 )}
                 {modalType === "password" && (
