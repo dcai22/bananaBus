@@ -53,6 +53,7 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
     }).catch((err) => {
       console.error(err)
       console.error(err.response.data.error)
+      Alert.alert(`Error: ${err.response.data.error}`)
       setError(err.response.data.error)
     }).finally(() => {
       setLoading(false)

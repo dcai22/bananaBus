@@ -63,6 +63,7 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
     }).catch((err) => {
       console.error(err)
       console.error(err.response.data.error)
+      Alert.alert(`Error: ${err.response.data.error}`)
       setError(err.response.data.error)
     }).finally(() => {
       setEditMode(false);
@@ -98,6 +99,7 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
     }).catch((err) => {
       console.error(err)
       console.error(err.response.data.error)
+      Alert.alert(`Error: ${err.response.data.error}`)
       setError(err.response.data.error)
     }).finally(() => {
       setDeleteLoading(false)
