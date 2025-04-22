@@ -19,8 +19,8 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
   // Vehicle Info for Modal
   const [model, setModel] = useState(vehicle.model);
   const [numberPlate, setNumberPlate] = useState(vehicle.numberPlate);
-  const [capacity, setCapacity] = useState(vehicle.maxCapacity);
-  const [luggage, setLuggage] = useState(vehicle.maxLuggageCapacity);
+  const [capacity, setCapacity] = useState(vehicle.maxCapacity.toString());
+  const [luggage, setLuggage] = useState(vehicle.maxLuggageCapacity.toString());
   const [hasAssist, setHasAssist] = useState(vehicle.hasAssist);
   const [visible, setVisible] = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -34,8 +34,8 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
     // resets modal variables back to vehicle box info
     setModel(vehicle.model)
     setNumberPlate(vehicle.numberPlate)
-    setCapacity(vehicle.maxCapacity)
-    setLuggage(vehicle.maxLuggageCapacity)
+    setCapacity(vehicle.maxCapacity.toString())
+    setLuggage(vehicle.maxLuggageCapacity.toString())
     setHasAssist(vehicle.hasAssist)
     setEditMode(false)
   }
@@ -48,8 +48,8 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
         vehicleId: vehicle._id,
         model: model,
         numberPlate: numberPlate,
-        maxCapacity: capacity,
-        maxLuggageCapacity: luggage,
+        maxCapacity: parseInt(capacity),
+        maxLuggageCapacity: parseInt(luggage),
         hasAssist: hasAssist,
       }, {
         headers: {
@@ -170,7 +170,7 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
             label="Max Capacity"
             value={capacity.toString()}
             onChangeText={(text) => {
-              setCapacity(parseInt(text.replace(/\D/g, "")))
+              setCapacity(text.replace(/\D/g, ""))
             }}
             keyboardType="numeric"
             readOnly={!editMode}
@@ -179,7 +179,7 @@ export default function VehicleBox({vehicle, onEditVehicle, onDeleteVehicle}: Ve
             label="Max Luggage Capacity"
             value={luggage.toString()}
             onChangeText={(text) => {
-              setLuggage(parseInt(text.replace(/\D/g, "")))
+              setLuggage(text.replace(/\D/g, ""))
             }}
             keyboardType="numeric"
             readOnly={!editMode}

@@ -18,27 +18,26 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
 
   const [model, setModel] = useState("");
   const [numberPlate, setNumberPlate] = useState("");
-  const [capacity, setCapacity] = useState(0);
-  const [luggage, setLuggage] = useState(0);
+  const [capacity, setCapacity] = useState("0");
+  const [luggage, setLuggage] = useState("0");
   const [hasAssist, setHasAssist] = useState(false);
 
   // reset to default if exiting modal
   useEffect(() => {
     setModel("")
     setNumberPlate("")
-    setCapacity(0)
-    setLuggage(0)
+    setCapacity("0")
+    setLuggage("0")
     setHasAssist(false)
   }, [visible])
 
   async function handleAdd() {
     const token = await getItem("token");
     setLoading(true)
-    console.log("hi")
-    axios.post("https://banana-bus.vercel-nine.app/manager/addVehicle", 
+    axios.post("https://banana-bus.vercel.app/manager/addVehicle", 
       {
-        maxCapacity: capacity,
-        maxLuggageCapacity: luggage,
+        maxCapacity: parseInt(capacity),
+        maxLuggageCapacity: parseInt(luggage),
         hasAssist: hasAssist,
         numberPlate: numberPlate,
         model: model,
@@ -95,7 +94,7 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
               label="Max Capacity"
               value={capacity.toString()}
               onChangeText={(text) => {
-                setCapacity(parseInt(text.replace(/\D/g, '')))
+                setCapacity(text.replace(/\D/g, ''))
               }}
               keyboardType="numeric"
             />
@@ -103,7 +102,7 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
               label="Max Luggage Capacity"
               value={luggage.toString()}
               onChangeText={(text) => {
-                setLuggage(parseInt(text.replace(/\D/g, '')))
+                setLuggage(text.replace(/\D/g, ''))
               }}
               keyboardType="numeric"
             />
