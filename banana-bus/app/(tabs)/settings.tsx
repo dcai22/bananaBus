@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
 import { NoButton, YesButton } from "@/components/Buttons";
-import PasswordInput from "@/components/PasswordInput";
 import StyledTextInput from "@/components/StyledTextInput";
 
 export default function Settings() {
@@ -19,9 +18,32 @@ export default function Settings() {
         oldPassword: "",
         newPassword: "",
         confirmPassword: "",
+        isExternal: false,
     });
+    const [isExternal, setIsExternal] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [refresh, setRefresh] = useState(false);
 
     const router = useRouter();
+
+    useFocusEffect(
+        React.useCallback(() => {
+            setRefresh(true);
+            return () => {
+                setLoading(true);
+            };
+        }, [])
+    )
+
+    useEffect(() => {
+        const fetchIsExternal = async () => {
+            const externalStatus = await getItem("isExternal");
+            setIsExternal(externalStatus === "true");
+        }
+
+        fetchIsExternal();
+        setRefresh(false);
+    }, [refresh]);
 
     const fetchUserDetails = async () => {
         const token = await getItem('token');
@@ -47,6 +69,7 @@ export default function Settings() {
                     lastName: data.lastName,
                     firstName: data.firstName,
                     email: data.email,
+                    isExternal: data.isExternal,
                 }
             } else {
                 const errorData = await response.json();
@@ -76,6 +99,7 @@ export default function Settings() {
                 oldPassword: "",
                 newPassword: "",
                 confirmPassword: "",
+                isExternal: false,
             });
         }
 
@@ -90,6 +114,7 @@ export default function Settings() {
             oldPassword: "",
             newPassword: "",
             confirmPassword: "",
+            isExternal: false,
         });
         setModalVisible(false);
     }
@@ -192,6 +217,7 @@ export default function Settings() {
         }
         saveItem('token', '');
         saveItem('userId', '');
+        saveItem('isExternal', '');
         closeModal();
         router.navigate("/login");
     };
@@ -228,6 +254,7 @@ export default function Settings() {
 
         saveItem('token', '');
         saveItem('userId', '');
+        saveItem('isExternal', '');
         closeModal();
         router.navigate("/login");
     };
@@ -239,9 +266,11 @@ export default function Settings() {
                 <TouchableOpacity style={styles.option} onPress={() => openModal("details")}>
                     <Text style={styles.optionText}>Change details</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.option} onPress={() => openModal("password")}>
-                    <Text style={styles.optionText}>Update password</Text>
-                </TouchableOpacity>
+                {!isExternal && (
+                    <TouchableOpacity style={styles.option} onPress={() => openModal("password")}>
+                        <Text style={styles.optionText}>Update password</Text>
+                    </TouchableOpacity>
+                )}
                 <TouchableOpacity style={styles.option} onPress={() => openModal("logout")}>
                     <Text style={styles.optionText}>Logout</Text>
                 </TouchableOpacity>
@@ -267,12 +296,15 @@ export default function Settings() {
                             value={formData.firstName}
                             onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                         />
-                        <StyledTextInput
+                        
+                        {!isExternal && (
+                            <StyledTextInput
                             label="Email"
                             value={formData.email}
                             onChangeText={(text) => setFormData({ ...formData, email: text })}
                             autoCapitalize="none"
-                        />
+                            />
+                        )}
                     </>
                 )}
                 {modalType === "password" && (
