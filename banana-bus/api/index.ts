@@ -4,7 +4,7 @@ import errorHandler from "middleware-http-errors";
 
 import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode, authGoogleLogin, removeExpiredSessions } from './auth';
 import { getTrip, tripsList } from './tripsList';
-import { searchBookings } from './searchBookings';
+import { createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount,
             getAccountName, 
@@ -670,5 +670,37 @@ app.get('/removeExpiredSessions', async (req: Request, res: Response, next) => {
     }
     return;
 });
+
+app.post('/createPaymentDetails', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const price = parseInt(req.body.price);
+        res.json(await createPaymentDetails(token, price));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
+app.post('/createCustomerKey', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await createCustomerKey(token));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
+app.post('/createSetupIntent', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await createSetupIntent(token));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
 
 app.use(errorHandler());

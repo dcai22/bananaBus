@@ -2,6 +2,9 @@ import HTTPError from "http-errors";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { findUserByToken, getRouteById, getStopById, getTripById } from "./helper";
 import { Booking } from "./interface";
+import dotenv from "dotenv";
+dotenv.config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // timeFrame: 'past', 'upcoming', 'ongoing', 'all'.
 // Past bookings have already arrived at their destination,
@@ -78,3 +81,76 @@ export async function searchBookings(token: string, timeFrame: string, numBookin
     ));
     return userBookings;
 }
+
+export async function createPaymentDetails(token: string, price: number) {
+    await connectToDatabase();
+
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const customerId = user.customerId;
+    const customer = await stripe.customers.retrieve(customerId);
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+        { customer: customerId },
+        { apiVersion: '2025-03-31.basil' }
+    );
+
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: price,
+        currency: 'myr',
+        customer: customerId,
+    });
+
+    return { 
+        paymentIntent: paymentIntent.client_secret,
+        ephemeralKey: ephemeralKey.secret,
+        customer: customer.id,
+        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+    }
+}
+
+export async function createCustomerKey(token: string) {
+    await connectToDatabase();
+
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const customer = await stripe.customers.retrieve(user.customerId);
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+        { customer: user.customerId },
+        { apiVersion: '2025-03-31.basil' }
+    );
+
+    return {
+        customer: customer.id,
+        ephemeralKey: ephemeralKey.secret,
+    }
+}
+
+export async function createSetupIntent(token: string) {
+    await connectToDatabase();
+
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const customer = await stripe.customers.retrieve(user.customerId);
+    const setupIntent = await stripe.setupIntents.create({
+        customer: customer.id,
+    });
+    return {
+        setupIntent: setupIntent.client_secret,
+    }
+}
+
