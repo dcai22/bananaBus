@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { set } from 'date-fns';
 import React, { useEffect, useState } from 'react';
-import { StyleProp, StyleSheet, Text, TextStyle, TouchableOpacity, View } from 'react-native';
+import { StyleProp, StyleSheet, TextStyle, TouchableOpacity, View } from 'react-native';
 import { TextInput, TextInputProps } from 'react-native-paper';
 
 interface StyledInputProps extends TextInputProps {

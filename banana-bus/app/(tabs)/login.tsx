@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, Alert, ImageBackground, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Alert, ImageBackground } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "expo-router";
 import * as Device from "expo-device";
@@ -302,24 +302,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginBottom: 15,
     },
-    icon: {
-        width: 50,
-        height: 50,
-        marginBottom: 20,
-    },
     form: {
         width: "80%",
         alignItems: "center",
-    },
-    input: {
-        width: "100%",
-        padding: 10,
-        paddingHorizontal: 16,
-        margin: 8,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        backgroundColor: "#fff",
     },
     forgotPassword: {
         marginVertical: 6,
@@ -351,10 +336,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginHorizontal: 8,
         lineHeight: 16,
-    },
-    buttonContainer: {
-        justifyContent: "space-between",
-        flexDirection: "row",
     },
     buttons: {
         flex: 0,

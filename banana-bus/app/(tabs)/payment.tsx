@@ -7,7 +7,7 @@ import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { CustomModal } from '@/components/Modal';
 import { LoadingPage } from '@/components/LoadingPage';
-import { NoButton, YesButton } from '@/components/Buttons';
+import { NoButton, WarnButton, YesButton } from '@/components/Buttons';
 
 interface Card {
 	_id: string;
@@ -158,9 +158,9 @@ export default function Payment() {
 				onCancel={closeModal}
 				headerText="Card Options"
 			>
-				<NoButton text="Remove Card" onPress={handleRemoveCard}/>
-				<NoButton text="Make Default" onPress={handleMakeDefault}/>
-				<YesButton text="Cancel" onPress={closeModal} />
+				<YesButton text="Make Default" onPress={handleMakeDefault} style={styles.buttons}/>
+				<WarnButton text="Remove Card" onPress={handleRemoveCard} style={styles.buttons}/>
+				<NoButton text="Cancel" onPress={closeModal} style={styles.buttons}/>
 			</CustomModal>
 		</Container>
 	);
@@ -220,22 +220,8 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		fontWeight: 'bold',
 	},
-	modalOverlay: {
-		flex: 1,
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	modalContent: {
-		backgroundColor: 'white',
-		padding: 20,
-		borderRadius: 10,
-		width: '80%',
-		alignItems: 'center',
-	},
-	modalTitle: {
-		fontSize: 20,
-		fontWeight: 'bold',
-		marginBottom: 12,
-	},
+	buttons: {
+		flex: 0,
+		width: '100%',
+	}
 });

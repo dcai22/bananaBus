@@ -1,5 +1,5 @@
 import React from "react";
-import { TripBox, TripList } from "@/api/interface";
+import { TripBox } from "@/api/interface";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format, formatDistance } from "date-fns";
 import { router } from "expo-router";

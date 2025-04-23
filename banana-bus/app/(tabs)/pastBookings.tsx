@@ -66,10 +66,10 @@ export default function pastBookings() {
     return(
         <Container>
             <Header title="Past Bookings" icon={<FontAwesome name="calendar"/>}/>
-            <ScrollView>
+            <ScrollView style={styles.bookingsContainer}>
                 {pastTrips.length > 0 ? (
-                    pastTrips.map((item) => (
-                        <View style={styles.tripItem}>
+                    pastTrips.map((item, index) => (
+                        <View style={styles.tripItem} key={index}>
                             <View style={styles.accent} />
                             <View style={styles.tripContent}>
                                 <Text>
@@ -98,6 +98,9 @@ export default function pastBookings() {
 }
 
 const styles = StyleSheet.create({
+    bookingsContainer: {
+        paddingHorizontal: 16,
+    },
     tripItem: {
         flexDirection: 'row',
         backgroundColor: '#fff',

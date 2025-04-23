@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { Header } from "@/components/Header";
@@ -289,13 +289,12 @@ export default function Settings() {
                             value={formData.firstName}
                             onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                         />
-                        
                         {!isExternal && (
                             <StyledTextInput
-                            label="Email"
-                            value={formData.email}
-                            onChangeText={(text) => setFormData({ ...formData, email: text })}
-                            autoCapitalize="none"
+                                label="Email"
+                                value={formData.email}
+                                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                                autoCapitalize="none"
                             />
                         )}
                     </>
@@ -304,7 +303,7 @@ export default function Settings() {
                     <>
                         <StyledTextInput
                             label="Old Password"
-                            secureTextEntry={true}
+                            password={true}
                             value={formData.oldPassword}
                             onChangeText={(text) => setFormData({ ...formData, oldPassword: text })}
                         />
@@ -358,19 +357,6 @@ const styles = StyleSheet.create({
         fontSize: 36,
         fontWeight: "bold",
     },
-    headerBox: {
-        backgroundColor: '#fff',
-        marginBottom: 24,
-        padding: 35,
-        minHeight: 150,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
     option: {
         padding: 15,
         borderRadius: 8,
@@ -384,30 +370,10 @@ const styles = StyleSheet.create({
         elevation: 3,
         flex: 0,
     },
-    optionText: {
-        fontSize: 16,
-        color: "#333",
-    },
     section: {
         alignItems: "center",
         justifyContent: "center",
         flex: 1,
-    },
-    deleteOption: {
-        backgroundColor: "#FF3B30",
-    },
-    deleteOptionText: {
-        color: "white",
-        fontWeight: "bold",
-    },
-    input: {
-        width: "100%",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-        padding: 10,
-        paddingHorizontal: 16,
-        marginBottom: 8,
     },
     modalButtons: {
         flexDirection: "row",
@@ -417,11 +383,5 @@ const styles = StyleSheet.create({
     modalButton: {
         flex: 1,
         marginHorizontal: 5,
-    },
-    info: {
-        fontSize: 14,
-        textAlign: "left",
-        width: "100%",
-
     },
 });
