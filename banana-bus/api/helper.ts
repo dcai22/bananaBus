@@ -97,6 +97,21 @@ export async function driverGetTrip(token: string, tripId: ObjectId) {
         throw HTTPError(400, 'bookings not found');
     }
 
+    const trip = await getTripById(tripId);
+    const route = await getRouteById(trip.routeId);
+    const vehicle = await getVehicleById(trip.vehicleId);
+
+    const stops = await Promise.all(
+        route.stops.map(async (s, i) => {
+            const stop = await getStopById(s);
+            return {
+                _id: s,
+                name: stop.name,
+                stopTime: trip.stopTimes[i],
+            };
+        })
+    );
+
     const passengers = await Promise.all(
         allBookings.map(async (booking) => {
             const user = await collections.users?.findOne<User>({
@@ -115,5 +130,5 @@ export async function driverGetTrip(token: string, tripId: ObjectId) {
         })
     );
 
-    return { passengers };
+    return { vehicle: Object.assign(vehicle, { _id: vehicle._id.toString() }), stops, passengers };
 }

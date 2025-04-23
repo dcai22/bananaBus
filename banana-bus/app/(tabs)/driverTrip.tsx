@@ -12,13 +12,16 @@ import { API_BASE } from '@env';
 
 export default function driverTrip() {
     interface Vehicle {
-        vehicleId: string,
-        numberPlate: string,
+        _id: string,
+        maxCapacity: number,
+        maxLuggageCapacity: number,
         hasAssist: boolean,
-    }
+        numberPlate: string,
+    } 
 
     interface Stop {
-        stopId: string,
+        _id: string,
+        name: string,
         stopTime: Date,
     }
 
@@ -34,7 +37,7 @@ export default function driverTrip() {
     const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [vehicle, setVehicle] = useState<Vehicle>({vehicleId: "", numberPlate: "", hasAssist: false});
+    const [vehicle, setVehicle] = useState<Vehicle>();
     const [stops, setStops] = useState<Stop[]>([]);
     const [passengers, setPassengers] = useState<Passenger[]>([]);
     
@@ -86,16 +89,6 @@ export default function driverTrip() {
         // ]);
     }, [tripId, refresh]);
 
-    // TODO: add refresh
-    if (loading) {
-        return(
-            <View style={styles.screen}>
-                <Header/>
-                <LoadingPage/>
-            </View>
-        )
-    }
-
     // make nicer or pop up
     if (error) {
         return(
@@ -118,23 +111,37 @@ export default function driverTrip() {
                     </View>
                 </View>
             </View>
-            <View style={styles.section}>
-                <View style={styles.upcomingList}>
-                    <Text>Vehicle: {vehicle.toString()}</Text>
-                    <Text>Stops: {stops.toString()}</Text>
-                    <Text>
-                        <Text>
-                            Passengers:
-                        </Text>
-                        {passengers.map((e, i) => <Text key={i}>
-                            {e.firstName} {e.lastName} has {e.numTickets} ticket(s),
-                        </Text>)}
-                    </Text>
-                    <TouchableOpacity>
-                        <Text>Report problem with vehicle</Text>
-                    </TouchableOpacity>
+            {loading
+                ? <LoadingPage />
+                : <View style={styles.section}>
+                    <View style={styles.upcomingList}>
+                        {vehicle &&
+                            <Text>Vehicle: {vehicle.numberPlate}. Capacity: {vehicle.maxCapacity}. Luggage capacity: {vehicle.maxLuggageCapacity}.</Text>
+                        }
+                        {stops && stops.length > 0 &&
+                            <View>
+                                {stops.map((s, i) => <Text key={i}>{i > 0 ? " -> " : ""}{s.name} ({format(s.stopTime, "hh:mm a")})</Text>)}
+                            </View>
+                        }
+                        {passengers &&
+                            <Text>
+                                <Text>
+                                    Passengers:
+                                </Text>
+                                {passengers.map((e, i) => <Text key={i}>
+                                    {e.firstName} {e.lastName} has {e.numTickets} ticket(s),
+                                </Text>)}
+                                <Text>
+                                    Total passengers: {passengers.reduce((accumulator, p) => accumulator + p.numTickets, 0)}
+                                </Text>
+                            </Text>
+                        }
+                        <TouchableOpacity>
+                            <Text>Report problem with vehicle</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
+            }
         </Container>
     )
 }
