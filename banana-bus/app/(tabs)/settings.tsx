@@ -5,8 +5,8 @@ import { getItem, saveItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
-import { NoButton, YesButton } from "@/components/Buttons";
-import PasswordInput from "@/components/PasswordInput";
+import { NoButton, StandardButton, WarnButton, YesButton } from "@/components/Buttons";
+import StyledTextInput from "@/components/StyledTextInput";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -263,20 +263,12 @@ export default function Settings() {
         <Container>
             <Header title="Settings" showGoBack={false} emoji="⚙️"/>
             <View style={styles.section}>
-                <TouchableOpacity style={styles.option} onPress={() => openModal("details")}>
-                    <Text style={styles.optionText}>Change details</Text>
-                </TouchableOpacity>
+                <StandardButton text="Change Details" onPress={() => openModal("details")} style={styles.option}/>
                 {!isExternal && (
-                    <TouchableOpacity style={styles.option} onPress={() => openModal("password")}>
-                        <Text style={styles.optionText}>Update password</Text>
-                    </TouchableOpacity>
+                    <StandardButton text="Update Password" onPress={() => openModal("password")} style={styles.option}/>
                 )}
-                <TouchableOpacity style={styles.option} onPress={() => openModal("logout")}>
-                    <Text style={styles.optionText}>Logout</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.option, styles.deleteOption]} onPress={() => openModal("delete")}>
-                    <Text style={[styles.optionText, styles.deleteOptionText]}>Delete Account</Text>
-                </TouchableOpacity>
+                <StandardButton text="Logout" onPress={() => openModal("logout")} style={styles.option}/>
+                <WarnButton text="Delete Account" onPress={() => openModal("delete")} style={styles.option}/>
             </View>
             <CustomModal
                 visible={modalVisible}
@@ -286,46 +278,44 @@ export default function Settings() {
             >
                 {modalType === "details" && (
                     <>
-                        <Text style={styles.info}>Last name:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Last Name"
+                        <StyledTextInput
+                            label="Last Name"
                             value={formData.lastName}
                             onChangeText={(text) => setFormData({ ...formData, lastName: text })}
                         />
-                        <Text style={styles.info}>First name:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="First Name"
+                        <StyledTextInput
+                            label="First Name"
                             value={formData.firstName}
                             onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                         />
+                        
                         {!isExternal && (
-                            <><Text style={styles.info}>Email:</Text><TextInput
-                                style={styles.input}
-                                placeholder="Email"
-                                value={formData.email}
-                                onChangeText={(text) => setFormData({ ...formData, email: text })}
-                                autoCapitalize="none" /></>
+                            <StyledTextInput
+                            label="Email"
+                            value={formData.email}
+                            onChangeText={(text) => setFormData({ ...formData, email: text })}
+                            autoCapitalize="none"
+                            />
                         )}
                     </>
                 )}
                 {modalType === "password" && (
                     <>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Old Password"
+                        <StyledTextInput
+                            label="Old Password"
                             secureTextEntry={true}
                             value={formData.oldPassword}
                             onChangeText={(text) => setFormData({ ...formData, oldPassword: text })}
                         />
-                        <PasswordInput
-                            placeholder="New Password"
+                        <StyledTextInput
+                            password={true}
+                            label="New Password"
                             value={formData.newPassword}
                             onChangeText={(text) => setFormData({ ...formData, newPassword: text })}
                         />
-                        <PasswordInput
-                            placeholder="Confirm Password"
+                        <StyledTextInput
+                            password={true}
+                            label="Confirm Password"
                             value={formData.confirmPassword}
                             onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
                         />
@@ -342,7 +332,7 @@ export default function Settings() {
                 {modalType === "delete" && (
                     <>
                         <View style={styles.modalButtons}>
-                            <YesButton text="Yes" onPress={handleDeleteAccount} style={styles.modalButton}/>
+                            <WarnButton text="Delete" onPress={handleDeleteAccount} style={styles.modalButton}/>
                             <NoButton text="No" onPress={closeModal} style={styles.modalButton} />
                         </View>
                     </>
@@ -381,7 +371,6 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
     },
     option: {
-        backgroundColor: "white",
         padding: 15,
         borderRadius: 8,
         width: "80%",
@@ -392,15 +381,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
+        flex: 0,
     },
     optionText: {
         fontSize: 16,
         color: "#333",
     },
     section: {
-        flex: 1,
         alignItems: "center",
         justifyContent: "center",
+        flex: 1,
     },
     deleteOption: {
         backgroundColor: "#FF3B30",
