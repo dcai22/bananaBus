@@ -11,23 +11,9 @@ import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
 import { CheckoutHeader } from "@/components/Header";
+import { initStripe, useStripe } from "@stripe/stripe-react-native";
 
 // TODO: fix up stack/tabs so router back works properly
-
-const tripBox  = {
-    tripId: "hello",
-    departId: "hello",
-    arriveId: "hello",
-    departureTime: new Date(),
-    arrivalTime: new Date(),
-    price: 20,
-    curCapacity: 20,
-    maxCapacity: 20,
-    curLuggageCapacity: 20,
-    maxLuggageCapacity: 20,
-    luggagePrice: 20,
-    hasAssist: true, 
-}
 
 export default function booking() {
     const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
@@ -44,6 +30,9 @@ export default function booking() {
     
     const [isCheckout, setIsCheckout] = useState(false);
 
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+    const [totalPrice, setTotalPrice] = useState(0);
+
     const router = useRouter();
     
     // TODO: backend to retrieve card details
@@ -59,6 +48,14 @@ export default function booking() {
             };
         }, [])
     )
+
+    useEffect(() => {
+        if (!trip) {
+            setTotalPrice(0)
+            return;
+        }
+        setTotalPrice(numPassenger * trip.price + numLuggage * trip.luggagePrice);
+    }, [numPassenger, numLuggage, trip, isCheckout]);
 
     useEffect(() => {
         if (!refresh) return
@@ -88,6 +85,15 @@ export default function booking() {
 
         fetchData();
     }, [tripId, departId, arriveId, refresh])
+
+    useEffect(() => {
+        async function initialise() {
+            await initStripe({
+                publishableKey: "pk_test_51RH2exQCoWz9CNH6HCkaSlX0P2ksn6Jd9NvcE7XzC492WF9W2GX5GgOx0SgINII4Burm48fsnMn7kdfZX1Cyd6AI00YJXaEQnw",
+            });
+        }
+        initialise();
+    })
 
     if (loading) {
         return(
@@ -132,11 +138,6 @@ export default function booking() {
         setNumLuggage(num => (num > 0 ? num - 1 : num))
     }
 
-    function totalPrice() {
-        if (!trip) return 0;
-        return (numPassenger * trip.price) + (numLuggage * trip.luggagePrice)
-    }
-
     // TODO: API calls to backend or navigate to new routes
     function handleSelectSeat() {
     
@@ -145,38 +146,88 @@ export default function booking() {
     function handleCardChange() {
 
     }
-    
-    async function handleCheckout() {
-        // TODO: handle payment
-        if (numPassenger === 0) {
-            Alert.alert("Please select at least 1 passenger");
-            return
-        }
-        setIsCheckout(true)
+
+    async function fetchPaymentSheetParams() {
         const token = await getItem("token");
+        const price = totalPrice * 100;
         try {
-            const res = await fetch('https://banana-bus.vercel.app/createBooking', {
+            const response = await fetch('https://banana-bus.vercel.app/createPaymentDetails', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ token, tripId, originId: departId, destId: arriveId, numTickets: numPassenger, numLuggage }),
+                body: JSON.stringify({ price }),
             });
-
-            if (res.ok) {
-                const data = await res.json();
-                setIsCheckout(false);
-                // console.log(`Created booking with id ${data.insertedId}`);
-                // TODO probably change to something better
-                Alert.alert("Booking confirmed");
-                router.navigate("/(tabs)");
-            } else {
-                const errorData = await res.json();
-                Alert.alert('Error', errorData.error || 'Booking failed');
+            const { paymentIntent, ephemeralKey, customer } = await response.json();
+            return {
+                paymentIntent,
+                ephemeralKey,
+                customer,
             }
-        } catch (err) {
-            Alert.alert('Error', 'An error occurred. Please try again.');
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function initialisePaymentSheet() {
+        const paymentSheetParams = await fetchPaymentSheetParams();
+        if (!paymentSheetParams) {
+            console.error("Failed to fetch payment sheet parameters");
+            return;
+        }
+        const { paymentIntent, ephemeralKey, customer } = paymentSheetParams;
+
+        const { error } = await initPaymentSheet({
+            merchantDisplayName: 'Banana Bus',
+            customerId: customer,
+            customerEphemeralKeySecret: ephemeralKey,
+            paymentIntentClientSecret: paymentIntent,
+            allowsDelayedPaymentMethods: true, 
+        })
+    }
+    
+    async function handleCheckout() {
+        if (numPassenger === 0) {
+            Alert.alert("Please select at least 1 passenger");
+            return
+        }
+        setIsCheckout(true)
+        await initialisePaymentSheet();
+
+        const { error } = await presentPaymentSheet();
+
+        if (error) {
+            setIsCheckout(false)
+            return;
+        } else {
+            const token = await getItem("token");
+            try {
+                const res = await fetch('https://banana-bus.vercel.app/createBooking', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ token, tripId, originId: departId, destId: arriveId, numTickets: numPassenger, numLuggage }),
+                });
+    
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsCheckout(false);
+                    // console.log(`Created booking with id ${data.insertedId}`);
+                    // TODO probably change to something better
+                    Alert.alert("Booking confirmed");
+                    router.navigate("/(tabs)");
+                } else {
+                    setIsCheckout(false);
+                    const errorData = await res.json();
+                    Alert.alert('Error', errorData.error || 'Booking failed');
+                }
+            } catch (err) {
+                Alert.alert('Error', 'An error occurred. Please try again.');
+                setIsCheckout(false);
+            }
         }
     }
 
@@ -234,41 +285,13 @@ export default function booking() {
                     </View>
                     <View style={styles.totalContainer}>
                         <Text style={styles.optionsText}>Total</Text>
-                        <Text style={styles.optionsText}>RM {totalPrice()}</Text>
+                        <Text style={styles.optionsText}>RM {totalPrice}</Text>
                     </View>
                 </View>
-
-                <View style={styles.paymentContainer}>
-                    <View style = {styles.cardContainer}>
-                        {/* maybe move to a component */}
-                        <View style={styles.cardIcon}>
-                            <View style={styles.typeIcon}>
-                                {/* checking card type. could be function*/}
-                                { defaultCard.type === "Mastercard" &&
-                                    <Image 
-                                        source={require("../../assets/images/mastercard.png")}
-                                        style={styles.typeImage}
-                                    />
-                                }
-                            </View> 
-                        </View>
-                        <View style={styles.cardInfoContainer}>
-                            <Text style={styles.cardType}>
-                                {defaultCard.type}
-                            </Text>
-                            <Text>
-                                ending in {defaultCard.lastFour}
-                            </Text>
-                        </View>
-                    </View>
-                    <TouchableOpacity style= {styles.cardChangeButton} onPress={handleCardChange}>
-                        <Text style= {styles.cardChangeText}>Change</Text>
-                    </TouchableOpacity>
-                </View> 
             </ScrollView>
 
             <View style= {styles.checkoutBar}>
-                <Text style= {styles.checkoutTotal}>Total: RM {totalPrice()}</Text>
+                <Text style= {styles.checkoutTotal}>Total: RM {totalPrice}</Text>
                 <TouchableOpacity style={styles.checkoutButton} disabled={isCheckout || numPassenger === 0}>
                     {isCheckout ? (
                         <ActivityIndicator size="small" color="white"/>
@@ -398,46 +421,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         padding: 15,
     },
-    paymentContainer: {
-        backgroundColor: "white",
-        borderRadius: 10,
-        boxShadow: "0px 2px 5px -2px grey",
-        flexDirection: "row",
-        paddingVertical: 15,
-        paddingHorizontal: 20, 
-        justifyContent: "space-between",
-    },
-    cardContainer: {
-        flexDirection: "row"
-    },
-    cardIcon: {
-        backgroundColor: "grey",
-        width: 80,
-        height: 60,
-        borderRadius: 15
-    },
-    typeIcon: {
-        position: "absolute",
-        bottom: 10,
-        right: 10,
-    },
-    typeImage: {
-        width:25, 
-        height: 20,
-    },
-    cardInfoContainer: {
-        paddingLeft: 7, justifyContent: "flex-end"
-    },
-    cardType: {
-        fontWeight:"500",
-    },
-    cardChangeButton:{
-        justifyContent: "center"
-    },
-    cardChangeText: {
-        fontWeight: "bold",
-        color: "#2a8cdf"
-    },
+    
     checkoutBar: {
         backgroundColor: "#042C5C",
         alignItems: "center",

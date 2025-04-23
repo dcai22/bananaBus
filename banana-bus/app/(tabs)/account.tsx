@@ -4,6 +4,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
+import { initStripe, CustomerSheetBeta } from '@stripe/stripe-react-native';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -13,6 +14,11 @@ export default function Account() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
+    const [customerSheetVisible, setCustomerSheetVisible] = useState(false);
+    const [customer, setCustomer] = useState('');
+    const [ephemeralKey, setEphemeralKey] = useState('');
+    const [intent, setIntent] = useState('');
+    const [sheetLoading, setSheetLoading] = useState(false);
 
     const router = useRouter();
 
@@ -58,6 +64,78 @@ export default function Account() {
         setRefresh(false);
     }, [refresh]);
 
+    useEffect(() => {
+        async function initialise() {
+            await initStripe({
+                publishableKey: "pk_test_51RH2exQCoWz9CNH6HCkaSlX0P2ksn6Jd9NvcE7XzC492WF9W2GX5GgOx0SgINII4Burm48fsnMn7kdfZX1Cyd6AI00YJXaEQnw",
+            });
+        }
+        initialise();
+    })
+
+    async function fetchCustomerKey() {
+        const token = await getItem('token');
+        try {
+            const response = await fetch('https://banana-bus.vercel.app/createCustomerKey', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const { customer, ephemeralKey } = await response.json();
+                return { customer, ephemeralKey };
+            }
+        } catch (error) {
+            console.error('Error fetching customer details:', error);
+        }
+    }
+
+    async function fetchCustomerIntent() {
+        const token = await getItem('token');
+        try {
+            const response = await fetch('https://banana-bus.vercel.app/createSetupIntent', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const { setupIntent } = await response.json();
+                return { setupIntent };
+            }
+        } catch (error) {
+            console.error('Error fetching payment intent:', error);
+        }
+    }
+
+    async function initialiseCustomerSheet() {
+        const customerKey = await fetchCustomerKey();
+        const customerIntent = await fetchCustomerIntent();
+        if (!customerKey || !customerIntent) {
+            console.error('Failed to fetch customer key or intent');
+            return;
+        }
+        const { customer, ephemeralKey } = customerKey;
+        const { setupIntent } = customerIntent;
+
+        const { error } = await CustomerSheetBeta.initialize({
+            setupIntentClientSecret: setupIntent,
+            customerEphemeralKeySecret: ephemeralKey,
+            customerId: customer,
+            headerTextForSelectionScreen: 'Manage cards',
+        });
+
+        if (!error) {
+            setIntent(setupIntent);
+            setCustomer(customer);
+            setEphemeralKey(ephemeralKey);
+        }
+    }
+
+    async function handlePayment() {
+        setSheetLoading(true);
+        await initialiseCustomerSheet();
+        setSheetLoading(false);
+        setCustomerSheetVisible(true);
+    }
+
     return (
         <Container>
             <Image
@@ -73,7 +151,7 @@ export default function Account() {
                 </View>
                 <View style={styles.menuContainer}>
                     {/* TODO do these pages */}
-                    <MenuItem title="Payment" icon="💳" onPress={() => router.navigate('/payment')} />
+                    <MenuItem title="Payment" icon="💳" onPress={handlePayment} />
                     <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.navigate('/tripsList')} />
                     <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')} />
                     { isAdmin && (
@@ -82,6 +160,26 @@ export default function Account() {
                     <MenuItem title="Settings" icon="⚙️" onPress={() => router.navigate('/settings')} />
                 </View>
             </View>
+            <CustomerSheetBeta.CustomerSheet
+                visible={customerSheetVisible}
+                onResult={({error, paymentOption, paymentMethod}) => {
+                    setCustomerSheetVisible(false);
+                    if (error) {
+                        console.log('Error:', error);
+                        return;
+                    }
+                    if (paymentOption) {
+                        console.log('Payment Option:', paymentOption);
+                    }
+                    if (paymentMethod) {
+                        console.log('Payment Method:', paymentMethod);
+                    }
+                }}
+                customerId={customer}
+                customerEphemeralKeySecret={ephemeralKey}
+                setupIntentClientSecret={intent}
+                headerTextForSelectionScreen='Manage cards'
+            />
         </Container>
     );
 }
