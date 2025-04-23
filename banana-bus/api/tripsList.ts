@@ -99,6 +99,7 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
         maxCapacity: 20,
         maxLuggageCapacity: 20,
         hasAssist: true,
+        model: "toyota",
         numberPlate: "abc123"
     }
 

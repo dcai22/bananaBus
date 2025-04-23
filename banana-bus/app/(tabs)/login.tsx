@@ -5,7 +5,8 @@ import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
-import PasswordInput from '@/components/PasswordInput';
+import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import StyledTextInput from '@/components/StyledTextInput';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -126,6 +127,7 @@ export default function LoginScreen() {
                     // This only works on mobile
                     saveItem("userId", data.userId.toString());
                     saveItem("token", data.token);
+                    saveItem("isExternal", "false");
                 } else {
                     // Save to local storage on web for testing purposes
                     localStorage.setItem("userId", data.userId.toString());
@@ -143,6 +145,55 @@ export default function LoginScreen() {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        try {
+            await GoogleSignin.hasPlayServices();
+            const response = await GoogleSignin.signIn();
+            if (isSuccessResponse(response)) {
+                const { user } = response.data;
+                const { email, givenName, familyName } = user;
+                console.log(user);
+                const loginResponse = await fetch("https://banana-bus.vercel.app/googleLogin", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, firstName: givenName, lastName: familyName }),
+                });
+                if (loginResponse.ok) {
+                    const data = await loginResponse.json();
+                    saveItem("userId", data.userId.toString());
+                    saveItem("isExternal", "true");
+                    saveItem("token", data.token);
+                    router.navigate('/(tabs)');
+                } else {
+                    const errorData = await loginResponse.json();
+                    Alert.alert("Error", errorData.error || "Login failed");
+                }
+            } else {
+                Alert.alert("Error", "Google sign-in failed. Please try again.");
+            }
+        } catch (error) {
+            if (isErrorWithCode(error)) {
+                switch (error.code) {
+                    case statusCodes.SIGN_IN_CANCELLED:
+                        Alert.alert("Error", "Sign-in cancelled by user.");
+                        break;
+                    case statusCodes.IN_PROGRESS:
+                        Alert.alert("Error", "Sign-in is in progress.");
+                        break;
+                    case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+                        Alert.alert("Error", "Play services not available or outdated.");
+                        break;
+                    default:
+                        Alert.alert("Error", "An unknown error occurred. Please try again.");
+                }
+            } else {
+                Alert.alert("Error", "An unknown error occurred. Please try again.");
+            }
+        }
+    }
+
     return (
         <ImageBackground
             source={{
@@ -156,15 +207,16 @@ export default function LoginScreen() {
                     <Text style={styles.title}>banana bus 🚌</Text>
                 </View>
                 <View style={styles.form}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="email"
+                    <StyledTextInput
+                        label="email"
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-                    <PasswordInput
+                    <StyledTextInput
+                        password={true}
+                        label="password"
                         value={password}
                         onChangeText={setPassword}
                     />
@@ -173,28 +225,55 @@ export default function LoginScreen() {
                         onPress={openModal}>
                         Forgot password?
                     </Text>
-                    <YesButton onPress={handleLogin} text="Login →" />
+                    <YesButton onPress={handleLogin} text="Login →" style={styles.buttons}/>
                     <NoButton onPress={() => {
                         setEmail("");
                         setPassword("");
                         router.navigate("/register");
-                    }} text="Register" />
+                    }} text="Register" style={styles.buttons} />
+                    <View style={styles.separatorContainer}>
+                        <View style={styles.separatorLine} />
+                        <Text style={styles.separatorText}>or</Text>
+                        <View style={styles.separatorLine} />
+                    </View>
+                    <GoogleSigninButton
+                        size={GoogleSigninButton.Size.Wide}
+                        color={GoogleSigninButton.Color.Light}
+                        style={styles.googleSignin}
+                        onPress={(handleGoogleLogin)}
+                    />
                 </View>
                 <CustomModal
                     visible={modalVisible}
-                    headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
-                    inputPlaceholders={modalType === "sendCode" ? ["email"] : ["code"]}
-                    inputValues={modalType === "sendCode" ? [recoveryEmail] : [emailCode]}
-                    onInputChange={(index, value) => {
-                        if (modalType === "sendCode") {
-                            setRecoveryEmail(value);
-                        } else {
-                            setEmailCode(value);
-                        }
-                    }}
-                    onConfirm={modalType === "sendCode" ? sendResetMail : checkEmailCode}
                     onCancel={closeModal}
-                />
+                    headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
+                >
+                    {modalType === "sendCode" && (
+                        <>
+                            <StyledTextInput
+                                label="email"
+                                value={recoveryEmail}
+                                onChangeText={setRecoveryEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                            />
+                            <YesButton onPress={sendResetMail} text="Send confirmation email" style={styles.buttons}/>
+                            <NoButton onPress={closeModal} text="Close" style={styles.buttons}/>
+                        </>
+                    )}
+                    {modalType === "enterCode" && (
+                        <>
+                            <StyledTextInput
+                                placeholder="code"
+                                value={emailCode}
+                                onChangeText={setEmailCode}
+                                autoCapitalize="none"
+                            />
+                            <YesButton onPress={checkEmailCode} text="Confirm" style={styles.buttons}/>
+                            <NoButton onPress={closeModal} text="Cancel" style={styles.buttons}/>
+                        </>
+                    )}
+                </CustomModal>
             </View>
         </ImageBackground>
     );
@@ -248,4 +327,37 @@ const styles = StyleSheet.create({
         color: "#c5e1ec",
         fontSize: 12
     },
+    googleSignin: {
+        width: "100%",
+        padding: 12,
+        marginVertical: 4,
+        borderRadius: 8,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    separatorContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginVertical: 12,
+    },
+    separatorLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: "#fff",
+    },
+    separatorText: {
+        color: "#fff",
+        fontSize: 16,
+        marginHorizontal: 8,
+        lineHeight: 16,
+    },
+    buttonContainer: {
+        justifyContent: "space-between",
+        flexDirection: "row",
+    },
+    buttons: {
+        flex: 0,
+        width: "100%",
+    }
 });

@@ -35,6 +35,7 @@ export async function getUserDetails(token: string) {
         firstName: user?.firstName,
         lastName: user?.lastName,
         email: user?.email,
+        isExternal: user?.isExternal,
     };
 }
 
@@ -49,6 +50,13 @@ export async function updateUserDetails(token: string, firstName: string, lastNa
     if (!user) {
         throw HTTPError(403, 'invalid token');
     }
+
+    const originalEmail = user.email;
+    const userByEmail = await collections.users?.findOne({ email : email });
+    if (userByEmail && userByEmail.email !== originalEmail) {
+        throw HTTPError(400, 'cannot use this email');
+    }
+
     await collections.users?.updateOne({ _id: user._id }, { $set: { firstName: firstName, lastName: lastName, email: email } } as any);
 
     return {
@@ -71,10 +79,10 @@ export async function updateUserPassword(token: string, oldPassword: string, new
         throw HTTPError(403, 'invalid token');
     }
 
-    if (!compareHash(oldPassword, user.password)) {
+    if (!(await compareHash(oldPassword, user.password))) {
         throw HTTPError(400, 'incorrect password');
     }
-    const newHashedPassword = getHash(newPassword);
+    const newHashedPassword = await getHash(newPassword);
     await collections.users?.updateOne({ _id: user._id }, { $set: { password: newHashedPassword } } as any);
     return {};
 }
@@ -210,8 +218,8 @@ export async function addCard(token: string, type: string, cardNumber: string, c
         throw HTTPError(400, "Card is expired");
     }
 
-    const hashedCardNumber = getHash(cardNumber);
-    const hashedCvv = getHash(cvv);
+    const hashedCardNumber = await getHash(cardNumber);
+    const hashedCvv = await getHash(cvv);
     const last4 = cardNumber.slice(-4);
     
     let isDefault = false;

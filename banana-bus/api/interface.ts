@@ -5,17 +5,28 @@ export interface Error {
     error: string
 }
 
+export interface UserPayload {
+    userId: string,
+    sessionId: string,
+}
+
+export interface Session {
+    sessionId: string,
+    expiry: Date,   
+}
+
 export interface User {
     _id: ObjectId;
     firstName: string,
     lastName: string,
     email: string;
     password: string;
-    tokens: string[];
+    sessions: Session[];
     resetToken: resetToken;
     bookings: ObjectId[];
     savedRoutes: RouteSection[];
     isManager: boolean;
+    isExternal: boolean;
     cards: Card[];
 }
 
@@ -30,7 +41,7 @@ export class UserBuilder implements Partial<User> {
     lastName: string = 'user';
     email?: string;
     password?: string;
-    tokens: string[] = [];
+    tokens: Token[] = [];
     resetToken: resetToken = {
         token: '',
         code: '',
@@ -40,6 +51,7 @@ export class UserBuilder implements Partial<User> {
     bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
     isManager: boolean = false;
+    isExternal: boolean = false;
     cards: Card[] = [];
 
     withFirstName(firstName: string) {
@@ -81,6 +93,11 @@ export class UserBuilder implements Partial<User> {
     build(this: User) {
         return new User(this);
     }
+}
+
+export interface Token {
+    token: string,
+    expiry: Date,
 }
 
 export interface Card {
@@ -276,5 +293,6 @@ export interface Vehicle {
     maxCapacity: number,
     maxLuggageCapacity: number,
     hasAssist: boolean,
+    model: string,
     numberPlate: string,
 }

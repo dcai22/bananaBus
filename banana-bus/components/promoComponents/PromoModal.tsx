@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import Modal from 'react-native-modal'
 import { Promotion } from "@/api/interface";
+import { NoButton } from "../Buttons";
 
 interface PromotionModal {
   promo: Promotion | null,
@@ -37,14 +38,11 @@ export default function PromoModal({promo, visible, setVisible}: PromotionModal)
 
                 <Text style={styles.descriptionHeader}>Description</Text>
                 <Text>{promo.description}</Text>
-                <View style={styles.closeBtnContainer}>
-                    <TouchableOpacity  
-                        style={styles.closeBtn}
+                    <NoButton
                         onPress={() => setVisible(false)}
-                    >
-                            <Text style={styles.closeBtnText}>Close</Text>
-                    </TouchableOpacity>
-                </View>
+                        text="Close"
+                        style={styles.closeBtn}
+                    />
             </View>
         }
     </Modal>  
@@ -77,18 +75,7 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginTop: 10
     },
-    closeBtnContainer: {
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        marginTop: 8
-    },
     closeBtn: {
-        backgroundColor: "#009cff",
-        padding: 5,
-        borderRadius: 3
+        flex: 0,
     },
-    closeBtnText: {
-        color: "white",
-        fontWeight: "bold"
-    }
 })
