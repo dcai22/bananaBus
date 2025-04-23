@@ -8,6 +8,7 @@ import { CustomModal } from '@/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { set } from 'date-fns';
 import PasswordInput from '@/components/PasswordInput';
+import { API_BASE } from '../index';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -38,7 +39,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/resetPasswordEmail", {
+            const response = await fetch(`${API_BASE}/resetPasswordEmail`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,7 +63,7 @@ export default function LoginScreen() {
     const checkEmailCode = async () => {
         const paramToken = await getItem('resetToken');
         try {
-            const response = await fetch("https://banana-bus.vercel.app/resetPasswordVerifyCode" + `?token=${paramToken}`, {
+            const response = await fetch(`${API_BASE}/resetPasswordVerifyCode` + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -95,7 +96,7 @@ export default function LoginScreen() {
             }
             if (token !== null) {
                 try {
-                    const response = await fetch('https://banana-bus.vercel.app/autologin', {
+                    const response = await fetch(`${API_BASE}/autologin`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -115,7 +116,7 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch("https://banana-bus.vercel.app/login", {
+            const response = await fetch(`${API_BASE}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -155,7 +156,7 @@ export default function LoginScreen() {
                 const { user } = response.data;
                 const { email, givenName, familyName } = user;
                 console.log(user);
-                const loginResponse = await fetch("https://banana-bus.vercel.app/googleLogin", {
+                const loginResponse = await fetch(`${API_BASE}/googleLogin`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

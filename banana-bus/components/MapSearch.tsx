@@ -17,13 +17,14 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { IStop, IRoute } from "@/app/(tabs)";
 import { getItem } from "@/app/helper";
 import axios from "axios";
+import { API_BASE } from "@/app/index";
 
 // Helper function to fetch all stops
 async function getAllStops(): Promise<IStop[]> {
     try {
         const token = await getItem("token");
         const response = await axios.get(
-            "https://banana-bus.vercel.app/manager/allStops",
+            `${API_BASE}/manager/allStops`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -51,7 +52,7 @@ async function getPossibleDestinations(
     try {
         const token = await getItem("token");
         const response = await axios.get(
-            "https://banana-bus.vercel.app/stops/reachableFrom",
+            `${API_BASE}/stops/reachableFrom`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

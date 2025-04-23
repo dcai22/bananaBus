@@ -5,6 +5,7 @@ import * as Device from 'expo-device';
 import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
 import PasswordInput from '@/components/PasswordInput';
+import { API_BASE } from '../index';
 
 export default function RegisterScreen() {
     const [email, setEmail] = useState('');
@@ -25,7 +26,7 @@ export default function RegisterScreen() {
         // Register user
 
         try {
-            const response = await fetch('https://banana-bus.vercel.app/register', {
+            const response = await fetch(`${API_BASE}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

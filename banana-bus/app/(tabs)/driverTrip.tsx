@@ -8,6 +8,7 @@ import { Text, FlatList, TouchableOpacity, View, StyleSheet } from "react-native
 import { getItem } from "../helper";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
+import { API_BASE } from "../index";
 
 export default function driverTrip() {
     interface Vehicle {
@@ -55,7 +56,7 @@ export default function driverTrip() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`https://banana-bus.vercel.app/driverTrip?tripId=${tripId}`,{
+            axios.get(`${API_BASE}/driver/getTrip?tripId=${tripId}`,{
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -126,9 +127,11 @@ export default function driverTrip() {
                     <Text>Vehicle: {vehicle.toString()}</Text>
                     <Text>Stops: {stops.toString()}</Text>
                     <Text>
-                        Passengers: 
+                        <Text>
+                            Passengers:
+                        </Text>
                         {passengers.map((e, i) => <Text key={i}>
-                            {e.firstName} {e.lastName}: {e.numTickets},
+                            {e.firstName} {e.lastName} has {e.numTickets} ticket(s),
                         </Text>)}
                     </Text>
                     <TouchableOpacity>

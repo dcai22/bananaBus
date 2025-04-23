@@ -12,6 +12,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { getItem } from "../helper";
 import axios from "axios";
+import { API_BASE } from "../index";
 
 const MAPBOX_TOKEN =
     "pk.eyJ1IjoiMzkwMGYxNWFiYW5hbmEyNSIsImEiOiJjbTg3ZWhxNmMwNzF6MmxvYjg3Z2dwdmx6In0.PlMxV_sUySfYSA3UNzuglA";
@@ -39,7 +40,7 @@ interface RouteGeometry {
 //     try {
 //         const token = await getItem("token");
 //         const response = await axios.get(
-//             "https://banana-bus.vercel.app/routes/fromSection",
+//             `${API_BASE}/routes/fromSection`,
 //             {
 //                 headers: {
 //                     Authorization: `Bearer ${token}`,
@@ -262,7 +263,7 @@ export default function Index() {
             try {
                 const token = await getItem("token");
                 const response = await axios.get(
-                    "https://banana-bus.vercel.app/routes/fromSection",
+                    `${API_BASE}/routes/fromSection`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,

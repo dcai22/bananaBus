@@ -8,6 +8,7 @@ import Container from '@/components/Container';
 import { CheckoutHeader } from '@/components/Header';
 import { CustomModal } from '@/components/Modal';
 import valid from 'card-validator';
+import { API_BASE } from '../index';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -47,7 +48,7 @@ export default function Payment() {
 
         const token = await getItem('token');
         try {
-            const response = await fetch('https://banana-bus.vercel.app/addCard', {
+            const response = await fetch(`${API_BASE}/addCard`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { getItem } from '../helper';
 import PasswordInput from '@/components/PasswordInput';
+import { API_BASE } from '../index';
 
 export default function ForgotPasswordScreen() {
     const [pass, setPass] = useState("");
@@ -20,7 +21,7 @@ export default function ForgotPasswordScreen() {
         const paramToken = await getItem("resetToken");
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/resetPassword" + `?token=${paramToken}`, {
+            const response = await fetch(`${API_BASE}/resetPassword` + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

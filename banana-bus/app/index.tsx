@@ -2,6 +2,11 @@ import { Redirect } from "expo-router";
 import React from "react";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
+// import { API_URL } from "@env";
+const API_BASE = "https://banana-bus.vercel.app";
+export { API_BASE };
+console.log(API_BASE);
+
 export default function Index() {
     React.useEffect(() => {
         GoogleSignin.configure({

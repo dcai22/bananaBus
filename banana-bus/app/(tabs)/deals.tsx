@@ -8,6 +8,7 @@ import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
+import { API_BASE } from "../index";
 
 const { width } = Dimensions.get("window")
 
@@ -21,7 +22,7 @@ export default function Deals() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get("https://banana-bus.vercel.app/getDeals", {})
+        axios.get(`${API_BASE}/getDeals`, {})
         .then((res) => {
             setPromos(res.data)
         })

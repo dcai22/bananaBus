@@ -8,6 +8,7 @@ import Container from '@/components/Container';
 import { CustomModal } from '@/components/Modal';
 import { LoadingPage } from '@/components/LoadingPage';
 import { NoButton, YesButton } from '@/components/Buttons';
+import { API_BASE } from '../index';
 
 interface Card {
 	_id: string;
@@ -40,7 +41,7 @@ export default function Payment() {
 		const fetchData = async () => {
 			const token = await getItem('token');
 			try {
-				const response = await fetch('https://banana-bus.vercel.app/getUserCards', {
+				const response = await fetch(`${API_BASE}/getUserCards`, {
 					method : 'GET',
 					headers: {
 						'Authorization': `Bearer ${token}`,
@@ -68,7 +69,7 @@ export default function Payment() {
 	const handleRemoveCard = async () => {
 		const token = await getItem('token');
 		try {
-			const response = await fetch('https://banana-bus.vercel.app/deleteCard', {
+			const response = await fetch(`${API_BASE}/deleteCard`, {
 				method: 'DELETE',
 				headers: {
 					'Authorization': `Bearer ${token}`,
@@ -89,7 +90,7 @@ export default function Payment() {
 	const handleMakeDefault = async () => {
 		const token = await getItem('token');
 		try {
-			const response = await fetch('https://banana-bus.vercel.app/makeDefaultCard', {
+			const response = await fetch(`${API_BASE}/makeDefaultCard`, {
 				method: 'PUT',
 				headers: {
 					'Authorization': `Bearer ${token}`,

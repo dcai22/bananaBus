@@ -8,6 +8,7 @@ import { getItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { ScrollView } from "react-native";
+import { API_BASE } from "../index";
 
 export default function Trips() {
     interface Trip {
@@ -126,7 +127,7 @@ export default function Trips() {
         if (!refresh) return
         const getTrips = async () => {
             const token = await getItem("token");
-            axios.get("https://banana-bus.vercel.app/upcomingBookings", {
+            axios.get(`${API_BASE}/upcomingBookings`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },

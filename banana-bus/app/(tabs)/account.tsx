@@ -4,6 +4,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
+import { API_BASE } from '../index';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -35,7 +36,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch('https://banana-bus.vercel.app/getAccountName', {
+                const response = await fetch(`${API_BASE}/getAccountName`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });

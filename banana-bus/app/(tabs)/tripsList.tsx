@@ -9,6 +9,7 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import DatePicker from 'react-native-date-picker'
+import { API_BASE } from "../index";
 
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
@@ -41,7 +42,7 @@ export default function tripsList() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus.vercel.app/tripsList", {
+            axios.get(`${API_BASE}/tripsList`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
