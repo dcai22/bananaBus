@@ -9,6 +9,7 @@ import { getItem } from "expo-secure-store";
 import axios from "axios";
 import { Vehicle } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
+import VehicleModal from "@/components/vehicleComponents/vehicleModal";
 
 export default function manageVehicles() {
   const [loading, setLoading] = useState(true);
@@ -18,6 +19,10 @@ export default function manageVehicles() {
   const [searchResult, setSearchResult] = useState<Vehicle[]>([]);
   const [search, setSearch] = useState('');
 
+  // for vehicle modal (shows details and allows of edit/delete)
+  const [visible, setVisible] = useState(false)
+  const [vehicle, setVehicle] = useState<Vehicle | null>(null)
+ 
   useEffect(() => {
     const fetchData = async () => {
         const token = await getItem("token");
@@ -76,12 +81,10 @@ export default function manageVehicles() {
               renderItem={({ item }) => 
                 <VehicleBox 
                   vehicle={item}
-                  onEditVehicle={(edited) => {
-                    setVehicles(prev => prev.map(v => v._id.toString() === edited._id.toString() ? edited : v));
-                  }}
-                  onDeleteVehicle={(deleted) => {
-                    setVehicles(prev => prev.filter(v => v._id.toString() !== deleted._id.toString()))
-                  }}
+                  onPress={() => {
+                    setVehicle(item)
+                    setVisible(true)
+                  }} 
                 />
               }
               ListEmptyComponent={
@@ -92,6 +95,19 @@ export default function manageVehicles() {
             />
           )}
         </View>
+        { vehicle &&
+          <VehicleModal 
+            vehicle={vehicle} 
+            visible={visible}
+            setVisible={setVisible}
+            onEditVehicle={(edited) => {
+              setVehicles(prev => prev.map(v => v._id.toString() === edited._id.toString() ? edited : v));
+            }}
+            onDeleteVehicle={(deleted) => {
+              setVehicles(prev => prev.filter(v => v._id.toString() !== deleted._id.toString()))
+            }}
+          />
+        }
       </View>
     </Container>
   );

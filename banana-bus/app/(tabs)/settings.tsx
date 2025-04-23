@@ -323,7 +323,7 @@ export default function Settings() {
                         />
                         <StyledTextInput
                             password={true}
-                            placeholder="Confirm Password"
+                            label="Confirm Password"
                             value={formData.confirmPassword}
                             onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
                         />
