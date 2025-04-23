@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
+import PasswordInput from '@/components/PasswordInput';
 
 export default function RegisterScreen() {
     const [email, setEmail] = useState('');
@@ -38,6 +39,7 @@ export default function RegisterScreen() {
                     // This only works on mobile
                     saveItem('userId', data.userId.toString());
                     saveItem('token', data.token);
+                    saveItem('isExternal', 'false');
                 } else {
                     // Save to local storage on web for testing purposes
                     localStorage.setItem('userId', data.userId);
@@ -94,21 +96,14 @@ export default function RegisterScreen() {
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-                    <TextInput
-                        style={[styles.input]}
-                        placeholder="password"
+                    <PasswordInput
                         value={password}
                         onChangeText={setPassword}
-                        secureTextEntry
-                        autoCapitalize='none'
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="confirm password"
+                    <PasswordInput
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
-                        secureTextEntry
-                        autoCapitalize='none'
+                        placeholder="confirm password"
                     />
                     <YesButton
                         text="Register"

@@ -7,6 +7,7 @@ import axios from "axios";
 import { getItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
+import { ScrollView } from "react-native";
 
 export default function Trips() {
     interface Trip {
@@ -151,16 +152,6 @@ export default function Trips() {
         )
     }
     const handlePress = (route: Route) => {
-        // router.push({
-        //     pathname: '/tripsList',
-        //     params: {
-        //         routeId: route.route.routeId,
-        //         departId: route.originIndex,
-        //         arriveId: route.destIndex,
-        //         date: new Date().toISOString(),
-        //     }
-        // })
-        // hard coded for the only route in db with 2 stops
         router.push({
             pathname: '/tripsList',
             params: {
@@ -175,52 +166,66 @@ export default function Trips() {
     return (
         <Container>
             <Header title="My Trips" emoji="🚌" showGoBack={false} />
-            <View style={styles.section}>
-                <View style={styles.sectionHeaderContainer}>
-                    <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
-                    { upcomingLoading &&
-                        <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
-                    }
-                </View>
-                <View style={styles.upcomingList}>
-                    <FlatList
-                        data={upcomingTrips}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity>
+            <ScrollView>
+                <View style={styles.section}>
+                    <View style={styles.sectionHeaderContainer}>
+                        <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
+                        { upcomingLoading &&
+                            <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
+                        }
+                    </View>
+                    {upcomingTrips.length > 0 ? (
+                        upcomingTrips.map((item) => (
+                            <View style={styles.tripItem}>
+                                <View style={styles.accent} />
+                                <View style={styles.tripContent}>
+                                    <Text>
+                                        {format(
+                                            new Date(item.departureTime),
+                                            "hh:mm a, do MMMM yyyy"
+                                        )}
+                                    </Text>
+                                    <Text style={styles.route}>
+                                        {item.originName}{" "}
+                                        <FontAwesome
+                                            name="arrow-right"
+                                            style={styles.arrow}
+                                        />{" "}
+                                        {item.destName}
+                                    </Text>
+                                </View>
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={styles.emptyMessage}>Book some trips!</Text>
+                    )}
+                    <Text style={styles.sectionHeader}>My Watchlist</Text>
+                    {watchlistRoutes.length > 0 ? (
+                        watchlistRoutes.map((item, index) => (
+                            <TouchableOpacity
+                                key={item.route.routeId + "-" + index}
+                                onPress={() => handlePress(item)}
+                            >
                                 <View style={styles.tripItem}>
                                     <View style={styles.accent} />
                                     <View style={styles.tripContent}>
-                                        <Text>{format(new Date(item.departureTime), "hh:mm a, do MMMM yyyy")}</Text>
                                         <Text style={styles.route}>
-                                            {item.originName} <FontAwesome name="arrow-right" style={styles.arrow}/> {item.destName}
+                                            {item.originName}{" "}
+                                            <FontAwesome
+                                                name="arrow-right"
+                                                style={styles.arrow}
+                                            />{" "}
+                                            {item.destName}
                                         </Text>
                                     </View>
                                 </View>
                             </TouchableOpacity>
-                        )}
-                    />
+                        ))
+                    ) : (
+                        <Text style={styles.emptyMessage}>Watchlist some trips!</Text>
+                    )}
                 </View>
-            </View>
-            <View style={styles.section}>
-                <Text style={styles.sectionHeader}>My Watchlist</Text>
-                <View style={styles.watchList}>
-                    <FlatList
-                        data={watchlistRoutes}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity onPress={() => handlePress(item)}>
-                                <View style={styles.tripItem}>
-                                    <View style={styles.accent} />
-                                    <View style={styles.tripContent}>
-                                        <Text style={styles.route}>
-                                            {item.originName} <FontAwesome name="arrow-right" style={styles.arrow}/> {item.destName}
-                                        </Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        )}
-                    />
-                </View>
-            </View>
+            </ScrollView>
         </Container>
     );
 }
@@ -268,15 +273,14 @@ const styles = StyleSheet.create({
         width: 12,
         alignSelf: 'stretch',
     },
-    watchList: {
-        flex: 1,
-        height: '55%',
-    },
-    upcomingList: {
-        flex: 1,
-        height: "60%",
-    },
     arrow: {
         fontSize: 18,
+    },
+    emptyMessage: {
+        fontSize: 18,
+        fontStyle: "italic",
+        color: "#888",
+        textAlign: "center",
+        marginBottom: 14,
     },
 });
