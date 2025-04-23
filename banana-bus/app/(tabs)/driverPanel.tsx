@@ -94,29 +94,32 @@ export default function driverPanel() {
                     }
                 </View>
                 <View style={styles.upcomingList}>
-                    {upcomingTrips.map((item, i) => (
-                        <TouchableOpacity onPress={() => handlePress(item)} key={i}>
-                            <View style={styles.tripItem}>
-                                <View style={styles.accent} />
-                                <View style={styles.tripContent}>
-                                    <Text>
-                                        {format(
-                                            new Date(item.stopTimes[0]),
-                                            "hh:mm a, do MMMM yyyy"
-                                        )}
-                                    </Text>
-                                    <Text style={styles.route}>
-                                        {item.originName}{" "}
-                                        <FontAwesome
-                                            name="arrow-right"
-                                            style={styles.arrow}
-                                        />{" "}
-                                        {item.destName}
-                                    </Text>
+                    {upcomingTrips.length > 0
+                        ? upcomingTrips.map((item, i) => (
+                            <TouchableOpacity onPress={() => handlePress(item)} key={i}>
+                                <View style={styles.tripItem}>
+                                    <View style={styles.accent} />
+                                    <View style={styles.tripContent}>
+                                        <Text>
+                                            {format(
+                                                new Date(item.stopTimes[0]),
+                                                "hh:mm a, do MMMM yyyy"
+                                            )}
+                                        </Text>
+                                        <Text style={styles.route}>
+                                            {item.originName}{" "}
+                                            <FontAwesome
+                                                name="arrow-right"
+                                                style={styles.arrow}
+                                            />{" "}
+                                            {item.destName}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))}
+                            </TouchableOpacity>
+                        ))
+                        : <Text style={styles.emptyMessage}>No upcoming trips</Text>
+                    }
                 </View>
             </View>
         </Container>
@@ -189,5 +192,12 @@ const styles = StyleSheet.create({
     topLeftButtonText: {
         color: 'white',
         fontSize: 12,
-    }
+    },
+    emptyMessage: {
+        fontSize: 18,
+        fontStyle: "italic",
+        color: "#888",
+        textAlign: "center",
+        marginBottom: 14,
+    },
 });
