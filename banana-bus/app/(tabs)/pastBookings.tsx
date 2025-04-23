@@ -47,7 +47,8 @@ export default function pastBookings() {
             }).catch((err) => {
                 Alert.alert("Error", err.response.data.error);
             }).finally(() => {
-                setLoading(false)
+                setLoading(false);
+                setRefresh(false);
             })
         }
         fetchData();
