@@ -43,6 +43,7 @@ export default function StyledTextInput({
         contentStyle={styles.inputContent}
         readOnly={readOnly}
         secureTextEntry={!isTextVisible}
+        autoCapitalize={password ? "none" : props.autoCapitalize}
         {...props}
       />
       { password && (
