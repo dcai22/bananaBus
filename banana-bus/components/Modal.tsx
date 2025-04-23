@@ -40,33 +40,27 @@ export const CustomModal: React.FC<CustomModalProps> = ({ visible, onCancel, chi
             onBackButtonPress={onCancel}
             onBackdropPress={onCancel}
         >
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
-                    {headerText && <Text style={styles.headerText}>{headerText}</Text>}
-                    {infoText && <Text style={styles.infoText}>{infoText}</Text>}
-                    {children}
-                </View>
+            <View style={styles.modalContent}>
+                {headerText && <Text style={styles.headerText}>{headerText}</Text>}
+                {infoText && <Text style={styles.infoText}>{infoText}</Text>}
+                {children}
             </View>
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    modalOverlay: {
-        justifyContent: "center",
-        alignItems: "center",
-    },
     modalContent: {
-        width: "80%",
         backgroundColor: "white",
         borderRadius: 10,
-        padding: 14,
+        padding: 16,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
         alignItems: "center",
+        justifyContent: "center",
     },
     headerText: {
         fontSize: 24,

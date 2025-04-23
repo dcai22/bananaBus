@@ -144,6 +144,18 @@ export default function TabLayout() {
                         href: null,
                     }}
                 />
+                <Tabs.Screen
+                    name="adminPanel"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
+                    name="manageVehicles"
+                    options={{
+                        href: null,
+                    }}
+                />
             </Tabs>
         </KeyboardAvoidingView>
     );

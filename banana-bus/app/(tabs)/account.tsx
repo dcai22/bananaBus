@@ -77,7 +77,7 @@ export default function Account() {
                     <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.navigate('/tripsList')} />
                     <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')} />
                     { isAdmin && (
-                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('adminPanel')} />
+                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('/adminPanel')} />
                     )}
                     <MenuItem title="Settings" icon="⚙️" onPress={() => router.navigate('/settings')} />
                 </View>
