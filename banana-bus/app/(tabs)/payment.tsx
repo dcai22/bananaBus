@@ -120,7 +120,7 @@ export default function Payment() {
 	if (loading) {
 		return (
 			<Container>
-				<Header title="My Wallet" />
+				<Header title="My Wallet" icon={<FontAwesome name="credit-card"/>} />
 				<LoadingPage/>
 			</Container>
 
@@ -128,7 +128,7 @@ export default function Payment() {
 	}
 	return (
 		<Container>
-			<Header title="My Wallet"/>
+			<Header title="My Wallet" icon={<FontAwesome name="credit-card"/>} />
 			<View style={styles.cards}>
 				{cards.map(card => (
 						<TouchableOpacity
@@ -159,9 +159,9 @@ export default function Payment() {
 				onCancel={closeModal}
 				headerText="Card Options"
 			>
-				<NoButton text="Remove Card" onPress={handleRemoveCard}/>
-				<NoButton text="Make Default" onPress={handleMakeDefault}/>
-				<YesButton text="Cancel" onPress={closeModal} />
+				<YesButton text="Make Default" onPress={handleMakeDefault} style={styles.buttons}/>
+				<WarnButton text="Remove Card" onPress={handleRemoveCard} style={styles.buttons}/>
+				<NoButton text="Cancel" onPress={closeModal} style={styles.buttons}/>
 			</CustomModal>
 		</Container>
 	);
@@ -221,22 +221,8 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		fontWeight: 'bold',
 	},
-	modalOverlay: {
-		flex: 1,
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	modalContent: {
-		backgroundColor: 'white',
-		padding: 20,
-		borderRadius: 10,
-		width: '80%',
-		alignItems: 'center',
-	},
-	modalTitle: {
-		fontSize: 20,
-		fontWeight: 'bold',
-		marginBottom: 12,
-	},
+	buttons: {
+		flex: 0,
+		width: '100%',
+	}
 });

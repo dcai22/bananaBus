@@ -297,6 +297,7 @@ export interface Vehicle {
     maxCapacity: number,
     maxLuggageCapacity: number,
     hasAssist: boolean,
+    model: string,
     numberPlate: string,
     reports: Report[],
 }

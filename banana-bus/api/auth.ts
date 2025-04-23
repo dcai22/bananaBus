@@ -259,12 +259,12 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const checkUser = await collections.users?.findOne({ email: email });
-    if (checkUser && checkUser.isExternal) {
+    const checkUser = await collections.users?.findOne({ email: email, isExternal: true });
+    if (checkUser) {
         const sessionId = crypto.randomBytes(64).toString('hex');
         const expiry = new Date(Date.now() + 120 * 60 * 1000);
         const token = jwt.sign({ userId: checkUser._id.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
-        await collections.users.updateOne({ email: email }, { $push: { sessions: { sessionId, expiry } } } as any);
+        await collections.users.updateOne({ _id: checkUser._id }, { $push: { sessions: { sessionId, expiry } } } as any);
         return {
             userId: checkUser._id,
             token: token,

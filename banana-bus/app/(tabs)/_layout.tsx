@@ -151,13 +151,31 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
+                    name="adminPanel"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
                     name="driverTrip"
                     options={{
                         href: null,
                     }}
                 />
                 <Tabs.Screen
+                    name="manageVehicles"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
                     name="driverReportProblem"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
+                    name="pastBookings"
                     options={{
                         href: null,
                     }}

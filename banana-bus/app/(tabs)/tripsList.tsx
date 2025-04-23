@@ -10,6 +10,7 @@ import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import DatePicker from 'react-native-date-picker'
 import { API_BASE } from '@env';
+import Container from "@/components/Container";
 
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
@@ -90,10 +91,10 @@ export default function tripsList() {
     // TODO: add refresh
     if (loading) {
         return(
-            <View style={styles.screen}>
+            <Container>
                 <Header/>
                 <LoadingPage/>
-            </View>
+            </Container>
         )
     }
 
@@ -105,7 +106,7 @@ export default function tripsList() {
     }
 
     return(
-        <View style={styles.screen}>
+        <Container>
             <Header/>
             <ScrollView style={styles.tripListContainer}>
                 <TouchableOpacity style={styles.tripListDate} onPress={() => setOpen(true)}>
@@ -129,20 +130,16 @@ export default function tripsList() {
                     setOpen(false)
                 }}
             />
-        </View>
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        height: "100%",
-        backgroundColor: "#e5f0fa",
-    },
     header: {
         backgroundColor: "white",
         height: "22%",
         padding: 20,
-        boxShadow: "0px 0px 5px grey"
+        boxShadow: "0px 0px 5px grey",
     },
     goBackContainer: {
         height: "20%",
@@ -181,10 +178,10 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
     },
     tripListContainer: {
-        padding: 20,
+        paddingHorizontal: 20,
     },
     tripListDate: {
-        marginBottom: 20,
+        marginVertical: 20,
         padding: 10,
         borderRadius: 10,
         backgroundColor: "#fff",
