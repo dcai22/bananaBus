@@ -136,20 +136,22 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
     return trips
 }
 
-async function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
+export async function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
     const now = new Date();
 
-    // Logistic price - increases with % of capacity used
-    const f = curCapacity / maxCapacity;
-    const pMin = 7;
-    const pMaxSpot = 15;
-    const k = 10;
-    const pSpot = pMin + (pMaxSpot - pMin) /(1 + Math.exp(-k * (f - 0.5)));
+    // // Logistic price - increases with % of capacity used
+    // const f = curCapacity / maxCapacity;
+    // const pMin = 7;
+    // const pMaxSpot = 15;
+    // const k = 10;
+    // const pSpot = pMin + (pMaxSpot - pMin) /(1 + Math.exp(-k * (f - 0.5)));
 
-    // // linear price - increases with time to departure
-    // const t = Math.max(0, (timeOfDeparture.getTime() - now.getTime()) / 36e5);
-    // const alpha = 0.1;
-    // const pTime = alpha*Math.max(0, 24 - t);
+    const basePrice = 10;
+    
+    // linear price - increases with time to departure
+    const t = Math.max(0, (timeOfDeparture.getTime() - now.getTime()) / 36e5);
+    const alpha = 0.1;
+    const pTime = alpha*Math.max(0, 24 - t);
 
     // Time of day pricing - increases smoothly with peak hours
     const peakPrice = 3;
@@ -158,8 +160,12 @@ async function getPrice(maxCapacity: number, curCapacity: number, timeOfDepartur
     const curTimeHour = now.getHours() + now.getMinutes() / 60;
     const pSurge = peakHours.reduce((sum, mu) => { const delta = curTimeHour - mu; 
                     return sum + peakPrice * Math.exp(- (delta * delta) / (2 * sigma * sigma)); }, 0);
-
-    return Math.min(pSpot + pTime + pSurge ,22);
+    
+    // Round tp nearest 5 cents
+    const factor = 1 / 0.05;
+    const sum =  pSurge + pTime + basePrice;        
+    const rounded = Math.round(sum * factor) / factor;
+    return Math.min(rounded, 22);
 
 }
 
@@ -211,7 +217,7 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
     })
 }
 
-async function calcCurrentCapacity(trip: Trip) {
+export async function calcCurrentCapacity(trip: Trip) {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
   if (!bookings) throw HTTPError(400, "Cant get bookings")
   // could probs calc through max of the interval
