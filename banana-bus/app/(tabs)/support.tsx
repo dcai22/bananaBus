@@ -121,7 +121,7 @@ export default function Payment() {
                     onChangeText={setEnquiryText}
                     multiline
                 />
-                <NoButton text="Send" onPress={handleSend} />
+                <NoButton text="Send" onPress={handleSend} style={styles.buttons}/>
             </View>
             <Modal
                 isVisible={modalVisible}
@@ -239,4 +239,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#000',
     },
+    buttons: {
+        flex: 0,
+    }
 });

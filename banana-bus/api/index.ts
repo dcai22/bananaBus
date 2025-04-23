@@ -20,7 +20,7 @@ import { deleteAccount,
 import { getDeals } from './getDeals';
 import { Route, RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
-import { addManager, removeManager } from './manager';
+import { addManager, removeManager, addVehicle, deleteVehicle, editVehicle } from './manager';
 import { collections, connectToDatabase } from './mongoUtil';
 import { findUserByToken } from './helper';
 
@@ -438,6 +438,7 @@ app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
 
 app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     try {
+        await connectToDatabase();
         const allVehicles = await collections.vehicles?.find().toArray();
         res.json({ vehicles: allVehicles });
     } catch (err) {
@@ -445,6 +446,91 @@ app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     }
     return;
 })
+
+app.post('/manager/addVehicle', async (req: Request, res: Response, next) => {
+    
+    const token = req.headers.authorization as string;
+    const maxCapacity = req.body.maxCapacity as number;
+    const maxLuggageCapacity = req.body.maxLuggageCapacity as number;
+    const hasAssist = req.body.hasAssist as boolean;
+    const numberPlate = req.body.numberPlate as string;
+    const model = req.body.model;
+
+    await connectToDatabase();
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: "user is not a manager" });
+        return;
+    }
+
+    try {   
+        res.json(await addVehicle(maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
+    } catch (err) {
+        next(err);
+    }
+    return;
+})  
+
+
+app.put('/manager/editVehicle', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
+    const maxCapacity = req.body.maxCapacity as number;
+    const maxLuggageCapacity = req.body.maxLuggageCapacity as number;
+    const hasAssist = req.body.hasAssist as boolean;
+    const numberPlate = req.body.numberPlate as string;
+    const model = req.body.model;
+
+    await connectToDatabase();
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: "user is not a manager" });
+        return;
+    }
+
+    try {   
+        res.json(await editVehicle(vehicleId, maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
+    } catch (err) {
+        next(err);
+    }
+    return;
+})
+
+app.delete('/manager/deleteVehicle', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string; 
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
+
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: "user is not a manager" });
+        return;
+    }
+    try{
+        res.json(await deleteVehicle(vehicleId));
+    } catch (err) {
+        next(err);
+    }
+
+})
+
 
 app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
     await connectToDatabase();
