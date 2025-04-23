@@ -298,4 +298,10 @@ export interface Vehicle {
     maxLuggageCapacity: number,
     hasAssist: boolean,
     numberPlate: string,
+    reports: Report[],
+}
+
+export interface Report {
+    date: Date,
+    text: string,
 }

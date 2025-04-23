@@ -633,6 +633,33 @@ app.get('/driver/getTrip', async (req: Request, res: Response, next) => {
     }
 });
 
+app.put('/driver/reportVehicle', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
+    const reportText = req.body.reportText as string;
+
+    console.log(req);
+
+    await connectToDatabase();
+    
+    try {
+        await collections.vehicles?.updateOne(
+            { _id: vehicleId },
+            { $push: { reports: { date: new Date(), text: reportText } } }
+        );
+        res.json();
+    } catch (err) {
+        next(err);
+    }
+});
+
 app.get('/removeExpiredSessions', async (req: Request, res: Response, next) => {
     try {
         res.json(await removeExpiredSessions());

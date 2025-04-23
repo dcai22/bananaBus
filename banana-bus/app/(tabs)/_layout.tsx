@@ -156,6 +156,12 @@ export default function TabLayout() {
                         href: null,
                     }}
                 />
+                <Tabs.Screen
+                    name="driverReportProblem"
+                    options={{
+                        href: null,
+                    }}
+                />
             </Tabs>
         </KeyboardAvoidingView>
     );

@@ -26,6 +26,7 @@ export default function tripsList() {
     useFocusEffect(
         useCallback(() => { 
             setRefresh(true)
+            setError("");
             // Makes sure to reload page upon leaving page
             return () => {
                 setLoading(true)

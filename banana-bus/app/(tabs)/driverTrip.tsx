@@ -17,7 +17,7 @@ export default function driverTrip() {
         maxLuggageCapacity: number,
         hasAssist: boolean,
         numberPlate: string,
-    } 
+    }
 
     interface Stop {
         _id: string,
@@ -45,6 +45,7 @@ export default function driverTrip() {
     useFocusEffect(
         useCallback(() => { 
             setRefresh(true)
+            setError("");
             // Makes sure to reload page upon leaving page
             return () => {
                 setLoading(true)
@@ -70,23 +71,10 @@ export default function driverTrip() {
             }).finally(() => {
                 setLoading(false);
                 setRefresh(false);
-            })
+            });
         }
 
         fetchData();
-
-        // setPassengers([
-        //     {
-        //         "firstName": "ahgj",
-        //         "lastName": "",
-        //         "numTickets": 1
-        //     },
-        //     {
-        //         "firstName": "dale",
-        //         "lastName": "c",
-        //         "numTickets": 5
-        //     }
-        // ]);
     }, [tripId, refresh]);
 
     // make nicer or pop up
@@ -94,6 +82,19 @@ export default function driverTrip() {
         return(
             <Text>Error: {error}</Text>
         )
+    }
+
+    const handlePress = () => {
+        router.push({
+            pathname: "/driverReportProblem",
+            params: {
+                vehicleId: vehicle?._id,
+                numberPlate: vehicle?.numberPlate,
+                tripId,
+                departName,
+                arriveName,
+            }
+        });
     }
 
     return (
@@ -124,7 +125,7 @@ export default function driverTrip() {
                             </View>
                         }
                         {passengers &&
-                            <Text>
+                            <View>
                                 <Text>
                                     Passengers:
                                 </Text>
@@ -134,11 +135,13 @@ export default function driverTrip() {
                                 <Text>
                                     Total passengers: {passengers.reduce((accumulator, p) => accumulator + p.numTickets, 0)}
                                 </Text>
-                            </Text>
+                            </View>
                         }
-                        <TouchableOpacity>
-                            <Text>Report problem with vehicle</Text>
-                        </TouchableOpacity>
+                        {vehicle &&
+                            <TouchableOpacity onPress={handlePress}>
+                                <Text>Report problem with vehicle</Text>
+                            </TouchableOpacity>
+                        }
                     </View>
                 </View>
             }

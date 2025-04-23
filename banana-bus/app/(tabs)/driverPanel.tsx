@@ -33,22 +33,11 @@ export default function driverPanel() {
             },
         });
     };
-    
-    // TODO: fetch trips from database
-    const fetchUpcomingTrips = async (token: string | null) => {
-        return [
-            {
-                _id: '680501b70817a695a46a9fd6',
-                stopTimes: [new Date(0), new Date(1)],
-                originName: '1utama Shopping Mall',
-                destName: 'Kuala Lumpur Intl. T1',
-            },
-        ];
-    }
 
     useFocusEffect(
         useCallback(() => { 
             setRefresh(true)
+            setError("");
             // Makes sure to reload page upon leaving page
             return () => {
                 setUpcomingLoading(true)
