@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, StyleSheet, FlatList, TextInput } from "react-native";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 

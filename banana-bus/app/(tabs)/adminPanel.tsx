@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity } from "react-native";
-import AnimatedDotsCarousel, { DecreasingDot, DotConfig } from "react-native-animated-dots-carousel";
-import PromoPage from "@/components/promoComponents/PromoPage";
-import PromoModal from "@/components/promoComponents/PromoModal";
-import { Promotion } from "@/api/interface";
-import axios from "axios";
-import { LoadingPage } from "@/components/LoadingPage";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { router } from "expo-router";
