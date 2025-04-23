@@ -5,7 +5,7 @@ import * as Device from 'expo-device';
 import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
 import PasswordInput from '@/components/PasswordInput';
-import { API_BASE } from '../index';
+import { API_BASE } from '@env';
 
 export default function RegisterScreen() {
     const [email, setEmail] = useState('');

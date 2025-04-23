@@ -8,7 +8,7 @@ import Container from '@/components/Container';
 import { CustomModal } from '@/components/Modal';
 import { LoadingPage } from '@/components/LoadingPage';
 import { NoButton, YesButton } from '@/components/Buttons';
-import { API_BASE } from '../index';
+import { API_BASE } from '@env';
 
 interface Card {
 	_id: string;

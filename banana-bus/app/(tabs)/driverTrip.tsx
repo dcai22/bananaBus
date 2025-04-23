@@ -8,7 +8,7 @@ import { Text, FlatList, TouchableOpacity, View, StyleSheet } from "react-native
 import { getItem } from "../helper";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
-import { API_BASE } from "../index";
+import { API_BASE } from '@env';
 
 export default function driverTrip() {
     interface Vehicle {
@@ -29,13 +29,11 @@ export default function driverTrip() {
         // needAssist: boolean,
     }
 
-    const { tripId } = useLocalSearchParams<{tripId: string}>();
+    const { tripId, departName, arriveName } = useLocalSearchParams<{tripId: string, departName: string, arriveName: string}>();
 
     const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [departName, setDepartName] = useState("Loading");
-    const [arriveName, setArriveName] = useState("");
     const [vehicle, setVehicle] = useState<Vehicle>({vehicleId: "", numberPlate: "", hasAssist: false});
     const [stops, setStops] = useState<Stop[]>([]);
     const [passengers, setPassengers] = useState<Passenger[]>([]);
@@ -56,13 +54,11 @@ export default function driverTrip() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`${API_BASE}/driver/getTrip?tripId=${tripId}`,{
+            axios.get(`${API_BASE}/driver/getTrip?tripId=${tripId}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
             }).then((res) => {
-                setDepartName(res.data.departName);
-                setArriveName(res.data.arriveName);
                 setVehicle(res.data.vehicle);
                 setStops(res.data.stops);
                 setPassengers(res.data.passengers);
@@ -76,18 +72,18 @@ export default function driverTrip() {
 
         fetchData();
 
-        setPassengers([
-            {
-                "firstName": "ahgj",
-                "lastName": "",
-                "numTickets": 1
-            },
-            {
-                "firstName": "dale",
-                "lastName": "c",
-                "numTickets": 5
-            }
-        ])
+        // setPassengers([
+        //     {
+        //         "firstName": "ahgj",
+        //         "lastName": "",
+        //         "numTickets": 1
+        //     },
+        //     {
+        //         "firstName": "dale",
+        //         "lastName": "c",
+        //         "numTickets": 5
+        //     }
+        // ]);
     }, [tripId, refresh]);
 
     // TODO: add refresh

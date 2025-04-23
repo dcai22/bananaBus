@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { getItem } from '../helper';
 import PasswordInput from '@/components/PasswordInput';
-import { API_BASE } from '../index';
+import { API_BASE } from '@env';
 
 export default function ForgotPasswordScreen() {
     const [pass, setPass] = useState("");

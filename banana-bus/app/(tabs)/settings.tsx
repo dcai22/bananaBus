@@ -7,7 +7,7 @@ import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
 import { NoButton, YesButton } from "@/components/Buttons";
 import PasswordInput from "@/components/PasswordInput";
-import { API_BASE } from "../index";
+import { API_BASE } from '@env';
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);

@@ -22,8 +22,7 @@ import { Booking, Route, RouteSection, Trip } from './interface';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
 import { collections, connectToDatabase } from './mongoUtil';
-import { findUserByToken } from './helper';
-import { driverGetTrip } from "./driver";
+import { driverGetTrip, findUserByToken, getRouteById, getStopById } from './helper';
 
 const app = express();
 
@@ -593,12 +592,31 @@ app.get('/driver/getUpcomingTrips', async (req: Request, res: Response, next) =>
     }
 
     try {
-        const now = new Date();
+        const now = new Date().toISOString();
         const allTrips = await collections.trips?.find<Trip>({
             driverId: user._id,
-            "stopTimes.0": { "$gte": now },
         }).toArray();
-        res.json({ allTrips });
+        const upcomingTrips = allTrips?.filter(t => t.stopTimes[0].toString() > now);
+        if (!upcomingTrips) {
+            res.json({ upcomingTrips: [] });
+            return;
+        }
+
+        const formattedUpcomingTrips = await Promise.all(
+            upcomingTrips.map(async (t) => {
+                const route = await getRouteById(t.routeId);
+                const origin = await getStopById(route.stops[0]);
+                const dest = await getStopById(route.stops[route.stops.length - 1]);
+                return {
+                    _id: t._id.toString(),
+                    stopTimes: t.stopTimes,
+                    originName: origin.name,
+                    destName: dest.name,
+                };
+            })
+        );
+
+        res.json({ upcomingTrips: formattedUpcomingTrips });
     } catch (err) {
         next(err);
     }

@@ -4,7 +4,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
-import { API_BASE } from '../index';
+import { API_BASE } from '@env';
 
 export default function Account() {
     const [userName, setUserName] = useState('');

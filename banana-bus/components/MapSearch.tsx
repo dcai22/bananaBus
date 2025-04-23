@@ -17,7 +17,7 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { IStop, IRoute } from "@/app/(tabs)";
 import { getItem } from "@/app/helper";
 import axios from "axios";
-import { API_BASE } from "@/app/index";
+import { API_BASE } from '@env';
 
 // Helper function to fetch all stops
 async function getAllStops(): Promise<IStop[]> {

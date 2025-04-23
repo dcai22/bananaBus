@@ -12,7 +12,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { getItem } from "../helper";
 import axios from "axios";
-import { API_BASE } from "../index";
+import { API_BASE } from '@env';
 
 const MAPBOX_TOKEN =
     "pk.eyJ1IjoiMzkwMGYxNWFiYW5hbmEyNSIsImEiOiJjbTg3ZWhxNmMwNzF6MmxvYjg3Z2dwdmx6In0.PlMxV_sUySfYSA3UNzuglA";

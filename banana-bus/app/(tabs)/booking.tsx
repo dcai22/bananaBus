@@ -11,7 +11,7 @@ import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
 import { CheckoutHeader } from "@/components/Header";
-import { API_BASE } from "../index";
+import { API_BASE } from '@env';
 
 // TODO: fix up stack/tabs so router back works properly
 

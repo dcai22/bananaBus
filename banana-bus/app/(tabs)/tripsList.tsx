@@ -9,7 +9,7 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import DatePicker from 'react-native-date-picker'
-import { API_BASE } from "../index";
+import { API_BASE } from '@env';
 
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()

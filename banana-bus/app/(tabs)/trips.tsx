@@ -8,7 +8,7 @@ import { getItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { ScrollView } from "react-native";
-import { API_BASE } from "../index";
+import { API_BASE } from '@env';
 
 export default function Trips() {
     interface Trip {
@@ -32,11 +32,11 @@ export default function Trips() {
         destName: string;
     }
 
-    const [error, setError] = useState("")
+    const [error, setError] = useState("");
     const [refresh, setRefresh] = useState(true);
     
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
-    const [upcomingLoading, setUpcomingLoading] = useState(true)
+    const [upcomingLoading, setUpcomingLoading] = useState(true);
 
     const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
 
@@ -124,7 +124,7 @@ export default function Trips() {
     )
         
     useEffect(() => {
-        if (!refresh) return
+        if (!refresh) return;
         const getTrips = async () => {
             const token = await getItem("token");
             axios.get(`${API_BASE}/upcomingBookings`, {

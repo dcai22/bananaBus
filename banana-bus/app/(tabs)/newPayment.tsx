@@ -8,7 +8,7 @@ import Container from '@/components/Container';
 import { CheckoutHeader } from '@/components/Header';
 import { CustomModal } from '@/components/Modal';
 import valid from 'card-validator';
-import { API_BASE } from '../index';
+import { API_BASE } from '@env';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');

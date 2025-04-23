@@ -8,7 +8,7 @@ import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
-import { API_BASE } from "../index";
+import { API_BASE } from '@env';
 
 const { width } = Dimensions.get("window")
 

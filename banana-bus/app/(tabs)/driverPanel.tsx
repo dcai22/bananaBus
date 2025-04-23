@@ -4,9 +4,10 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
 import { format } from "date-fns";
 import { useFocusEffect, router } from "expo-router";
-import { getItem } from "expo-secure-store";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, FlatList, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Text, FlatList, TouchableOpacity, View, StyleSheet, ActivityIndicator } from "react-native";
+import { API_BASE } from "@env";
+import { getItem } from "../helper";
 
 export default function driverPanel() {
     interface Trip {
@@ -15,20 +16,26 @@ export default function driverPanel() {
         originName: string,
         destName: string,
     }
+
+    const [error, setError] = useState("")
+    const [refresh, setRefresh] = useState(true);
     
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
+    const [upcomingLoading, setUpcomingLoading] = useState(true);
     
     const handlePress = (trip: Trip) => {
         router.push({
             pathname: '/driverTrip',
             params: {
-                routeId: trip._id,
+                tripId: trip._id,
+                departName: trip.originName,
+                arriveName: trip.destName,
             },
         });
     };
     
     // TODO: fetch trips from database
-    const fetchUpcomingTrips = () => {
+    const fetchUpcomingTrips = async (token: string | null) => {
         return [
             {
                 _id: '680501b70817a695a46a9fd6',
@@ -38,13 +45,43 @@ export default function driverPanel() {
             },
         ];
     }
+
+    useFocusEffect(
+        useCallback(() => { 
+            setRefresh(true)
+            // Makes sure to reload page upon leaving page
+            return () => {
+                setUpcomingLoading(true)
+            };
+        }, [])
+    )
     
     useEffect(() => {
-        function init() {
-            setUpcomingTrips(fetchUpcomingTrips());
+        if (!refresh) return;
+        async function init() {
+            const token = await getItem("token");
+            await axios.get(`${API_BASE}/driver/getUpcomingTrips`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                }
+            }).then((res) => {
+                setUpcomingTrips(res.data.upcomingTrips);
+            }).catch((err) => {
+                setError(err.response.data.error);
+            }).finally(() => {
+                setUpcomingLoading(false);
+                setRefresh(false);
+            });
         }
+
         init();
-    }, []);
+    }, [refresh]);
+
+    if (error) {
+        return (
+            <Text>Error: {error}</Text>
+        )
+    }
     
     return (
         <Container>
@@ -52,24 +89,34 @@ export default function driverPanel() {
             <View style={styles.section}>
                 <View style={styles.sectionHeaderContainer}>
                     <Text style={styles.sectionHeader}>Designated Trips</Text>
+                    { upcomingLoading &&
+                        <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
+                    }
                 </View>
                 <View style={styles.upcomingList}>
-                    <FlatList
-                        data={upcomingTrips}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity onPress={() => handlePress(item)}>
-                                <View style={styles.tripItem}>
-                                    <View style={styles.accent} />
-                                    <View style={styles.tripContent}>
-                                        <Text>{format(new Date(item.stopTimes[0]), "hh:mm a, do MMMM yyyy")}</Text>
-                                        <Text style={styles.route}>
-                                            {item.originName} <FontAwesome name="arrow-right" style={styles.arrow}/> {item.destName}
-                                        </Text>
-                                    </View>
+                    {upcomingTrips.map((item, i) => (
+                        <TouchableOpacity onPress={() => handlePress(item)} key={i}>
+                            <View style={styles.tripItem}>
+                                <View style={styles.accent} />
+                                <View style={styles.tripContent}>
+                                    <Text>
+                                        {format(
+                                            new Date(item.stopTimes[0]),
+                                            "hh:mm a, do MMMM yyyy"
+                                        )}
+                                    </Text>
+                                    <Text style={styles.route}>
+                                        {item.originName}{" "}
+                                        <FontAwesome
+                                            name="arrow-right"
+                                            style={styles.arrow}
+                                        />{" "}
+                                        {item.destName}
+                                    </Text>
                                 </View>
-                            </TouchableOpacity>
-                        )}
-                    />
+                            </View>
+                        </TouchableOpacity>
+                    ))}
                 </View>
             </View>
         </Container>
