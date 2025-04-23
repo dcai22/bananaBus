@@ -21,7 +21,7 @@ import { getDeals } from './getDeals';
 import { Route, RouteSection } from './interface';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager } from './manager';
-import { collections, connectToDatabase } from './mongoUtil';
+import { closeConnection, collections, connectToDatabase } from './mongoUtil';
 import { findUserByToken } from './helper';
 
 const app = express();
@@ -582,6 +582,18 @@ app.get('/removeExpiredSessions', async (req: Request, res: Response, next) => {
     } catch (error) {
         next(error);
     }
+    return;
+});
+
+app.delete('/clearUsers', async (req: Request, res: Response, next) => {
+    await connectToDatabase();
+    await collections.users?.deleteMany({});
+    res.json({});
+    return;
+});
+
+app.post('/closeConnection', async (req: Request, res: Response, next) => {
+    res.json(await closeConnection());
     return;
 });
 

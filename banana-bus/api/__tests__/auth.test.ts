@@ -1,13 +1,19 @@
 import express, { json, Request, Response } from 'express';
-import { setData } from "../dataStore";
-import { authRegister, authLogin } from "../auth";
+import { ObjectId } from 'mongodb';
 
 const request = require("supertest");
 const app = require("../index");
 
-beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [], routes: [], stops: [] });
-})
+beforeEach(async () => {
+    // Clear users before each test
+    await request(app)
+        .del('/clearUsers')
+});
+
+afterAll(async () => {
+    await request(app)
+        .post('/closeConnection')
+});
 
 describe('Register', () => {
     test('successful register', async () => {
@@ -20,12 +26,19 @@ describe('Register', () => {
                 lastName: 'last',
             });
         expect(response.status).toBe(200);
-        expect(response.body.userId).toBe(0);
-        expect(response.body.token).toBeTruthy;
+        expect(ObjectId.isValid(response.body.userId)).toBe(true);
+        expect(response.body.token).toBeTruthy();
     })
 
     test('email already in use', async () => {
-        authRegister('email@email', 'password', 'first', 'last');
+        await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
         const response = await request(app)
             .post('/register')
             .send({
@@ -40,7 +53,14 @@ describe('Register', () => {
 
 describe('Login', () => {
     test('successful login', async () => {
-        authRegister('email@email', 'password', 'first', 'last');
+        await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
         const response = await request(app)
             .post('/login')
             .send({
@@ -48,12 +68,19 @@ describe('Login', () => {
                 password: 'password',
             });
         expect(response.status).toBe(200);
-        expect(response.body.userId).toBe(0);
-        expect(response.body.token).toBeTruthy;
+        expect(ObjectId.isValid(response.body.userId)).toBe(true);
+        expect(response.body.token).toBeTruthy();
     })
 
     test('incorrect password', async () => {
-        authRegister('email@email', 'password', 'first', 'last');
+        await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
         const response = await request(app)
             .post('/login')
             .send({
@@ -76,35 +103,51 @@ describe('Login', () => {
 
 describe('Logout', () => {
     test('successful logout', async () => {
-        const { userId, token } = authRegister('email@email', 'password', 'first', 'last');
-        const response = await request(app)
+        const response1 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { userId, token } = response1.body;
+        const response2 = await request(app)
             .post('/logout')
             .set('Authorization', `Bearer ${token}`)
             .send({
                 userId,
             });
-        expect(response.status).toBe(200);
+        expect(response2.status).toBe(200);
     });
 });
 
 describe('Delete', () => {
     test('successful delete', async () => {
-        const token = authRegister('email@email', 'password', 'first', 'last').token;
-        const response = await request(app)
+        const response1 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { userId, token } = response1.body;
+        const response2 = await request(app)
             .delete('/deleteAccount')
             .set('Authorization', `Bearer ${token}`)
             .send({
-                userId: 0,
+                userId
             });
-        expect(response.status).toBe(200);
+        expect(response2.status).toBe(200);
 
-        const response1 = await request(app)
+        const response3 = await request(app)
             .post('/login')
             .send({
                 email: 'email@email',
                 password: 'password',
             });
-        expect(response1.status).toBe(400);
+        expect(response3.status).toBe(400);
     })
 
     test('user not found', async () => {
