@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { getItem } from '../helper';
 import PasswordInput from '@/components/PasswordInput';
+import StyledTextInput from '@/components/StyledTextInput';
 
 export default function ForgotPasswordScreen() {
     const [pass, setPass] = useState("");
@@ -58,31 +59,17 @@ export default function ForgotPasswordScreen() {
                     <Text style={styles.title}>Enter new password</Text>
                 </View>
                 <View style={styles.form}>
-                    {/* <TextInput
-                        style={styles.input}
-                        placeholder="new password"
+                    <StyledTextInput
+                        password={true}
                         value={pass}
                         onChangeText={setPass}
-                        secureTextEntry
-                        autoCapitalize='none'
+                        label="new password"
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="confirm new password"
+                    <StyledTextInput
+                        password={true}
                         value={confirmPass}
                         onChangeText={setConfirmPass}
-                        secureTextEntry
-                        autoCapitalize='none'
-                    /> */}
-                    <PasswordInput
-                        value={pass}
-                        onChangeText={setPass}
-                        placeholder="new password"
-                    />
-                    <PasswordInput
-                        value={confirmPass}
-                        onChangeText={setConfirmPass}
-                        placeholder="confirm new password"
+                        label="confirm new password"
                     />
                     <TouchableOpacity
                         style={[styles.button, styles.loginButton]}

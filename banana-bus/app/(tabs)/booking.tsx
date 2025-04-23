@@ -228,12 +228,6 @@ export default function booking() {
                         </View>
                     </View>
                     <View style={styles.optionsContainer}>
-                        <Text style={styles.optionsText}>Select Seats</Text>
-                        <TouchableOpacity style={styles.seatsButton} onPress={handleSelectSeat}>
-                            <FontAwesome name="arrow-right" style={styles.seatsArrow}/>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.optionsContainer}>
                         <Text style={styles.optionsText}>Promo Code</Text>
                         {/* to implement functionality*/}
                         <TextInput style={styles.promoInput}></TextInput>
