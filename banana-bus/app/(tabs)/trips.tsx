@@ -164,7 +164,7 @@ export default function Trips() {
 
     return (
         <Container>
-            <Header title="My Trips" emoji="🚌" showGoBack={false} />
+            <Header title="My Trips" icon={<FontAwesome name="calendar"/>} showGoBack={false} />
             <ScrollView>
                 <View style={styles.section}>
                     <View style={styles.sectionHeaderContainer}>

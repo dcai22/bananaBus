@@ -119,7 +119,7 @@ export default function Payment() {
 	if (loading) {
 		return (
 			<Container>
-				<Header title="My Wallet" />
+				<Header title="My Wallet" icon={<FontAwesome name="credit-card"/>} />
 				<LoadingPage/>
 			</Container>
 
@@ -127,7 +127,7 @@ export default function Payment() {
 	}
 	return (
 		<Container>
-			<Header title="My Wallet"/>
+			<Header title="My Wallet" icon={<FontAwesome name="credit-card"/>} />
 			<View style={styles.cards}>
 				{cards.map(card => (
 						<TouchableOpacity

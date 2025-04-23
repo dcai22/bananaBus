@@ -73,13 +73,13 @@ export default function Account() {
                 </View>
                 <View style={styles.menuContainer}>
                     {/* TODO do these pages */}
-                    <MenuItem title="Payment" icon="💳" onPress={() => router.navigate('/payment')} />
-                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.navigate('/tripsList')} />
-                    <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')} />
+                    <MenuItem title="Payment" icon="💳" onPress={() => router.push('/payment')} />
+                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.push('/pastBookings')} />
+                    <MenuItem title="Support" icon="📞" onPress={() => router.push('/support')} />
                     { isAdmin && (
-                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('adminPanel')} />
+                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.push('adminPanel')} />
                     )}
-                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.navigate('/settings')} />
+                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')} />
                 </View>
             </View>
         </Container>

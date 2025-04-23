@@ -7,6 +7,7 @@ import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
 import { NoButton, YesButton } from "@/components/Buttons";
 import PasswordInput from "@/components/PasswordInput";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -261,7 +262,7 @@ export default function Settings() {
 
     return (
         <Container>
-            <Header title="Settings" showGoBack={false} emoji="⚙️"/>
+            <Header title="Settings" showGoBack={false} icon={<FontAwesome name="cog"/>}/>
             <View style={styles.section}>
                 <TouchableOpacity style={styles.option} onPress={() => openModal("details")}>
                     <Text style={styles.optionText}>Change details</Text>

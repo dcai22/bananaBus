@@ -144,6 +144,12 @@ export default function TabLayout() {
                         href: null,
                     }}
                 />
+                <Tabs.Screen
+                    name="pastBookings"
+                    options={{
+                        href: null,
+                    }}
+                />
             </Tabs>
         </KeyboardAvoidingView>
     );

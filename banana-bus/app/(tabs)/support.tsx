@@ -6,6 +6,7 @@ import { NoButton } from '@/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
 import { getItem } from '../helper';
 import * as Device from "expo-device";
+import { Header } from '@/components/Header';
 
 export default function Payment() {
     const [enquiryType, setEnquiryType] = useState('');
@@ -95,10 +96,7 @@ export default function Payment() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.headerBox}>
-                <Text style={styles.header}>Support</Text>
-                <FontAwesome name="life-ring" style={[styles.header, styles.headerIcon]}/>
-            </View>
+            <Header title="Support" icon={<FontAwesome name="life-ring"/>} />
             <View style={styles.section}>
                 <TouchableOpacity
                     style={styles.dropdown}
