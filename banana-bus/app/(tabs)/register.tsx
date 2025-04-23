@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
-import PasswordInput from '@/components/PasswordInput';
 import StyledTextInput from '@/components/StyledTextInput';
 
 export default function RegisterScreen() {
@@ -109,6 +108,7 @@ export default function RegisterScreen() {
                     <YesButton
                         text="Register"
                         onPress={handleRegister}
+                        style={styles.button}
                     />
                 </View>
             </View>
@@ -163,16 +163,6 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '100%',
-        padding: 12,
-        marginVertical: 8,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#2A8AE4',
-    },
-    buttonText: {
-        fontWeight: 'bold',
-        fontSize: 15,
-        color: '#fff',
+        flex: 0,
     },
 });

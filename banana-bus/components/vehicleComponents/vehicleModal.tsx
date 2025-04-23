@@ -5,6 +5,8 @@ import StyledTextInput from "../StyledTextInput";
 import axios from "axios";
 import { getItem } from "expo-secure-store";
 import { Vehicle } from "@/api/interface";
+import { LoadingButton, NoButton, WarnButton, YesButton } from "../Buttons";
+import { CustomModal } from "../Modal";
 
 interface VehicleModalProps {
   vehicle: Vehicle,
@@ -120,91 +122,91 @@ export default function VehicleModal({vehicle, visible, setVisible, onEditVehicl
 
   return (
     <View>
-      <Modal
-        isVisible={visible}
-        onBackButtonPress={handleClose}
-        onBackdropPress={handleClose}
+      <CustomModal
+        visible={visible}
+        onCancel={handleClose}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Vehicle Details</Text>
-            { !editMode &&
-              <TouchableOpacity style={[styles.minimalBtn, {marginLeft: 10}]} onPress={()=> setEditMode(true)}>
-                <Text style={styles.minimalBtnText}>Edit</Text>
-              </TouchableOpacity>
-            }
-          </View>
-          <StyledTextInput
-            label="Model"
-            value={model}
-            onChangeText={setModel}
-            readOnly={!editMode}
-          />
-          <StyledTextInput
-            label="Number Plate"
-            value={numberPlate}
-            onChangeText={setNumberPlate}
-            readOnly={!editMode}
-          />
-          <StyledTextInput
-            label="Max Capacity"
-            value={capacity.toString()}
-            onChangeText={(text) => {
-              setCapacity(text.replace(/\D/g, ""))
-            }}
-            keyboardType="numeric"
-            readOnly={!editMode}
-          />
-          <StyledTextInput
-            label="Max Luggage Capacity"
-            value={luggage.toString()}
-            onChangeText={(text) => {
-              setLuggage(text.replace(/\D/g, ""))
-            }}
-            keyboardType="numeric"
-            readOnly={!editMode}
-          />
-          <View style={styles.assistContainer}> 
-            <Switch
-              value={hasAssist}
-              onValueChange={setHasAssist}
-              trackColor={{ false: "#d3d3d3", true: "#3399ff" }}
-              thumbColor={hasAssist ? "#1e90ff" : "#888888"}
-              disabled={!editMode}
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Vehicle Details</Text>
+          { !editMode &&
+            <YesButton
+              text="Edit"
+              onPress={() => setEditMode(true)}
             />
-            <Text style={styles.assistText}>Wheelchair Accessible</Text>
-          </View>
-
-          {/* Buttons at the Bottom of Modal*/}
-          { editMode ? (
-              editLoading ? (
-                <View style={styles.buttonsContainer}>
-                  <TouchableOpacity style={styles.standardBtn} disabled={true}>
-                    <ActivityIndicator size="small" color="white"/>
-                  </TouchableOpacity>
-                </View>
-              ): (
-                <View style={styles.buttonsContainer}>
-                  <TouchableOpacity style={styles.minimalBtn} onPress={handleCancelEdit}>
-                    <Text style={styles.minimalBtnText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.standardBtn} onPress={handleEdit}>
-                    <Text style={styles.standardBtnText}>Save</Text>
-                  </TouchableOpacity>
-                </View>
-              )
-          ): (
-            <View style={[styles.buttonsContainer, styles.spaceBtns]}>
-              <TouchableOpacity style={[styles.standardBtn, styles.deleteBtn]} onPress={() => setConfirmDeleteVisible(true)}>
-                <Text style={styles.standardBtnText}>Delete</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.standardBtn} onPress={()=>  setVisible(false)}>
-                <Text style={styles.standardBtnText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          }
         </View>
-      </Modal>
+        <StyledTextInput
+          label="Model"
+          value={model}
+          onChangeText={setModel}
+          readOnly={!editMode}
+        />
+        <StyledTextInput
+          label="Number Plate"
+          value={numberPlate}
+          onChangeText={setNumberPlate}
+          readOnly={!editMode}
+        />
+        <StyledTextInput
+          label="Max Capacity"
+          value={capacity.toString()}
+          onChangeText={(text) => {
+            setCapacity(text.replace(/\D/g, ""))
+          }}
+          keyboardType="numeric"
+          readOnly={!editMode}
+        />
+        <StyledTextInput
+          label="Max Luggage Capacity"
+          value={luggage.toString()}
+          onChangeText={(text) => {
+            setLuggage(text.replace(/\D/g, ""))
+          }}
+          keyboardType="numeric"
+          readOnly={!editMode}
+        />
+        <View style={styles.assistContainer}> 
+          <Switch
+            value={hasAssist}
+            onValueChange={setHasAssist}
+            trackColor={{ false: "#d3d3d3", true: "#3399ff" }}
+            thumbColor={hasAssist ? "#1e90ff" : "#888888"}
+            disabled={!editMode}
+          />
+          <Text style={styles.assistText}>Wheelchair Accessible</Text>
+        </View>
+
+        {/* Buttons at the Bottom of Modal*/}
+        { editMode ? (
+            editLoading ? (
+              <View style={styles.buttonsContainer}>
+                <LoadingButton/>
+              </View>
+            ): (
+              <View style={styles.buttonsContainer}>
+                <YesButton
+                  text="Save"
+                  onPress={handleEdit}
+                />
+                <NoButton
+                  text="Cancel"
+                  onPress={handleCancelEdit}
+                />
+              </View>
+            )
+        ): (
+          <View style={styles.buttonsContainer}>
+            <WarnButton
+              text="Delete"
+              onPress={() => setConfirmDeleteVisible(true)}
+            />
+            <NoButton
+              text="Close"
+              onPress={handleClose}
+            />
+          </View>
+        )}
+      </CustomModal>
       
       {/* Delete Confirmation Modal */}
       <Modal 
@@ -222,18 +224,18 @@ export default function VehicleModal({vehicle, visible, setVisible, onEditVehicl
           </Text>
           { deleteLoading ? (
             <View style={styles.buttonsContainer}>
-              <TouchableOpacity style={[styles.standardBtn, styles.deleteBtn]} onPress={handleDelete}>
-                <ActivityIndicator size="small" color="white"/>
-              </TouchableOpacity>
+              <LoadingButton/>
             </View>
           ): (
-            <View style={[styles.buttonsContainer, styles.spaceBtns]}>
-              <TouchableOpacity style={styles.standardBtn} onPress={() => setConfirmDeleteVisible(false)}>
-                <Text style={styles.standardBtnText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.standardBtn, styles.deleteBtn]} onPress={handleDelete}>
-                <Text style={styles.standardBtnText}>Delete</Text>
-              </TouchableOpacity>
+            <View style={styles.buttonsContainer}>
+              <WarnButton
+                text="Delete"
+                onPress={handleDelete}
+              />
+              <NoButton
+                text="Cancel"
+                onPress={handleDeleteClose}
+              />
             </View>
           )}
         </View>
@@ -243,11 +245,6 @@ export default function VehicleModal({vehicle, visible, setVisible, onEditVehicl
 }
 
 const styles = StyleSheet.create({
-  modalContainer: {
-    padding: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
-  },
   modalHeader: {
     flexDirection: "row",
     padding: 10,
@@ -269,29 +266,7 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: "row",
-    padding: 10,
-    justifyContent: "flex-end",
-  },
-  spaceBtns: {
     justifyContent: "space-between",
-  },
-  minimalBtn: {
-    padding: 10,
-  },
-  minimalBtnText: {
-    color: "#2563EB" 
-  },
-  standardBtn: {
-    backgroundColor: "#2A8AE4",
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  standardBtnText: {
-    color: "white"
-  },
-  deleteBtn: {
-    backgroundColor: "red",
   },
   confirmModal: {
     backgroundColor: "white",

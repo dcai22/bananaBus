@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {View, Text, TouchableOpacity, StyleSheet, Switch, Alert, ActivityIndicator } from "react-native";
-import Modal from "react-native-modal"
 import StyledTextInput from "../StyledTextInput";
 import { getItem } from "expo-secure-store";
 import axios from "axios";
 import { Vehicle } from "@/api/interface";
+import { LoadingButton, NoButton, YesButton } from "../Buttons";
+import { CustomModal } from "../Modal";
 
 interface addVehicleButtonProps {
   onAddVehicle?: (newVehicle: Vehicle) => void
@@ -18,8 +19,8 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
 
   const [model, setModel] = useState("");
   const [numberPlate, setNumberPlate] = useState("");
-  const [capacity, setCapacity] = useState("0");
-  const [luggage, setLuggage] = useState("0");
+  const [capacity, setCapacity] = useState("");
+  const [luggage, setLuggage] = useState("");
   const [hasAssist, setHasAssist] = useState(false);
 
   // reset to default if exiting modal
@@ -74,70 +75,59 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
         <Text style={styles.addBtnText}>+ Add Vehicle</Text>
       </TouchableOpacity>
 
-      <Modal 
-        isVisible={visible}
-        onBackButtonPress={handleModalClose}
-        onBackdropPress={handleModalClose}
+      <CustomModal 
+        visible={visible}
+        onCancel={handleModalClose}
       >
-          <View style={styles.modalContainer}>
-            <Text style={styles.title}>Add Vehicle</Text>
-            <StyledTextInput
-              label="Model"
-              value={model}
-              onChangeText={setModel}
-            />
-            <StyledTextInput
-              label="Number Plate"
-              value={numberPlate}
-              onChangeText={setNumberPlate}
-            />
-            <StyledTextInput
-              label="Max Capacity"
-              value={capacity.toString()}
-              onChangeText={(text) => {
-                setCapacity(text.replace(/\D/g, ''))
-              }}
-              keyboardType="numeric"
-            />
-            <StyledTextInput
-              label="Max Luggage Capacity"
-              value={luggage.toString()}
-              onChangeText={(text) => {
-                setLuggage(text.replace(/\D/g, ''))
-              }}
-              keyboardType="numeric"
-            />
-
-            <View style={styles.assistContainer}> 
-              <Switch
-                value={hasAssist}
-                onValueChange={setHasAssist}
-                trackColor={{ false: "#d3d3d3", true: "#3399ff" }}
-                thumbColor={hasAssist ? "#1e90ff" : "#888888"}
-              />
-              <Text style={styles.assistText}>Wheelchair Accessible</Text>
-            </View>
-            { loading ? (
-              <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.modalAddBtn} disabled={true}>
-                  <ActivityIndicator size="small" color="white"/>
-                </TouchableOpacity>
-              </View>
-            ): (
-              <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={handleModalClose}>
-                  <Text style={{ color: '#2A8AE4' }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.modalAddBtn} onPress={handleAdd}>
-                  <Text style={{ color: 'white' }}>Add</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+        <Text style={styles.title}>Add Vehicle</Text>
+        <StyledTextInput
+          label="Model"
+          value={model}
+          onChangeText={setModel}
+        />
+        <StyledTextInput
+          label="Number Plate"
+          value={numberPlate}
+          onChangeText={(text) => setNumberPlate(text.toUpperCase())}
+          maxLength={7}
+        />
+        <StyledTextInput
+          label="Max Capacity"
+          value={capacity.toString()}
+          onChangeText={(text) => {
+            setCapacity(text.replace(/\D/g, ''))
+          }}
+          keyboardType="numeric"
+        />
+        <StyledTextInput
+          label="Max Luggage Capacity"
+          value={luggage.toString()}
+          onChangeText={(text) => {
+            setLuggage(text.replace(/\D/g, ''))
+          }}
+          keyboardType="numeric"
+        />
+        <View style={styles.assistContainer}> 
+          <Switch
+            value={hasAssist}
+            onValueChange={setHasAssist}
+            trackColor={{ false: "#d3d3d3", true: "#3399ff" }}
+            thumbColor={hasAssist ? "#1e90ff" : "#888888"}
+          />
+          <Text style={styles.assistText}>Wheelchair Accessible</Text>
+        </View>
+        { loading ? (
+          <View style={styles.buttonsContainer}>
+            <LoadingButton/>
           </View>
-      </Modal>
+        ): (
+          <View style={styles.buttonsContainer}>
+            <YesButton text="Add" onPress={handleAdd}/>
+            <NoButton text="Cancel" onPress={handleModalClose}/>
+          </View>
+        )}
+      </CustomModal>
     </View>
-
-
   );
 }
 
@@ -153,7 +143,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 17,
     color: "white"
-
   },
   modalContainer: {
     padding: 20,
@@ -175,15 +164,6 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  cancelBtn: {
-    padding: 10,
-  },
-  modalAddBtn: {
-    backgroundColor: '#2A8AE4',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    justifyContent: 'space-between',
   },
 });

@@ -6,8 +6,6 @@ import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
-import { set } from 'date-fns';
-import PasswordInput from '@/components/PasswordInput';
 import StyledTextInput from '@/components/StyledTextInput';
 
 export default function LoginScreen() {
@@ -17,7 +15,6 @@ export default function LoginScreen() {
     const [modalType, setModalType] = useState("sendCode");
     const [recoveryEmail, setRecoveryEmail] = useState("");
     const [emailCode, setEmailCode] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
     const openModal = () => {
@@ -228,12 +225,12 @@ export default function LoginScreen() {
                         onPress={openModal}>
                         Forgot password?
                     </Text>
-                    <YesButton onPress={handleLogin} text="Login →" />
+                    <YesButton onPress={handleLogin} text="Login →" style={styles.buttons}/>
                     <NoButton onPress={() => {
                         setEmail("");
                         setPassword("");
                         router.navigate("/register");
-                    }} text="Register" />
+                    }} text="Register" style={styles.buttons} />
                     <View style={styles.separatorContainer}>
                         <View style={styles.separatorLine} />
                         <Text style={styles.separatorText}>or</Text>
@@ -251,7 +248,6 @@ export default function LoginScreen() {
                     onCancel={closeModal}
                     headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
                 >
-                    
                     {modalType === "sendCode" && (
                         <>
                             <StyledTextInput
@@ -261,8 +257,8 @@ export default function LoginScreen() {
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                             />
-                            <YesButton onPress={sendResetMail} text="Send confirmation email" />
-                            <NoButton onPress={closeModal} text="Close" />
+                            <YesButton onPress={sendResetMail} text="Send confirmation email" style={styles.buttons}/>
+                            <NoButton onPress={closeModal} text="Close" style={styles.buttons}/>
                         </>
                     )}
                     {modalType === "enterCode" && (
@@ -273,8 +269,8 @@ export default function LoginScreen() {
                                 onChangeText={setEmailCode}
                                 autoCapitalize="none"
                             />
-                            <YesButton onPress={checkEmailCode} text="Confirm" />
-                            <NoButton onPress={closeModal} text="Cancel" />
+                            <YesButton onPress={checkEmailCode} text="Confirm" style={styles.buttons}/>
+                            <NoButton onPress={closeModal} text="Cancel" style={styles.buttons}/>
                         </>
                     )}
                 </CustomModal>
@@ -356,4 +352,12 @@ const styles = StyleSheet.create({
         marginHorizontal: 8,
         lineHeight: 16,
     },
+    buttonContainer: {
+        justifyContent: "space-between",
+        flexDirection: "row",
+    },
+    buttons: {
+        flex: 0,
+        width: "100%",
+    }
 });
