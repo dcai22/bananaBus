@@ -1,0 +1,23 @@
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: ./api/Dockerfile
+    ports:
+      - "3000:3000"       
+    depends_on:
+      - mongo             
+    environment:
+      MONGODB_URI: mongodb+srv://z5414020:BNevzr9sqzAeWrjF@cluster0.4cyln.mongodb.net/
+
+  mongo:
+    image: mongo:8
+    restart: always
+    ports:
+      - "27017:27017"     
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
+
