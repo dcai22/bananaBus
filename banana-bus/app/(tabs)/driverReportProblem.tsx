@@ -82,7 +82,6 @@ export default function driverReportProblem() {
                     multiline
                 />
                 <NoButton text="Send Report" onPress={handleSend} />
-                <Text>{done ? "done" : "not done"}</Text>
             </View>
         </Container>
     )
