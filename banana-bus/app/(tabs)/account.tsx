@@ -188,7 +188,7 @@ function MenuItem({ title, icon, onPress, isLoading }: { title: string; icon: ke
     return (
         <TouchableOpacity style={styles.menuItem} onPress={onPress} disabled={isLoading}>
             {isLoading ? (
-                <ActivityIndicator size="small" color="#000"/>
+                <ActivityIndicator size="small" style={styles.icons}/>
             ) : (
                 <>
                     <FontAwesome name={icon} style={styles.icons}/> 
