@@ -42,11 +42,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-<<<<<<< Updated upstream
-                const response = await fetch(`${API_BASE}/getAccountName`, {
-=======
                 const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/getAccountDetails`, {
->>>>>>> Stashed changes
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
