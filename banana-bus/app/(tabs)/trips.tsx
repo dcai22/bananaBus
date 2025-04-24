@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
@@ -164,7 +164,7 @@ export default function Trips() {
 
     return (
         <Container>
-            <Header title="My Trips" emoji="🚌" showGoBack={false} />
+            <Header title="My Trips" icon={<FontAwesome name="calendar"/>} showGoBack={false} />
             <ScrollView>
                 <View style={styles.section}>
                     <View style={styles.sectionHeaderContainer}>
@@ -174,8 +174,8 @@ export default function Trips() {
                         }
                     </View>
                     {upcomingTrips.length > 0 ? (
-                        upcomingTrips.map((item) => (
-                            <View style={styles.tripItem}>
+                        upcomingTrips.map((item, index) => (
+                            <View style={styles.tripItem} key={index}>
                                 <View style={styles.accent} />
                                 <View style={styles.tripContent}>
                                     <Text>

@@ -164,6 +164,18 @@ app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
     return;
 });
 
+app.get("/pastBookings", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
+        const bookings = await searchBookings(token, 'past', numBookings);
+        res.json(bookings);
+    } catch (err) {
+        next(err);
+    }
+    return;
+});
+
 app.get("/tripsList", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
