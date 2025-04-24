@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import Modal from 'react-native-modal'
 import { Promotion } from "@/api/interface";
 import { NoButton } from "../Buttons";

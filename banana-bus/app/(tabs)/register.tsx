@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
+import { Text, View, StyleSheet, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
@@ -150,16 +150,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         paddingHorizontal: 48,
         marginBottom: 15,
-    },
-    input: {
-        width: '100%',
-        padding: 10,
-        paddingHorizontal: 20,
-        marginVertical: 8,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        backgroundColor: '#fff',
     },
     button: {
         width: '100%',
