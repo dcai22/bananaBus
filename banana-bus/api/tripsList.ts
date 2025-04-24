@@ -138,15 +138,18 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
 
 export async function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
     const now = new Date();
-
-    // // Logistic price - increases with % of capacity used
-    // const f = curCapacity / maxCapacity;
-    // const pMin = 7;
-    // const pMaxSpot = 15;
-    // const k = 10;
-    // const pSpot = pMin + (pMaxSpot - pMin) /(1 + Math.exp(-k * (f - 0.5)));
-
     const basePrice = 10;
+
+    if ( now > timeOfDeparture ) {
+        return basePrice;
+    }
+
+    // Logistic price - increases with % of capacity used
+    const f = curCapacity / maxCapacity;
+    const pMin = 7;
+    const pMaxSpot = 15;
+    const k = 10;
+    const pSpot = pMin + (pMaxSpot - pMin) /(1 + Math.exp(-k * (f - 0.5)));
     
     // linear price - increases with time to departure
     const t = Math.max(0, (timeOfDeparture.getTime() - now.getTime()) / 36e5);
