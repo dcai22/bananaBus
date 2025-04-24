@@ -31,6 +31,7 @@ export async function authRegister(email: string, password: string, firstName: s
     })
 
     const newUser = {
+        _id: new ObjectId(),
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -288,6 +289,7 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
 
     // note: google members should not have a password, and cannot reset email or password
     const newUser = {
+        _id: new ObjectId(),
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -304,6 +306,7 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         bookings: [],
         savedRoutes: [],
         isManager: false,
+        isDriver: false,
         isExternal: true,
         cards: [],
         customerId: customer.id,

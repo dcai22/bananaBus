@@ -309,12 +309,14 @@ app.post("/createBooking", async (req: Request, res: Response, next) => {
 
     try {
         const dbRes = await collections.bookings?.insertOne({
+            _id: new ObjectId(),
             userId: user._id,
             tripId,
             originId,
             destId,
             numTickets,
             numLuggage,
+            bookingTime: new Date(),
         });
         await collections.trips?.updateOne(
             { _id: tripId },

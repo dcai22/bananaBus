@@ -3,7 +3,7 @@ import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { findUserByToken, getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
-import { Booking, Trip, TripInfo, TripList, Vehicle } from "./interface";
+import { Booking, Trip, TripBox, TripInfo, TripList, User, Vehicle } from "./interface";
 import { differenceInCalendarDays } from 'date-fns';
 
 const timezone = "Australia/Sydney"
@@ -65,7 +65,7 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
     }
     
     // convert dataStore info to tripBox(info needed by frontend)
-    const tripBoxes = await Promise.all(
+    const tripBoxes: TripBox[] = await Promise.all(
         trips.map(async (t) => {
             const vehicle = await getVehicleById(t.vehicleId);
         
@@ -121,17 +121,18 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
         const end = stopTimes[stopTimes.length - 1];
 
         const vehicle = await findAvailableVehicle(start, end);
-        console.log(vehicle)
-        if (!vehicle) {
+        const driver = await findAvailableDriver(start, end);
+        if (!vehicle || !driver) {
             // TODO alert manager somehow
             console.log(`no vehicle available for ${hr}`);
             continue;
         }
         
+
         const trip = {
             _id: new ObjectId(),
             vehicleId: vehicle._id,
-            driverId: null,
+            driverId: driver._id,
             routeId: routeId,
             stopTimes: stopTimes,					
             bookings: [],
@@ -186,6 +187,39 @@ async function findAvailableVehicle(start: Date, end: Date): Promise<Vehicle | n
     })
 
     return availableVehicle
+}
+
+// finds any available driver (to assign to a trip)
+async function findAvailableDriver(start: Date, end: Date): Promise<User | null> {
+    await connectToDatabase();
+
+    if (!collections.trips || !collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    // buffer time for driver (mins)
+    const bufferTime = 60;
+    
+    const bufferedStart = new Date(start.getTime() - bufferTime * 60 * 1000);
+    const bufferedEnd = new Date(end.getTime() + bufferTime * 60 * 1000);
+
+    // find trips that overlap within the buffered times
+    const overlappingTrips = await collections.trips.find<Trip>({
+        $or: [
+          { "stopTimes.0": { $lt: bufferedEnd }, "stopTimes": { $elemMatch: { $gt: bufferedStart } } }
+        ]
+      }).toArray();
+
+    // extract driver ids from trips
+    const unavailableDriverIds = overlappingTrips.map(t => t.driverId);
+
+    // get any driver not in array
+    const availableDriver = await collections.users.findOne<User>({
+        isDriver: true,
+        _id: {$nin: unavailableDriverIds }
+    })
+
+    return availableDriver
 }
 
 // Get a trips info (for booking page)
