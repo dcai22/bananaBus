@@ -39,79 +39,7 @@ export default function Trips() {
     const [upcomingLoading, setUpcomingLoading] = useState(true);
 
     const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
-
-    const fetchWatchlistRoutes = async () => {
-        // TODO fetch actual data
-        
-        return [
-            {
-                route: {
-                    routeId: 0,
-                    stops: [0, 1],      // route visits stop0 (1utama) -> stop1 (terminal 1)
-                    trips: [0, 1, 2, 3, 4],
-                },
-                originIndex: 0,         // user intends to board at stops[0], i.e., stop0 (1utama)
-                originName: '1utama Shopping Mall',
-                destIndex: 1,           // user intends to disembark at stops[1], i.e., stop1 (terminal 1)
-                destName: 'Kuala Lumpur Intl. T1',
-            },
-            {
-                route: {
-                    routeId: 1,
-                    stops: [2, 1, 0],   // route visits stop2 (terminal 2) -> stop1 (terminal 1) -> stop0 (1utama)
-                    trips: [5, 6, 7, 8, 9],
-                },
-                originIndex: 0,         // user intends to board at stops[0], i.e., stop2 (terminal 2)
-                originName: 'Kuala Lumpur Intl. T2',
-                destIndex: 2,           // user intends to disembark at stops[2], i.e., stop0 (1utama)
-                destName: '1utama Shopping Mall',
-            },
-            {
-                route: {
-                    routeId: 1,
-                    stops: [2, 1, 0],   // route visits stop2 (terminal 2) -> stop1 (terminal 1) -> stop0 (1utama)
-                    trips: [5, 6, 7, 8, 9],
-                },
-                originIndex: 0,         // user intends to board at stops[0], i.e., stop2 (terminal 2)
-                originName: 'Kuala Lumpur Intl. T2',
-                destIndex: 2,           // user intends to disembark at stops[2], i.e., stop0 (1utama)
-                destName: '1utama Shopping Mall',
-            },
-            {
-                route: {
-                    routeId: 1,
-                    stops: [2, 1, 0],   // route visits stop2 (terminal 2) -> stop1 (terminal 1) -> stop0 (1utama)
-                    trips: [5, 6, 7, 8, 9],
-                },
-                originIndex: 0,         // user intends to board at stops[0], i.e., stop2 (terminal 2)
-                originName: 'Kuala Lumpur Intl. T2',
-                destIndex: 2,           // user intends to disembark at stops[2], i.e., stop0 (1utama)
-                destName: '1utama Shopping Mall',
-            },
-            {
-                route: {
-                    routeId: 1,
-                    stops: [2, 1, 0],   // route visits stop2 (terminal 2) -> stop1 (terminal 1) -> stop0 (1utama)
-                    trips: [5, 6, 7, 8, 9],
-                },
-                originIndex: 0,         // user intends to board at stops[0], i.e., stop2 (terminal 2)
-                originName: 'Kuala Lumpur Intl. T2',
-                destIndex: 2,           // user intends to disembark at stops[2], i.e., stop0 (1utama)
-                destName: '1utama Shopping Mall',
-            },
-            {
-                route: {
-                    routeId: 1,
-                    stops: [2, 1, 0],   // route visits stop2 (terminal 2) -> stop1 (terminal 1) -> stop0 (1utama)
-                    trips: [5, 6, 7, 8, 9],
-                },
-                originIndex: 0,         // user intends to board at stops[0], i.e., stop2 (terminal 2)
-                originName: 'Kuala Lumpur Intl. T2',
-                destIndex: 2,           // user intends to disembark at stops[2], i.e., stop0 (1utama)
-                destName: '1utama Shopping Mall',
-            },
-        ];
-    };
+    const [watchlistLoading, setWatchlistLoading] = useState(true)
 
     useFocusEffect(
         useCallback(() => { 
@@ -125,26 +53,43 @@ export default function Trips() {
         
     useEffect(() => {
         if (!refresh) return;
-        const getTrips = async () => {
+    
+        const fetchData = async () => {
             const token = await getItem("token");
-            axios.get(`${API_BASE}/upcomingBookings`, {
+    
+            axios.get(`${API_BASE}upcomingBookings`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
-            }).then((res) => {
-                setUpcomingTrips(res.data)
-            }).catch((err) => {
-                setError(err.response.data.error)
-            }).finally(() => {
-                setUpcomingLoading(false)
-                setRefresh(false)
             })
-
-            const watchlist = await fetchWatchlistRoutes();
-            setWatchlistRoutes(watchlist);
+            .then((tripsResponse) => {
+                setUpcomingTrips(tripsResponse.data);
+            })
+            .catch((err) => {
+                setError(err.response?.data?.error || "An error occurred");
+            })
+            .finally(() => {
+                setUpcomingLoading(false);
+            });
+    
+            axios.get(`${API_BASE}getSavedRoutes`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+            })
+            .then((watchlistResponse) => {
+                setWatchlistRoutes(watchlistResponse.data);
+            })
+            .catch((err) => {
+                setError(err.response?.data?.error || "An error occurred");
+            })
+            .finally(() => {
+                setWatchlistLoading(false);
+                setRefresh(false);
+            });
         };
-
-        getTrips();
+    
+        fetchData();
     }, [refresh]);
 
     if (error) {
@@ -152,6 +97,7 @@ export default function Trips() {
             <Text>Error: {error}</Text>
         )
     }
+
     const handlePress = (route: Route) => {
         router.push({
             pathname: '/tripsList',
@@ -200,7 +146,12 @@ export default function Trips() {
                     ) : (
                         <Text style={styles.emptyMessage}>Book some trips!</Text>
                     )}
-                    <Text style={styles.sectionHeader}>My Watchlist</Text>
+                    <View style={styles.sectionHeaderContainer}>
+                        <Text style={styles.sectionHeader}>My Watchlist</Text>
+                        { watchlistLoading &&
+                            <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
+                        }
+                    </View>
                     {watchlistRoutes.length > 0 ? (
                         watchlistRoutes.map((item, index) => (
                             <TouchableOpacity
