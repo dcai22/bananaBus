@@ -14,12 +14,12 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const strippedToken = token.replace('Bearer ', '');
-    const user = await findUserByToken(strippedToken);
+    // const strippedToken = token.replace('Bearer ', '');
+    // const user = await findUserByToken(strippedToken);
 
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    } 
+    // if (!user) {
+    //     throw HTTPError(403, 'invalid token');
+    // } 
     
     const route = await getRouteById(routeId)
 
@@ -65,7 +65,7 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
             arriveId: arriveId,
             departureTime: departTime,
             arrivalTime: arriveTime,
-            price: getPrice(vehicle.maxCapacity, curCapacity, departTime),
+            price: Number(getPrice(vehicle.maxCapacity, curCapacity, departTime)), 
             curCapacity: curCapacity,
             maxCapacity: vehicle.maxCapacity,
             curLuggageCapacity: await calcCurrentLuggageCapacity(t),
@@ -86,7 +86,7 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
 
 
 // Used to generate trips for a given day if no fixed trips are on day
-async function generateTrips(routeId: ObjectId, dateString: string) {
+export async function generateTrips(routeId: ObjectId, dateString: string) {
     await connectToDatabase();
     
     const route = await getRouteById(routeId)
@@ -136,40 +136,39 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
     return trips
 }
 
-export async function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
+export function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
     const now = new Date();
-    const basePrice = 10;
+    const basePrice = 8;
 
     if ( now > timeOfDeparture ) {
-        return basePrice;
+        return 14;
     }
 
-    // Logistic price - increases with % of capacity used
+    // // Logistic price - increases with % of capacity used
     const f = curCapacity / maxCapacity;
-    const pMin = 7;
+    const pMin = 8;
     const pMaxSpot = 15;
     const k = 10;
     const pSpot = pMin + (pMaxSpot - pMin) /(1 + Math.exp(-k * (f - 0.5)));
     
     // linear price - increases with time to departure
     const t = Math.max(0, (timeOfDeparture.getTime() - now.getTime()) / 36e5);
-    const alpha = 0.1;
+    const alpha = 0.75;
     const pTime = alpha*Math.max(0, 24 - t);
 
     // Time of day pricing - increases smoothly with peak hours
     const peakPrice = 3;
-    const peakHours = [9, 18];
-    const sigma = 2;
+    const peakHours = [9, 12, 5];
+    const sigma = 1.5;
     const curTimeHour = now.getHours() + now.getMinutes() / 60;
     const pSurge = peakHours.reduce((sum, mu) => { const delta = curTimeHour - mu; 
                     return sum + peakPrice * Math.exp(- (delta * delta) / (2 * sigma * sigma)); }, 0);
     
     // Round tp nearest 5 cents
     const factor = 1 / 0.05;
-    const sum =  pSurge + pTime + basePrice;        
+    const sum =  basePrice + pTime + pSurge;        
     const rounded = Math.round(sum * factor) / factor;
     return Math.min(rounded, 22);
-
 }
 
 // Get a trips info (for booking page)
@@ -204,7 +203,7 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
         arriveId: arriveId,
         departureTime: trip.stopTimes[departIndex],
         arrivalTime: trip.stopTimes[arriveIndex],
-        price: getPrice(vehicle.maxCapacity, curCapacity, trip.stopTimes[departIndex]),
+        price: Number(getPrice(vehicle.maxCapacity, curCapacity, trip.stopTimes[departIndex])),
         curCapacity: curCapacity, 
         maxCapacity: vehicle.maxCapacity,
         curLuggageCapacity: await calcCurrentLuggageCapacity(trip),
