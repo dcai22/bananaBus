@@ -75,11 +75,11 @@ export async function authLogin(email: string, password: string) {
 
     const user = await collections.users.findOne({ email: email });
     if (!user) {
-        throw HTTPError(400, 'email not found');
+        throw HTTPError(400, 'incorrect email or password');
     }
 
     if (!(await compareHash(password, user.password))) {
-        throw HTTPError(400, 'incorrect password');
+        throw HTTPError(400, 'incorrect email or password');
     }
 
     
