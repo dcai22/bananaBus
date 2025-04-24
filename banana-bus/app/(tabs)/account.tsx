@@ -12,7 +12,7 @@ export default function Account() {
     const [temperature, setTemperature] = useState(0);
     const [windSpeed, setWindSpeed] = useState(0);
     const [humidity, setHumidity] = useState(0);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isManager, setisManager] = useState(false);
     const [isDriver, setIsDriver] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
@@ -34,7 +34,7 @@ export default function Account() {
     )
 
     useEffect(() => {
-        const getAccountName = async () => {
+        const getAccountDetails = async () => {
             let token = null;
             if (Device.deviceType === Device.DeviceType.PHONE) {
                 token = await getItem('token');
@@ -49,6 +49,8 @@ export default function Account() {
                 if (response.ok) {
                     const data = await response.json();
                     setUserName(data.firstName);
+                    setisManager(data.isManager);
+                    setIsDriver(data.isDriver);
                 }
             } catch {
                 // console.log('Failed to fetch user name');
@@ -56,14 +58,11 @@ export default function Account() {
                 setLoading(false);
             }
         }
-        getAccountName();
+        getAccountDetails();
         // TODO Fetch weather data from API
         setTemperature(30);
         setWindSpeed(10);
         setHumidity(80);
-        // TODO Fetch user role from API
-        setIsAdmin(true);
-        setIsDriver(true);
         setRefresh(false);
     }, [refresh]);
 
@@ -156,7 +155,7 @@ export default function Account() {
                     <MenuItem title="Payments" icon="credit-card" onPress={handlePayment} isLoading={sheetLoading}/>
                     <MenuItem title="Past Bookings" icon="bus" onPress={() => router.navigate('/pastBookings')}/>
                     <MenuItem title="Support" icon="phone" onPress={() => router.navigate('/support')}/>
-                    { isAdmin && (
+                    { isManager && (
                         <MenuItem title="Admin Panel" icon="folder" onPress={() => router.navigate('/adminPanel')}/>
                     )}
                     { isDriver && (

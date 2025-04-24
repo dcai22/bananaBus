@@ -67,7 +67,7 @@ export async function getVehicleById(vehicleId: ObjectId) {
 }
 
 export async function findUserByResetToken(token: string) {
-    const users = await collections.users?.find({ resetToken: { $ne: [] } }).toArray();
+    const users = await collections.users?.find({ resetToken: { $ne: [] as any} }).toArray();
     if (!users) {
         return;
     }

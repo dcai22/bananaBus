@@ -113,14 +113,19 @@ export default function tripsList() {
                     <Text style={styles.tripListDateText}>{format(date, "E, do LLL y")}</Text>
                     <FontAwesome name="chevron-down" style={styles.tripDateArrow}></FontAwesome>
                 </TouchableOpacity>
-                <View>
-                    {trips.map((t, index )=> <TripListBox key={index} trip={t} disabled={false}/>)}
-                </View>
+                { trips.length > 0 ? (
+                    <View>
+                        {trips.map((t, index )=> <TripListBox key={index} trip={t} disabled={false}/>)}
+                    </View>
+                ): (
+                    <Text style={styles.emptyMessage}>No available trips for this date! {"\n"} Please try again later.</Text>
+                )}
             </ScrollView>
             <DatePicker
                 modal
                 open={open}
                 date={date}
+                mode="date"
                 minimumDate={new Date()}
                 onConfirm={(date) => {
                     setOpen(false)
@@ -195,5 +200,12 @@ const styles = StyleSheet.create({
         fontSize: 20,
         alignSelf: "center",
         color: "#74b9f1",
+    },
+    emptyMessage: {
+        fontSize: 18,
+        fontStyle: "italic",
+        color: "#888",
+        textAlign: "center",
+        marginBottom: 14,
     },
 });

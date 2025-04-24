@@ -6,8 +6,7 @@ import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEm
 import { getTrip, tripsList } from './tripsList';
 import { createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
-import { deleteAccount,
-            getAccountName, 
+import { deleteAccount, 
             getUserDetails,
             updateUserDetails,
             updateUserPassword,
@@ -234,16 +233,6 @@ app.delete("/unsaveRoute", async (req: Request, res: Response, next) => {
     }
 });
 
-app.get("/getAccountName", async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        res.json(await getAccountName(token));
-    } catch (error) {
-        next(error);
-    }
-    return;
-});
-
 app.get("/getAccountDetails", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
@@ -309,12 +298,14 @@ app.post("/createBooking", async (req: Request, res: Response, next) => {
 
     try {
         const dbRes = await collections.bookings?.insertOne({
+            _id: new ObjectId(),
             userId: user._id,
             tripId,
             originId,
             destId,
             numTickets,
             numLuggage,
+            bookingTime: new Date(),
         });
         await collections.trips?.updateOne(
             { _id: tripId },

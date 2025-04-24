@@ -3,7 +3,8 @@ import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { findUserByToken, getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
-import { Booking, Trip, TripInfo, TripList, Vehicle } from "./interface";
+import { Booking, Trip, TripBox, TripInfo, TripList, User, Vehicle } from "./interface";
+import { differenceInCalendarDays } from 'date-fns';
 
 const timezone = "Australia/Sydney"
 
@@ -21,12 +22,12 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
     //     throw HTTPError(403, 'invalid token');
     // } 
     
-    const route = await getRouteById(routeId)
+    const route = await getRouteById(routeId);
 
     // define Start and end of date
-    const dateStart = toZonedTime(date, timezone)
+    const dateStart = toZonedTime(date, timezone);
     dateStart.setHours(0,0,0,0);
-    const dateEnd = toZonedTime(date, timezone)
+    const dateEnd = toZonedTime(date, timezone);
     dateEnd.setHours(23,59,59,999);
 
     let trips: Trip[] = []
@@ -36,22 +37,35 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
         "stopTimes.0": {"$gte": fromZonedTime(dateStart, timezone), "$lte": fromZonedTime(dateEnd, timezone)}
     }).toArray();
 
-    // check if trips exist
+    
+    const departStop = await getStopById(departId);
+    const departIndex = route.stops.findIndex(id => id.equals(departId));
+    
+    const arriveStop = await getStopById(arriveId);
+    const arriveIndex = route.stops.findIndex(id => id.equals(arriveId));
+    
+    const arriveName = arriveStop.name;
+    const departName = departStop.name;
+    
+    // check if trips exist else generate some trips
     if (trips.length === 0) {
-        trips = await generateTrips(routeId, date)
+        const today = toZonedTime(new Date(), timezone);
+        const dayDiff = differenceInCalendarDays(dateStart, today);
+
+        // prevent generating trips more than a week ahead
+        if (dayDiff > 7) {
+            return {
+                departName,
+                arriveName,
+                trips: [],
+            }
+        }
+
+        trips = await generateTrips(routeId, date);
     }
-
-    const departStop = await getStopById(departId)
-    const departIndex = route.stops.findIndex(id => id.equals(departId))
     
-    const arriveStop = await getStopById(arriveId)
-    const arriveIndex = route.stops.findIndex(id => id.equals(arriveId))
-    
-    const arriveName = arriveStop.name
-    const departName = departStop.name
-
     // convert dataStore info to tripBox(info needed by frontend)
-    const tripBoxes = await Promise.all(
+    const tripBoxes: TripBox[] = await Promise.all(
         trips.map(async (t) => {
             const vehicle = await getVehicleById(t.vehicleId);
             
@@ -77,6 +91,9 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
         })
     );
 
+    // sorts trips by departure time
+    tripBoxes.sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime());
+    
     return {
         departName,
         arriveName,
@@ -90,53 +107,123 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
 export async function generateTrips(routeId: ObjectId, dateString: string) {
     await connectToDatabase();
     
-    const route = await getRouteById(routeId)
+    const route = await getRouteById(routeId);
     
-    //create sample vehicle
-    //to be replaced with actual vehicle
-    
-    const vehicle: Vehicle = {
-        _id: new ObjectId(),
-        maxCapacity: 20,
-        maxLuggageCapacity: 20,
-        hasAssist: true,
-        model: "toyota",
-        numberPlate: "abc123",
-        reports: [],
-    }
-
-    await collections.vehicles?.insertOne(vehicle)
-
     let trips: Trip[] = []
-    
     // generate a trip every hr from 8am - 5pm
     for (let hr = 8; hr <= 17; hr++) {
-        const departDate = toZonedTime(dateString, timezone)
-        departDate.setHours(hr, 0, 0 , 0)
+        const departDate = toZonedTime(dateString, timezone);
+        departDate.setHours(hr, 0, 0 , 0);
 
+        // TODO replace with actual stopTimes
         const stopTimes = route.stops.map((_, i) => {
-            const stopTime = new Date(departDate.getTime() + i * 30 * 60 * 1000)
-            return fromZonedTime(stopTime, timezone)
+            const stopTime = new Date(departDate.getTime() + i * 30 * 60 * 1000);
+            return fromZonedTime(stopTime, timezone);
         })
 
-        trips.push({
+        const start = stopTimes[0];
+        const end = stopTimes[stopTimes.length - 1];
+
+        const vehicle = await findAvailableVehicle(start, end);
+        const driver = await findAvailableDriver(start, end);
+        if (!vehicle || !driver) {
+            // TODO alert manager somehow
+            console.log(`no vehicle available for ${hr}`);
+            continue;
+        }
+        
+
+        const trip = {
             _id: new ObjectId(),
             vehicleId: vehicle._id,
-            driverId: null,
+            driverId: driver._id,
             routeId: routeId,
             stopTimes: stopTimes,					
             bookings: [],
-        })
+        }
+
+        await collections.trips?.insertOne(trip);
+        trips.push(trip);
     }
 
-    const tripIds = trips.map(t => t._id)
+    // TODO: alert manager
+    // checks if no trips are generates i.e no available vehicles
+    /* if (trips.length === 0) {
+    } */
+
+    // add tripId to route
+    const tripIds = trips.map(t => t._id);
     await collections.routes?.updateOne(
         {_id: routeId},
         { $push: { trips: {$each: tripIds}}}
     )
-    await collections.trips?.insertMany(trips)
 
-    return trips
+    return trips;
+}
+
+// finds any available vehicle (to assign to a trip)
+async function findAvailableVehicle(start: Date, end: Date): Promise<Vehicle | null> {
+    await connectToDatabase();
+
+    if (!collections.trips || !collections.vehicles) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    // buffer time for vehicle (mins)
+    const bufferTime = 60;
+    
+    const bufferedStart = new Date(start.getTime() - bufferTime * 60 * 1000);
+    const bufferedEnd = new Date(end.getTime() + bufferTime * 60 * 1000);
+
+    // find trips that overlap within the buffered times
+    const overlappingTrips = await collections.trips.find<Trip>({
+        $or: [
+          { "stopTimes.0": { $lt: bufferedEnd }, "stopTimes": { $elemMatch: { $gt: bufferedStart } } }
+        ]
+      }).toArray();
+
+    // extract vehicle ids from trips
+    const unavailableVehiclesIds = overlappingTrips.map(t => t.vehicleId);
+
+    // get any vehicle not in array
+    const availableVehicle = await collections.vehicles.findOne<Vehicle>({
+        _id: {$nin: unavailableVehiclesIds }
+    })
+
+    return availableVehicle
+}
+
+// finds any available driver (to assign to a trip)
+async function findAvailableDriver(start: Date, end: Date): Promise<User | null> {
+    await connectToDatabase();
+
+    if (!collections.trips || !collections.users) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    // buffer time for driver (mins)
+    const bufferTime = 60;
+    
+    const bufferedStart = new Date(start.getTime() - bufferTime * 60 * 1000);
+    const bufferedEnd = new Date(end.getTime() + bufferTime * 60 * 1000);
+
+    // find trips that overlap within the buffered times
+    const overlappingTrips = await collections.trips.find<Trip>({
+        $or: [
+          { "stopTimes.0": { $lt: bufferedEnd }, "stopTimes": { $elemMatch: { $gt: bufferedStart } } }
+        ]
+      }).toArray();
+
+    // extract driver ids from trips
+    const unavailableDriverIds = overlappingTrips.map(t => t.driverId);
+
+    // get any driver not in array
+    const availableDriver = await collections.users.findOne<User>({
+        isDriver: true,
+        _id: {$nin: unavailableDriverIds }
+    })
+
+    return availableDriver
 }
 
 export function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
@@ -184,18 +271,18 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
         throw HTTPError(403, 'invalid token');
     }
 
-    const trip = await getTripById(tripId)
-    const route = await getRouteById(trip.routeId)
+    const trip = await getTripById(tripId);
+    const route = await getRouteById(trip.routeId);
     const vehicle = await getVehicleById(trip.vehicleId);
 
     const departStop = await getStopById(departId)
-    const departIndex = route.stops.findIndex(id => id.equals(departId))
+    const departIndex = route.stops.findIndex(id => id.equals(departId));
     
     const arriveStop = await getStopById(arriveId)
-    const arriveIndex = route.stops.findIndex(id => id.equals(arriveId))
+    const arriveIndex = route.stops.findIndex(id => id.equals(arriveId));
     
-    const arriveName = arriveStop.name
-    const departName = departStop.name
+    const arriveName = arriveStop.name;
+    const departName = departStop.name;
 
     const curCapacity = await calcCurrentCapacity(trip);
 
@@ -223,14 +310,14 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
 
 export async function calcCurrentCapacity(trip: Trip) {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
-  if (!bookings) throw HTTPError(400, "Cant get bookings")
+  if (!bookings) throw HTTPError(400, "Cant get bookings");
   // could probs calc through max of the interval
   return bookings.reduce((sum, b) => sum + b.numTickets, 0)
 }
 
 async function calcCurrentLuggageCapacity(trip: Trip) {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
-  if (!bookings) throw HTTPError(400, "Cant get bookings")
+  if (!bookings) throw HTTPError(400, "Cant get bookings");
   // could probs calc through max of the interval
   return bookings.reduce((sum, b) => sum + b.numLuggage, 0)
 }
