@@ -146,13 +146,13 @@ export default function Account() {
             <View style={styles.overlay}>
                 <Text style={styles.greeting}>Good Morning, {loading ? <ActivityIndicator size="small" color="#ffffff"/> : userName}</Text>
                 <View style={styles.weatherContainer}>
-                    <Text style={styles.weatherText}>☀️ {temperature}°C</Text>
+                    <Text style={styles.weatherText}>☀️ {temperature}°C</Text>  
                     <Text style={styles.weatherText}>💨 {windSpeed} km/h</Text>
                     <Text style={styles.weatherText}>💧 {humidity}%</Text>
                 </View>
                 <View style={styles.menuContainer}>
                     <MenuItem title="Payments" icon="credit-card" onPress={handlePayment} isLoading={sheetLoading}/>
-                    <MenuItem title="Past Bookings" icon="bus" onPress={() => router.navigate('/tripsList')}/>
+                    <MenuItem title="Past Bookings" icon="bus" onPress={() => router.navigate('/pastBookings')}/>
                     <MenuItem title="Support" icon="phone" onPress={() => router.navigate('/support')}/>
                     { isAdmin && (
                         <MenuItem title="Admin Panel" icon="folder" onPress={() => router.navigate('/adminPanel')}/>

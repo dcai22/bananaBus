@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
@@ -39,6 +39,7 @@ export default function tripsList() {
 
     useEffect(() => {
         if (!refresh) return
+        setError("")
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
@@ -86,7 +87,6 @@ export default function tripsList() {
         )
     }
 
-    // TODO: add refresh
     if (loading) {
         return(
             <Container>
@@ -96,10 +96,12 @@ export default function tripsList() {
         )
     }
 
-    // make nicer or pop up
     if (error) {
+        Alert.alert(`Error ${error}`)
         return(
-            <Text>Error: {error}</Text>
+            <Container>
+                <Header/>
+            </Container>
         )
     }
 

@@ -71,12 +71,6 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="payment"
-                    options={{
-                        href: null,
-                    }}
-                />
-                <Tabs.Screen
                     name="index"
                     options={{
                         title: "Home",
@@ -120,13 +114,6 @@ export default function TabLayout() {
                 />
                 <Tabs.Screen
                     name="booking"
-                    options={{
-                        href: null,
-                        tabBarStyle: { display: "none" },
-                    }}
-                />
-                <Tabs.Screen
-                    name="newPayment"
                     options={{
                         href: null,
                         tabBarStyle: { display: "none" },
