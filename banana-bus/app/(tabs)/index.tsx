@@ -12,7 +12,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { getItem } from "../helper";
 import axios from "axios";
-import { API_BASE } from '@env';
+import { API_BASE } from "@env";
 
 const MAPBOX_TOKEN =
     "pk.eyJ1IjoiMzkwMGYxNWFiYW5hbmEyNSIsImEiOiJjbTg3ZWhxNmMwNzF6MmxvYjg3Z2dwdmx6In0.PlMxV_sUySfYSA3UNzuglA";
@@ -35,30 +35,6 @@ interface RouteGeometry {
     type: "LineString";
     coordinates: number[][];
 }
-
-// async function getRouteId(departId: string, arriveId: string) {
-//     try {
-//         const token = await getItem("token");
-//         const response = await axios.get(
-//             `${API_BASE}/routes/fromSection`,
-//             {
-//                 headers: {
-//                     Authorization: `Bearer ${token}`,
-//                 },
-//                 params: {
-//                     departId,
-//                     arriveId,
-//                 },
-//             }
-//         );
-//         return response.data[0]._id; // TODO: Fix this later to use more than one
-//     } catch (error) {
-//         console.error("Error fetching route id:", error);
-//         Alert.alert("Something went wrong!", "Error fetching destinations", [
-//             { text: "OK" },
-//         ]);
-//     }
-// }
 
 export default function Index() {
     const [location, setLocation] = useState({
@@ -181,7 +157,7 @@ export default function Index() {
         }
     };
 
-    const onCameraChange = (event : any) => {
+    const onCameraChange = (event: any) => {
         if (event.properties.heading !== undefined) {
             setCompassHeading(event.properties.heading);
         }
@@ -304,17 +280,6 @@ export default function Index() {
             }
         };
     }, []);
-
-    // TODO: Change this so it doesnt autoupdate when location updates, only when pinpoint
-    // useEffect(() => {
-    //     if (cameraRef.current && location) {
-    //         cameraRef.current.setCamera({
-    //             centerCoordinate: [location.lng, location.lat],
-    //             zoomLevel: 15,
-    //             animationDuration: 1000,
-    //         });
-    //     }
-    // }, [location]);
 
     return (
         <SafeAreaView style={styles.container}>
