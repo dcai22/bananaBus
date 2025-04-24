@@ -181,7 +181,7 @@ export default function Trips() {
                     {watchlistRoutes.length > 0 ? (
                         watchlistRoutes.map((item, index) => (
                             <TouchableOpacity
-                                key={item.route.routeId + "-" + index}
+                                key={index}
                                 onPress={() => handlePress(item)}
                             >
                                 <View style={styles.tripItem}>
