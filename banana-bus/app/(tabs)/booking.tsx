@@ -11,6 +11,7 @@ import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
 import { CheckoutHeader } from "@/components/Header";
+import { API_BASE } from '@env';
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -65,7 +66,7 @@ export default function booking() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus.vercel.app/getTrip", {
+            axios.get(`${API_BASE}/getTrip`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -98,7 +99,6 @@ export default function booking() {
         )
     }
 
-    
     // make nicer or pop up
     if (error) {
         return(
@@ -137,11 +137,6 @@ export default function booking() {
         return (numPassenger * trip.price) + (numLuggage * trip.luggagePrice)
     }
 
-    // TODO: API calls to backend or navigate to new routes
-    function handleSelectSeat() {
-    
-    }
-
     function handleCardChange() {
 
     }
@@ -155,7 +150,7 @@ export default function booking() {
         setIsCheckout(true)
         const token = await getItem("token");
         try {
-            const res = await fetch('https://banana-bus.vercel.app/createBooking', {
+            const res = await fetch(`${API_BASE}/createBooking`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -228,12 +223,6 @@ export default function booking() {
                         </View>
                     </View>
                     <View style={styles.optionsContainer}>
-                        <Text style={styles.optionsText}>Select Seats</Text>
-                        <TouchableOpacity style={styles.seatsButton} onPress={handleSelectSeat}>
-                            <FontAwesome name="arrow-right" style={styles.seatsArrow}/>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.optionsContainer}>
                         <Text style={styles.optionsText}>Promo Code</Text>
                         {/* to implement functionality*/}
                         <TextInput style={styles.promoInput}></TextInput>
@@ -288,34 +277,6 @@ export default function booking() {
 }
 
 const styles = StyleSheet.create({
-    header: {
-        backgroundColor: "#060c40",
-        height: "10%",
-        padding: 20,
-        boxShadow: "0px 0px 5px grey",
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-    goBackContainer: {
-        height: "100%",
-        flexDirection: "row",
-    },
-    goBackArrow: {
-        paddingTop: 5,
-        color: "#009cff",
-        fontSize: 20,
-    },
-    goBackText: {   
-        fontWeight: "bold",
-        fontSize: 20,
-        color: "#009cff",
-        paddingLeft: 10,
-    },
-    headerText: {
-        color: "white",
-        fontSize: 22,
-        alignContent: "center"
-    },
     checkoutInfo: {
         padding: 20,
     },
@@ -380,14 +341,6 @@ const styles = StyleSheet.create({
         color: "#2095ec",
         fontWeight:"bold",
         paddingHorizontal: 10
-    },
-    seatsButton: {
-        justifyContent: "center",
-        paddingHorizontal: 5,
-    },
-    seatsArrow:{
-        fontSize: 15,
-        color: "#2095ec",
     },
     promoInput: {
         backgroundColor: "#e0f4ff",

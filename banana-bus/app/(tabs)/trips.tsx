@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
@@ -8,6 +8,7 @@ import { getItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { ScrollView } from "react-native";
+import { API_BASE } from '@env';
 
 export default function Trips() {
     interface Trip {
@@ -30,11 +31,12 @@ export default function Trips() {
         destIndex: number;
         destName: string;
     }
-    const [error, setError] = useState("")
+
+    const [error, setError] = useState("");
     const [refresh, setRefresh] = useState(true);
     
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
-    const [upcomingLoading, setUpcomingLoading] = useState(true)
+    const [upcomingLoading, setUpcomingLoading] = useState(true);
 
     const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
 
@@ -122,10 +124,10 @@ export default function Trips() {
     )
         
     useEffect(() => {
-        if (!refresh) return
+        if (!refresh) return;
         const getTrips = async () => {
             const token = await getItem("token");
-            axios.get("https://banana-bus.vercel.app/upcomingBookings", {
+            axios.get(`${API_BASE}/upcomingBookings`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -164,7 +166,7 @@ export default function Trips() {
 
     return (
         <Container>
-            <Header title="My Trips" emoji="🚌" showGoBack={false} />
+            <Header title="My Trips" icon={<FontAwesome name="calendar"/>} showGoBack={false} />
             <ScrollView>
                 <View style={styles.section}>
                     <View style={styles.sectionHeaderContainer}>
@@ -174,8 +176,8 @@ export default function Trips() {
                         }
                     </View>
                     {upcomingTrips.length > 0 ? (
-                        upcomingTrips.map((item) => (
-                            <View style={styles.tripItem}>
+                        upcomingTrips.map((item, index) => (
+                            <View style={styles.tripItem} key={index}>
                                 <View style={styles.accent} />
                                 <View style={styles.tripContent}>
                                     <Text>

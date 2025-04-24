@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TextInput, Alert, ImageBackground, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Alert, ImageBackground } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "expo-router";
 import * as Device from "expo-device";
@@ -6,8 +6,8 @@ import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
-import { set } from 'date-fns';
-import PasswordInput from '@/components/PasswordInput';
+import { API_BASE } from '@env';
+import StyledTextInput from '@/components/StyledTextInput';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -16,7 +16,6 @@ export default function LoginScreen() {
     const [modalType, setModalType] = useState("sendCode");
     const [recoveryEmail, setRecoveryEmail] = useState("");
     const [emailCode, setEmailCode] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
     const openModal = () => {
@@ -38,7 +37,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/resetPasswordEmail", {
+            const response = await fetch(`${API_BASE}/resetPasswordEmail`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -62,7 +61,7 @@ export default function LoginScreen() {
     const checkEmailCode = async () => {
         const paramToken = await getItem('resetToken');
         try {
-            const response = await fetch("https://banana-bus.vercel.app/resetPasswordVerifyCode" + `?token=${paramToken}`, {
+            const response = await fetch(`${API_BASE}/resetPasswordVerifyCode` + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -95,7 +94,7 @@ export default function LoginScreen() {
             }
             if (token !== null) {
                 try {
-                    const response = await fetch('https://banana-bus.vercel.app/autologin', {
+                    const response = await fetch(`${API_BASE}/autologin`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -115,7 +114,7 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch("https://banana-bus.vercel.app/login", {
+            const response = await fetch(`${API_BASE}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -155,7 +154,7 @@ export default function LoginScreen() {
                 const { user } = response.data;
                 const { email, givenName, familyName } = user;
                 console.log(user);
-                const loginResponse = await fetch("https://banana-bus.vercel.app/googleLogin", {
+                const loginResponse = await fetch(`${API_BASE}/googleLogin`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -209,15 +208,16 @@ export default function LoginScreen() {
                     <Text style={styles.title}>banana bus 🚌</Text>
                 </View>
                 <View style={styles.form}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="email"
+                    <StyledTextInput
+                        label="email"
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-                    <PasswordInput
+                    <StyledTextInput
+                        password={true}
+                        label="password"
                         value={password}
                         onChangeText={setPassword}
                     />
@@ -226,12 +226,12 @@ export default function LoginScreen() {
                         onPress={openModal}>
                         Forgot password?
                     </Text>
-                    <YesButton onPress={handleLogin} text="Login →" />
+                    <YesButton onPress={handleLogin} text="Login →" style={styles.buttons}/>
                     <NoButton onPress={() => {
                         setEmail("");
                         setPassword("");
                         router.navigate("/register");
-                    }} text="Register" />
+                    }} text="Register" style={styles.buttons} />
                     <View style={styles.separatorContainer}>
                         <View style={styles.separatorLine} />
                         <Text style={styles.separatorText}>or</Text>
@@ -249,32 +249,29 @@ export default function LoginScreen() {
                     onCancel={closeModal}
                     headerText={modalType === "sendCode" ? "Enter your email" : "Enter the code sent to your email"}
                 >
-                    
                     {modalType === "sendCode" && (
                         <>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="email"
+                            <StyledTextInput
+                                label="email"
                                 value={recoveryEmail}
                                 onChangeText={setRecoveryEmail}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                             />
-                            <YesButton onPress={sendResetMail} text="Send confirmation email" />
-                            <NoButton onPress={closeModal} text="Close" />
+                            <YesButton onPress={sendResetMail} text="Send confirmation email" style={styles.buttons}/>
+                            <NoButton onPress={closeModal} text="Close" style={styles.buttons}/>
                         </>
                     )}
                     {modalType === "enterCode" && (
                         <>
-                            <TextInput
-                                style={styles.input}
+                            <StyledTextInput
                                 placeholder="code"
                                 value={emailCode}
                                 onChangeText={setEmailCode}
                                 autoCapitalize="none"
                             />
-                            <YesButton onPress={checkEmailCode} text="Confirm" />
-                            <NoButton onPress={closeModal} text="Cancel" />
+                            <YesButton onPress={checkEmailCode} text="Confirm" style={styles.buttons}/>
+                            <NoButton onPress={closeModal} text="Cancel" style={styles.buttons}/>
                         </>
                     )}
                 </CustomModal>
@@ -306,24 +303,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginBottom: 15,
     },
-    icon: {
-        width: 50,
-        height: 50,
-        marginBottom: 20,
-    },
     form: {
         width: "80%",
         alignItems: "center",
-    },
-    input: {
-        width: "100%",
-        padding: 10,
-        paddingHorizontal: 16,
-        margin: 8,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        backgroundColor: "#fff",
     },
     forgotPassword: {
         marginVertical: 6,
@@ -356,4 +338,8 @@ const styles = StyleSheet.create({
         marginHorizontal: 8,
         lineHeight: 16,
     },
+    buttons: {
+        flex: 0,
+        width: "100%",
+    }
 });

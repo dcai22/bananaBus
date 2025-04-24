@@ -9,6 +9,8 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import DatePicker from 'react-native-date-picker'
+import { API_BASE } from '@env';
+import Container from "@/components/Container";
 
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
@@ -25,6 +27,7 @@ export default function tripsList() {
     useFocusEffect(
         useCallback(() => { 
             setRefresh(true)
+            setError("");
             // Makes sure to reload page upon leaving page
             return () => {
                 setLoading(true)
@@ -41,7 +44,7 @@ export default function tripsList() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus.vercel.app/tripsList", {
+            axios.get(`${API_BASE}/tripsList`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -70,10 +73,9 @@ export default function tripsList() {
     function Header() {
         return(
             <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}></FontAwesome>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
+                <Text style = {styles.goBackText} onPress={() => router.back()}>
+                    <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
+                </Text>
                 <View style = {styles.locationContainer}>
                     <Text style = {styles.departText}>{departName}</Text>
                     <View style={styles.arriveContainer}>
@@ -88,10 +90,10 @@ export default function tripsList() {
     // TODO: add refresh
     if (loading) {
         return(
-            <View style={styles.screen}>
+            <Container>
                 <Header/>
                 <LoadingPage/>
-            </View>
+            </Container>
         )
     }
 
@@ -103,7 +105,7 @@ export default function tripsList() {
     }
 
     return(
-        <View style={styles.screen}>
+        <Container>
             <Header/>
             <ScrollView style={styles.tripListContainer}>
                 <TouchableOpacity style={styles.tripListDate} onPress={() => setOpen(true)}>
@@ -127,35 +129,24 @@ export default function tripsList() {
                     setOpen(false)
                 }}
             />
-        </View>
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        height: "100%",
-        backgroundColor: "#e5f0fa",
-    },
     header: {
         backgroundColor: "white",
         height: "22%",
-        padding: 20,
-        boxShadow: "0px 0px 5px grey"
-    },
-    goBackContainer: {
-        height: "20%",
-        flexDirection: "row",
+        padding: 28,
+        boxShadow: "0px 0px 5px grey",
     },
     goBackArrow: {
-        paddingTop: 5,
-        color: "#74b9f1",
         fontSize: 20,
     },
     goBackText: {   
         fontWeight: "bold",
         fontSize: 20,
-        color: "#009cff",
-        paddingLeft: 10,
+        color: "#74b9f1",
     },
     locationContainer: {
         justifyContent: "center",
@@ -179,10 +170,10 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
     },
     tripListContainer: {
-        padding: 20,
+        paddingHorizontal: 20,
     },
     tripListDate: {
-        marginBottom: 20,
+        marginVertical: 20,
         padding: 10,
         borderRadius: 10,
         backgroundColor: "#fff",

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
-import { NoButton, YesButton } from "@/components/Buttons";
-import PasswordInput from "@/components/PasswordInput";
+import { API_BASE } from '@env';
+import { NoButton, StandardButton, WarnButton, YesButton } from "@/components/Buttons";
+import StyledTextInput from "@/components/StyledTextInput";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -56,7 +58,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/getAccountDetails", {
+            const response = await fetch(`${API_BASE}/getAccountDetails`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -131,7 +133,7 @@ export default function Settings() {
 
         if (modalType === "details") {
             try {
-                const response = await fetch("https://banana-bus.vercel.app/updateAccountDetails", {
+                const response = await fetch(`${API_BASE}/updateAccountDetails`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -159,7 +161,7 @@ export default function Settings() {
                 return;
             }
             try {
-                const response = await fetch("https://banana-bus.vercel.app/updateAccountPassword", {
+                const response = await fetch(`${API_BASE}/updateAccountPassword`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -196,7 +198,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/logout", {
+            const response = await fetch(`${API_BASE}/logout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -234,7 +236,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/deleteAccount", {
+            const response = await fetch(`${API_BASE}/deleteAccount`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -261,22 +263,14 @@ export default function Settings() {
 
     return (
         <Container>
-            <Header title="Settings" showGoBack={false} emoji="⚙️"/>
+            <Header title="Settings" showGoBack={false} icon={<FontAwesome name="cog"/>}/>
             <View style={styles.section}>
-                <TouchableOpacity style={styles.option} onPress={() => openModal("details")}>
-                    <Text style={styles.optionText}>Change details</Text>
-                </TouchableOpacity>
+                <StandardButton text="Change Details" onPress={() => openModal("details")} style={styles.option}/>
                 {!isExternal && (
-                    <TouchableOpacity style={styles.option} onPress={() => openModal("password")}>
-                        <Text style={styles.optionText}>Update password</Text>
-                    </TouchableOpacity>
+                    <StandardButton text="Update Password" onPress={() => openModal("password")} style={styles.option}/>
                 )}
-                <TouchableOpacity style={styles.option} onPress={() => openModal("logout")}>
-                    <Text style={styles.optionText}>Logout</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.option, styles.deleteOption]} onPress={() => openModal("delete")}>
-                    <Text style={[styles.optionText, styles.deleteOptionText]}>Delete Account</Text>
-                </TouchableOpacity>
+                <StandardButton text="Logout" onPress={() => openModal("logout")} style={styles.option}/>
+                <WarnButton text="Delete Account" onPress={() => openModal("delete")} style={styles.option}/>
             </View>
             <CustomModal
                 visible={modalVisible}
@@ -286,46 +280,43 @@ export default function Settings() {
             >
                 {modalType === "details" && (
                     <>
-                        <Text style={styles.info}>Last name:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Last Name"
+                        <StyledTextInput
+                            label="Last Name"
                             value={formData.lastName}
                             onChangeText={(text) => setFormData({ ...formData, lastName: text })}
                         />
-                        <Text style={styles.info}>First name:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="First Name"
+                        <StyledTextInput
+                            label="First Name"
                             value={formData.firstName}
                             onChangeText={(text) => setFormData({ ...formData, firstName: text })}
                         />
                         {!isExternal && (
-                            <><Text style={styles.info}>Email:</Text><TextInput
-                                style={styles.input}
-                                placeholder="Email"
+                            <StyledTextInput
+                                label="Email"
                                 value={formData.email}
                                 onChangeText={(text) => setFormData({ ...formData, email: text })}
-                                autoCapitalize="none" /></>
+                                autoCapitalize="none"
+                            />
                         )}
                     </>
                 )}
                 {modalType === "password" && (
                     <>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Old Password"
-                            secureTextEntry={true}
+                        <StyledTextInput
+                            label="Old Password"
+                            password={true}
                             value={formData.oldPassword}
                             onChangeText={(text) => setFormData({ ...formData, oldPassword: text })}
                         />
-                        <PasswordInput
-                            placeholder="New Password"
+                        <StyledTextInput
+                            password={true}
+                            label="New Password"
                             value={formData.newPassword}
                             onChangeText={(text) => setFormData({ ...formData, newPassword: text })}
                         />
-                        <PasswordInput
-                            placeholder="Confirm Password"
+                        <StyledTextInput
+                            password={true}
+                            label="Confirm Password"
                             value={formData.confirmPassword}
                             onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
                         />
@@ -342,7 +333,7 @@ export default function Settings() {
                 {modalType === "delete" && (
                     <>
                         <View style={styles.modalButtons}>
-                            <YesButton text="Yes" onPress={handleDeleteAccount} style={styles.modalButton}/>
+                            <WarnButton text="Delete" onPress={handleDeleteAccount} style={styles.modalButton}/>
                             <NoButton text="No" onPress={closeModal} style={styles.modalButton} />
                         </View>
                     </>
@@ -367,21 +358,7 @@ const styles = StyleSheet.create({
         fontSize: 36,
         fontWeight: "bold",
     },
-    headerBox: {
-        backgroundColor: '#fff',
-        marginBottom: 24,
-        padding: 35,
-        minHeight: 150,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
     option: {
-        backgroundColor: "white",
         padding: 15,
         borderRadius: 8,
         width: "80%",
@@ -392,31 +369,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
-    },
-    optionText: {
-        fontSize: 16,
-        color: "#333",
+        flex: 0,
     },
     section: {
-        flex: 1,
         alignItems: "center",
         justifyContent: "center",
-    },
-    deleteOption: {
-        backgroundColor: "#FF3B30",
-    },
-    deleteOptionText: {
-        color: "white",
-        fontWeight: "bold",
-    },
-    input: {
-        width: "100%",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-        padding: 10,
-        paddingHorizontal: 16,
-        marginBottom: 8,
+        flex: 1,
     },
     modalButtons: {
         flexDirection: "row",
@@ -426,11 +384,5 @@ const styles = StyleSheet.create({
     modalButton: {
         flex: 1,
         marginHorizontal: 5,
-    },
-    info: {
-        fontSize: 14,
-        textAlign: "left",
-        width: "100%",
-
     },
 });

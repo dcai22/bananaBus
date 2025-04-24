@@ -2,12 +2,13 @@ import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from 'reac
 import React, { useState } from 'react';
 import { router } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons';
-import { NoButton } from '@/components/Buttons';
+import { NoButton, YesButton } from '@/components/Buttons';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { CheckoutHeader } from '@/components/Header';
 import { CustomModal } from '@/components/Modal';
 import valid from 'card-validator';
+import { API_BASE } from '@env';
 
 export default function Payment() {
     const [cardNumber, setCardNumber] = useState('');
@@ -47,7 +48,7 @@ export default function Payment() {
 
         const token = await getItem('token');
         try {
-            const response = await fetch('https://banana-bus.vercel.app/addCard', {
+            const response = await fetch(`${API_BASE}/addCard`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -159,10 +160,10 @@ export default function Payment() {
                         <FontAwesome name="question-circle" style={styles.icon} />
                     </TouchableOpacity>
                 </View>
-                <NoButton
+                <YesButton
                     text="Add Card"
                     onPress={handleAddCard}
-                    style={styles.addButton}
+                    style={styles.buttons}
                 />
             </View>
             <CustomModal
@@ -171,36 +172,13 @@ export default function Payment() {
                 headerText="Information"
             >
                 <Text style={styles.modalText}>{modalContent}</Text>
-                <NoButton text="Close" onPress={closeModal} />
+                <NoButton text="Close" onPress={closeModal} style={styles.buttons}/>
             </CustomModal>
         </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    header: {
-        backgroundColor: "#060c40",
-        height: "10%",
-        padding: 20,
-        boxShadow: "0px 0px 5px grey",
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-    goBackContainer: {
-        height: "100%",
-        flexDirection: "row",
-    },
-    goBackArrow: {
-        paddingTop: 5,
-        color: "#009cff",
-        fontSize: 20,
-    },
-    goBackText: {
-        fontWeight: "bold",
-        fontSize: 20,
-        color: "#009cff",
-        paddingLeft: 10,
-    },
     formContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -228,27 +206,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingHorizontal: 5,
     },
-    addButton: {
-        margin: 12,
-        width: '100%'
+    buttons: {
+        width: '100%',
+        flex: 0,
     },
     icon: {
         fontSize: 20,
         color: '#009cff',
         marginHorizontal: 5,
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContent: {
-        width: '80%',
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        padding: 20,
-        alignItems: 'center',
     },
     modalText: {
         fontSize: 16,

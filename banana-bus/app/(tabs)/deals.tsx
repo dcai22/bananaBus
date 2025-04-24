@@ -8,6 +8,8 @@ import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
+import { API_BASE } from '@env';
+import { FontAwesome } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window")
 
@@ -21,7 +23,7 @@ export default function Deals() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get("https://banana-bus.vercel.app/getDeals", {})
+        axios.get(`${API_BASE}/getDeals`, {})
         .then((res) => {
             setPromos(res.data)
         })
@@ -32,17 +34,11 @@ export default function Deals() {
             setLoading(false)
         })
     }, [])
-
-    function DealsHeader() {
-        return (
-            <Header title="Deals" showGoBack={false} style={styles.header}/>
-        )
-    }
         
     if (loading) {
         return(
             <Container>
-                <DealsHeader/>
+                <Header title="Deals" icon={<FontAwesome name="tags"/>} showGoBack={false} style={styles.header} />
                 <LoadingPage/>
             </Container>
         )
@@ -63,7 +59,7 @@ export default function Deals() {
     
     return (
         <Container>
-            <DealsHeader/>
+            <Header title="Deals" icon={<FontAwesome name="tags"/>} showGoBack={false} style={styles.header} />
             <View style={styles.promoPages}>
                 <FlatList
                     data={pageDataArray}
