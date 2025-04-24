@@ -27,7 +27,7 @@ export default function Trips() {
 
     interface Route {
         route: {
-            routeId: string;
+            _id: string;
             stops: string[];
             trips: string[];
         };
@@ -107,7 +107,7 @@ export default function Trips() {
         router.push({
             pathname: "/tripsList",
             params: {
-                routeId: route.route.routeId,
+                routeId: route.route._id,
                 departId: route.route.stops[route.originIndex],
                 arriveId: route.route.stops[route.destIndex],
             },

@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     Alert,
 } from "react-native";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
@@ -18,11 +18,18 @@ import { getItem } from "../helper";
 import DatePicker from "react-native-date-picker";
 import Container from "@/components/Container";
 
-interface IRouteSection {
-    routeId: string;
-    originId: string;
-    destId: string;
+interface Route {
+    route: {
+        _id: string;
+        stops: string[];
+        trips: string[];
+    };
+    originIndex: number;
+    originName: string;
+    destIndex: number;
+    destName: string;
 }
+
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{
         routeId: string;
@@ -66,10 +73,9 @@ export default function tripsList() {
                 );
 
                 const savedRoutes = response.data.savedRoutes;
-                console.log("saved", savedRoutes);
                 setIsSaved(
                     savedRoutes.some(
-                        (route) => route.route._id.toString() === routeId
+                        (route : Route) => route.route._id.toString() === routeId
                     )
                 );
             } catch (err) {
@@ -122,7 +128,7 @@ export default function tripsList() {
         try {
             const token = await getItem("token");
             const endpoint = isSaved ? "/unsaveRoute" : "/saveRoute";
-
+            setIsSaved(!isSaved);
             await axios.post(
                 `${process.env.EXPO_PUBLIC_API_BASE}/${endpoint}`,
                 {
@@ -136,11 +142,10 @@ export default function tripsList() {
                     },
                 }
             );
-
-            setIsSaved(!isSaved);
         } catch (err) {
             console.error("Error toggling route save:", err);
             Alert.alert("Error", "Failed to save/unsave route");
+            setIsSaved(isSaved); // Revert the state if the request fails
         }
     };
 
@@ -152,13 +157,15 @@ export default function tripsList() {
                     go back
                 </Text>
                 <View style={styles.locationContainer}>
-                    <Text style={styles.departText}>{departName}</Text>
-                    <View style={styles.arriveContainer}>
-                        <FontAwesome
-                            name="arrow-right"
-                            style={styles.arriveArrow}
-                        ></FontAwesome>
-                        <Text style={styles.arriveText}>{arriveName}</Text>
+                    <View>
+                        <Text style={styles.departText}>{departName}</Text>
+                        <View style={styles.arriveContainer}>
+                            <FontAwesome
+                                name="arrow-right"
+                                style={styles.arriveArrow}
+                            ></FontAwesome>
+                            <Text style={styles.arriveText}>{arriveName}</Text>
+                        </View>
                     </View>
                     <TouchableOpacity
                         onPress={toggleSaveRoute}
@@ -254,7 +261,9 @@ const styles = StyleSheet.create({
         color: "#74b9f1",
     },
     locationContainer: {
-        justifyContent: "center",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         height: "80%",
     },
     departText: {
