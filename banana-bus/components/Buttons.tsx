@@ -9,6 +9,7 @@ interface CustomButtonProps {
 
 interface LoadingButtonProps {
     style?: ViewStyle;
+    type?: "yes" | "no" | "warn";
 }
 
 export const StandardButton: React.FC<CustomButtonProps> = ({ onPress, text, style }) => {
@@ -43,13 +44,20 @@ export const WarnButton: React.FC<CustomButtonProps> = ({ onPress, text, style }
     );
 }
 
-export const LoadingButton: React.FC<LoadingButtonProps> = ({ style }) => {
+export const LoadingButton: React.FC<LoadingButtonProps> = ({ style, type = "no" }) => {
+    const buttonStyle =
+        type === "yes"
+            ? styles.yesButton
+            : type === "warn"
+            ? styles.warnButton
+            : styles.noButton;
+
     return (
-        <TouchableOpacity style={[styles.button, styles.noButton, style]} disabled={true}>
-            <ActivityIndicator size="small" color="white"/>
+        <TouchableOpacity style={[styles.button, buttonStyle, style]} disabled={true}>
+            <ActivityIndicator color={type === "warn" ? "white" : "#2A8AE4"} />
         </TouchableOpacity>
     );
-}
+};
 
 const styles = StyleSheet.create({
     button: {
