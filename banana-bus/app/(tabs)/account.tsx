@@ -161,9 +161,9 @@ export default function Account() {
                         <MenuItem title="Admin Panel" icon="folder" onPress={() => router.navigate('/adminPanel')}/>
                     )}
                     { isDriver && (
-                        <MenuItem title="Driver Panel" icon="🚖" onPress={() => router.navigate('/driverPanel')} />
+                        <MenuItem title="Driver Panel" icon="truck" onPress={() => router.navigate('/driverPanel')} />
                     )}
-                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')} />
+                    <MenuItem title="Settings" icon="cog" onPress={() => router.push('/settings')} />
                 </View>
             </View>
             <CustomerSheetBeta.CustomerSheet
