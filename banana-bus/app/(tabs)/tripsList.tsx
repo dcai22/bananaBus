@@ -42,7 +42,7 @@ export default function tripsList() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus-nine.vercel.app/tripsList", {
+            axios.get("https://banana-bus.vercel.app/tripsList", {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
