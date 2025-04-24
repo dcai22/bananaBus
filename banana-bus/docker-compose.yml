@@ -6,9 +6,11 @@ services:
     ports:
       - "3000:3000"       
     depends_on:
-      - mongo             
+      - mongo
+    env_file:
+      - .env
     environment:
-      MONGODB_URI: mongodb+srv://z5414020:BNevzr9sqzAeWrjF@cluster0.4cyln.mongodb.net/
+      - MONGODB_URI 
 
   mongo:
     image: mongo:8
