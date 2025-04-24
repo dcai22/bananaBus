@@ -5,6 +5,7 @@ import { getItem, saveItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
+import { API_BASE } from '@env';
 import { NoButton, StandardButton, WarnButton, YesButton } from "@/components/Buttons";
 import StyledTextInput from "@/components/StyledTextInput";
 import { FontAwesome } from "@expo/vector-icons";
@@ -57,7 +58,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/getAccountDetails", {
+            const response = await fetch(`${API_BASE}/getAccountDetails`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -132,7 +133,7 @@ export default function Settings() {
 
         if (modalType === "details") {
             try {
-                const response = await fetch("https://banana-bus.vercel.app/updateAccountDetails", {
+                const response = await fetch(`${API_BASE}/updateAccountDetails`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -160,7 +161,7 @@ export default function Settings() {
                 return;
             }
             try {
-                const response = await fetch("https://banana-bus.vercel.app/updateAccountPassword", {
+                const response = await fetch(`${API_BASE}/updateAccountPassword`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -197,7 +198,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/logout", {
+            const response = await fetch(`${API_BASE}/logout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -235,7 +236,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/deleteAccount", {
+            const response = await fetch(`${API_BASE}/deleteAccount`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

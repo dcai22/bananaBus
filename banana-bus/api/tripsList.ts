@@ -60,18 +60,19 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
             const curCapacity = await calcCurrentCapacity(t);
 
             return {
-            tripId: t._id,
-            departId: departId,
-            arriveId: arriveId,
-            departureTime: departTime,
-            arrivalTime: arriveTime,
-            price: Number(getPrice(vehicle.maxCapacity, curCapacity, departTime)), 
-            curCapacity: curCapacity,
-            maxCapacity: vehicle.maxCapacity,
-            curLuggageCapacity: await calcCurrentLuggageCapacity(t),
-            maxLuggageCapacity: vehicle.maxLuggageCapacity,
-            luggagePrice: 20,
-            hasAssist: vehicle.hasAssist,
+                tripId: t._id,
+                departId: departId,
+                arriveId: arriveId,
+                departureTime: departTime,
+                arrivalTime: arriveTime,
+                price: Number(getPrice(vehicle.maxCapacity, curCapacity, departTime)), 
+                curCapacity: curCapacity,
+                maxCapacity: vehicle.maxCapacity,
+                curLuggageCapacity: await calcCurrentLuggageCapacity(t),
+                maxLuggageCapacity: vehicle.maxLuggageCapacity,
+                luggagePrice: 20,
+                hasAssist: vehicle.hasAssist,
+                reports: [],
             };
         })
     );
@@ -100,7 +101,8 @@ export async function generateTrips(routeId: ObjectId, dateString: string) {
         maxLuggageCapacity: 20,
         hasAssist: true,
         model: "toyota",
-        numberPlate: "abc123"
+        numberPlate: "abc123",
+        reports: [],
     }
 
     await collections.vehicles?.insertOne(vehicle)
@@ -120,6 +122,7 @@ export async function generateTrips(routeId: ObjectId, dateString: string) {
         trips.push({
             _id: new ObjectId(),
             vehicleId: vehicle._id,
+            driverId: null,
             routeId: routeId,
             stopTimes: stopTimes,					
             bookings: [],
@@ -209,7 +212,7 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
         curLuggageCapacity: await calcCurrentLuggageCapacity(trip),
         maxLuggageCapacity: vehicle.maxLuggageCapacity,
         luggagePrice: 10,
-        hasAssist: vehicle.hasAssist, 
+        hasAssist: vehicle.hasAssist,
     }
 
     return ({

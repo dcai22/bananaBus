@@ -56,6 +56,7 @@ export async function addVehicle(maxCapacity: number, maxLuggageCapacity: number
         hasAssist: hasAssist,
         numberPlate: numberPlate,
         model,
+        reports: []
     };
 
     const added_vehicle = await collections.vehicles.insertOne(newVehicle);
@@ -123,7 +124,3 @@ export async function editVehicle( vehicleId: ObjectId, maxCapacity: number, max
 
     return result;
 }
-
-
-
-

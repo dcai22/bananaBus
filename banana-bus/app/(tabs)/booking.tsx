@@ -11,6 +11,7 @@ import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
 import { CheckoutHeader } from "@/components/Header";
+import { API_BASE } from '@env';
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -65,7 +66,7 @@ export default function booking() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus.vercel.app/getTrip", {
+            axios.get(`${API_BASE}/getTrip`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -149,7 +150,7 @@ export default function booking() {
         setIsCheckout(true)
         const token = await getItem("token");
         try {
-            const res = await fetch('https://banana-bus.vercel.app/createBooking', {
+            const res = await fetch(`${API_BASE}/createBooking`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
