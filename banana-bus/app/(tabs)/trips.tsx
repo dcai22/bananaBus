@@ -8,7 +8,6 @@ import { getItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { ScrollView } from "react-native";
-import { API_BASE } from '@env';
 
 export default function Trips() {
     interface Booking {
@@ -56,8 +55,7 @@ export default function Trips() {
     
         const fetchData = async () => {
             const token = await getItem("token");
-    
-            axios.get(`${API_BASE}/upcomingBookings`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/upcomingBookings`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },

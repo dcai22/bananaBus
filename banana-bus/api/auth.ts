@@ -8,6 +8,7 @@ import { connectToDatabase } from "./mongoUtil";
 import dotenv from "dotenv";
 var jwt = require('jsonwebtoken');
 dotenv.config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
     await connectToDatabase();
@@ -24,7 +25,13 @@ export async function authRegister(email: string, password: string, firstName: s
     const hashedPassword = await getHash(password);
     const sessionId = crypto.randomBytes(64).toString('hex');
 
+    const customer = await stripe.customers.create({
+        name: `${firstName} ${lastName}`,
+        email: email,
+    })
+
     const newUser = {
+        _id: new ObjectId(),
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -46,6 +53,7 @@ export async function authRegister(email: string, password: string, firstName: s
         isDriver: false,
         isExternal: false,
         cards: [],
+        customerId: customer.id,
     }
 
     const userId = await collections.users.insertOne(newUser);
@@ -274,8 +282,14 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
     const sessionId = crypto.randomBytes(64).toString('hex');
     const expiry = new Date(Date.now() + 120 * 60 * 1000);
 
+    const customer = await stripe.customers.create({
+        name: `${firstName} ${lastName}`,
+        email: email,
+    });
+
     // note: google members should not have a password, and cannot reset email or password
     const newUser = {
+        _id: new ObjectId(),
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -292,8 +306,10 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         bookings: [],
         savedRoutes: [],
         isManager: false,
+        isDriver: false,
         isExternal: true,
         cards: [],
+        customerId: customer.id,
     }
 
     const userId = await collections.users?.insertOne(newUser);

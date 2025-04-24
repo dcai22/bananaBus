@@ -1,22 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Alert,
-} from "react-native";
-import { format } from "date-fns";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { format } from "date-fns"
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
-import DatePicker from "react-native-date-picker";
-import { API_BASE } from "@env";
+import DatePicker from 'react-native-date-picker'
 import Container from "@/components/Container";
 
 interface IRouteSection {
@@ -57,7 +49,7 @@ export default function tripsList() {
         const checkRouteSaved = async () => {
             try {
                 const token = await getItem("token");
-                const response = await axios.get(`${API_BASE}/getSavedRoutes`, {
+                const response = await axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -82,35 +74,32 @@ export default function tripsList() {
     }, [date]);
 
     useEffect(() => {
-        if (!refresh) return;
+        if (!refresh) return
+        setError("")
         const fetchData = async () => {
             const token = await getItem("token");
-            setLoading(true);
-            axios
-                .get(`${API_BASE}/tripsList`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    params: {
-                        routeId,
-                        departId,
-                        arriveId,
-                        date,
-                    },
-                })
-                .then((res) => {
-                    setDepartName(res.data.departName);
-                    setArriveName(res.data.arriveName);
-                    setTrips(res.data.trips);
-                })
-                .catch((err) => {
-                    setError(err.response.data.error);
-                })
-                .finally(() => {
-                    setLoading(false);
-                    setRefresh(false);
-                });
-        };
+            setLoading(true)
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                params: {
+                    routeId,
+                    departId,
+                    arriveId,
+                    date
+                }
+            }).then((res) => {
+                setDepartName(res.data.departName)
+                setArriveName(res.data.arriveName)
+                setTrips(res.data.trips)
+            }).catch((err) => {
+                setError(err.response.data.error)
+            }).finally(() => {
+                setLoading(false)
+                setRefresh(false)
+            })
+        }
 
         fetchData();
     }, [date, routeId, departId, arriveId, refresh]);
@@ -171,7 +160,6 @@ export default function tripsList() {
         );
     }
 
-    // TODO: add refresh
     if (loading) {
         return (
             <Container>
@@ -181,7 +169,6 @@ export default function tripsList() {
         );
     }
 
-    // make nicer or pop up
     if (error) {
         return <Text>Error: {error}</Text>;
     }
@@ -202,16 +189,19 @@ export default function tripsList() {
                         style={styles.tripDateArrow}
                     ></FontAwesome>
                 </TouchableOpacity>
-                <View>
-                    {trips.map((t, index) => (
-                        <TripListBox key={index} trip={t} disabled={false} />
-                    ))}
-                </View>
+                { trips.length > 0 ? (
+                    <View>
+                        {trips.map((t, index )=> <TripListBox key={index} trip={t} disabled={false}/>)}
+                    </View>
+                ): (
+                    <Text style={styles.emptyMessage}>No available trips for this date! {"\n"} Please try again later.</Text>
+                )}
             </ScrollView>
             <DatePicker
                 modal
                 open={open}
                 date={date}
+                mode="date"
                 minimumDate={new Date()}
                 onConfirm={(date) => {
                     setOpen(false);
@@ -291,5 +281,12 @@ const styles = StyleSheet.create({
     starIcon: {
         fontSize: 24,
         color: "#FFD700",
+    },
+    emptyMessage: {
+        fontSize: 18,
+        fontStyle: "italic",
+        color: "#888",
+        textAlign: "center",
+        marginBottom: 14,
     },
 });

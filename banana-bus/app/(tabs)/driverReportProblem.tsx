@@ -4,7 +4,6 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { Text, View, StyleSheet, TextInput } from "react-native";
 import axios from "axios";
-import { API_BASE } from '@env';
 import { NoButton } from "@/components/Buttons";
 import { getItem } from "../helper";
 import { Header } from "@/components/Header";
@@ -38,7 +37,7 @@ export default function driverReportProblem() {
         console.log(token);
         
         axios.put(
-            `${API_BASE}/driver/reportVehicle`,
+            `${process.env.EXPO_PUBLIC_API_BASE}/driver/reportVehicle`,
             {
                 vehicleId,
                 reportText,

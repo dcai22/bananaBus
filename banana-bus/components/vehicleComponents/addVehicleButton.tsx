@@ -35,7 +35,7 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
   async function handleAdd() {
     const token = await getItem("token");
     setLoading(true)
-    axios.post("https://banana-bus.vercel.app/manager/addVehicle", 
+    axios.post(`${process.env.EXPO_PUBLIC_API_BASE}/manager/addVehicle`, 
       {
         maxCapacity: parseInt(capacity),
         maxLuggageCapacity: parseInt(luggage),

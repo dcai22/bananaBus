@@ -10,7 +10,6 @@ import axios from "axios";
 import { Vehicle } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import VehicleModal from "@/components/vehicleComponents/vehicleModal";
-import { API_BASE } from '@env';
 
 export default function manageVehicles() {
     const [loading, setLoading] = useState(true);
@@ -28,7 +27,7 @@ export default function manageVehicles() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`${API_BASE}/manager/allVehicles`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/manager/allVehicles`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 }

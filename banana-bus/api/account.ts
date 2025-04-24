@@ -2,22 +2,8 @@ import HTTPError from "http-errors";
 import { compareHash, findUserByToken, getHash } from "./helper";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
-import { Card, User } from "./interface";
-
-export async function getAccountName(token: string) {
-    await connectToDatabase();
-
-    if (!collections.users) {
-        throw HTTPError(500, 'Database collection is not initialized');
-    }
-
-    const strippedToken = token.replace('Bearer ', '');
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    }
-    return { firstName: user?.firstName, lastName: user?.lastName };
-}
+import { Card } from "./interface";
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export async function getUserDetails(token: string) {
     await connectToDatabase();
@@ -36,6 +22,8 @@ export async function getUserDetails(token: string) {
         lastName: user?.lastName,
         email: user?.email,
         isExternal: user?.isExternal,
+        isManager: user?.isManager,
+        isDriver: user?.isDriver,
     };
 }
 
@@ -106,6 +94,10 @@ export async function deleteAccount(userId: ObjectId, token: string) {
     if (!userById._id.equals(userByToken._id)) {
         throw HTTPError(403, 'invalid data');
     }
+
+    const customerId = userById.customerId;
+
+    await stripe.customers.del(customerId);
 
     await collections.users?.deleteOne({ _id: new ObjectId(userId) });
     return {};

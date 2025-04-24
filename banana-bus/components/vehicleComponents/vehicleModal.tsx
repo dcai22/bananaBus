@@ -50,7 +50,7 @@ export default function VehicleModal({vehicle, visible, setVisible, onEditVehicl
   async function handleEdit() {
     const token = await getItem("token");
     setEditLoading(true)
-    axios.put("https://banana-bus.vercel.app/manager/editVehicle", 
+    axios.put(`${process.env.EXPO_PUBLIC_API_BASE}/manager/editVehicle`, 
       {
         vehicleId: vehicle._id,
         model: model,
@@ -92,7 +92,7 @@ export default function VehicleModal({vehicle, visible, setVisible, onEditVehicl
   async function handleDelete() {
     setDeleteLoading(true)
     const token = await getItem("token");
-    axios.delete("https://banana-bus.vercel.app/manager/deleteVehicle", {
+    axios.delete(`${process.env.EXPO_PUBLIC_API_BASE}/manager/deleteVehicle`, {
       headers: {
         "Authorization": `Bearer ${token}`,
       },

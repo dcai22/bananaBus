@@ -17,14 +17,13 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { IStop, IRoute } from "@/app/(tabs)";
 import { getItem } from "@/app/helper";
 import axios from "axios";
-import { API_BASE } from '@env';
 
 // Helper function to fetch all stops
 async function getAllStops(): Promise<IStop[]> {
     try {
         const token = await getItem("token");
         const response = await axios.get(
-            `${API_BASE}/manager/allStops`,
+            `${process.env.EXPO_PUBLIC_API_BASE}/manager/allStops`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -52,7 +51,7 @@ async function getPossibleDestinations(
     try {
         const token = await getItem("token");
         const response = await axios.get(
-            `${API_BASE}/stops/reachableFrom`,
+            `${process.env.EXPO_PUBLIC_API_BASE}/stops/reachableFrom`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
