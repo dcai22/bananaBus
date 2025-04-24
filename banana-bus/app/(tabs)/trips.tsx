@@ -57,7 +57,7 @@ export default function Trips() {
         const fetchData = async () => {
             const token = await getItem("token");
     
-            axios.get(`${API_BASE}upcomingBookings`, {
+            axios.get(`${API_BASE}/upcomingBookings`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -72,7 +72,7 @@ export default function Trips() {
                 setUpcomingLoading(false);
             });
     
-            axios.get(`${API_BASE}getSavedRoutes`, {
+            axios.get(`${API_BASE}/getSavedRoutes`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
