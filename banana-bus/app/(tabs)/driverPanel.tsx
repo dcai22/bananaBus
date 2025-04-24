@@ -5,8 +5,12 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useFocusEffect, router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
+<<<<<<< Updated upstream
 import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator } from "react-native";
 import { API_BASE } from "@env";
+=======
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
+>>>>>>> Stashed changes
 import { getItem } from "../helper";
 
 export default function driverPanel() {
@@ -49,7 +53,7 @@ export default function driverPanel() {
         if (!refresh) return;
         async function init() {
             const token = await getItem("token");
-            await axios.get(`${API_BASE}/driver/getUpcomingTrips`, {
+            await axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/driver/getUpcomingTrips`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 }

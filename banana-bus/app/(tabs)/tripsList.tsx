@@ -9,7 +9,6 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import DatePicker from 'react-native-date-picker'
-import { API_BASE } from '@env';
 import Container from "@/components/Container";
 
 export default function tripsList() {
@@ -45,7 +44,7 @@ export default function tripsList() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`${API_BASE}/tripsList`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },

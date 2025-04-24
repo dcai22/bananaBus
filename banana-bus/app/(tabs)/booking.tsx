@@ -12,7 +12,6 @@ import { getItem } from "../helper";
 import Container from "@/components/Container";
 import { CheckoutHeader } from "@/components/Header";
 import { initStripe, useStripe } from "@stripe/stripe-react-native";
-import { API_BASE, STRIPE_PUBLISHABLE_KEY } from '@env';
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -63,7 +62,7 @@ export default function booking() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`${API_BASE}/getTrip`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getTrip`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -90,7 +89,7 @@ export default function booking() {
     useEffect(() => {
         async function initialise() {
             await initStripe({
-                publishableKey: STRIPE_PUBLISHABLE_KEY,
+                publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY as string,
             });
         }
         initialise();
@@ -151,7 +150,7 @@ export default function booking() {
         const token = await getItem("token");
         const price = totalPrice * 100;
         try {
-            const response = await fetch(`${API_BASE}/createPaymentDetails`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/createPaymentDetails`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -203,7 +202,7 @@ export default function booking() {
         } else {
             const token = await getItem("token");
             try {
-                const res = await fetch(`${API_BASE}/createBooking`, {
+                const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/createBooking`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

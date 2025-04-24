@@ -6,7 +6,6 @@ import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { initStripe, CustomerSheetBeta } from '@stripe/stripe-react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { API_BASE, STRIPE_PUBLISHABLE_KEY } from '@env';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -43,7 +42,11 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
+<<<<<<< Updated upstream
                 const response = await fetch(`${API_BASE}/getAccountName`, {
+=======
+                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/getAccountDetails`, {
+>>>>>>> Stashed changes
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -71,7 +74,7 @@ export default function Account() {
     useEffect(() => {
         async function initialise() {
             await initStripe({
-                publishableKey: STRIPE_PUBLISHABLE_KEY,
+                publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY as string,
             });
         }
         initialise();
@@ -80,7 +83,7 @@ export default function Account() {
     async function fetchCustomerKey() {
         const token = await getItem('token');
         try {
-            const response = await fetch(`${API_BASE}/createCustomerKey`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/createCustomerKey`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -96,7 +99,7 @@ export default function Account() {
     async function fetchCustomerIntent() {
         const token = await getItem('token');
         try {
-            const response = await fetch(`${API_BASE}/createSetupIntent`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/createSetupIntent`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
