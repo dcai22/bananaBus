@@ -168,9 +168,8 @@ export function getPrice(maxCapacity: number, curCapacity: number, timeOfDepartu
                     return sum + peakPrice * Math.exp(- (delta * delta) / (2 * sigma * sigma)); }, 0);
     
     // Round tp nearest 5 cents
-    const factor = 1 / 0.05;
     const sum =  basePrice + pTime + pSurge;        
-    const rounded = Math.round(sum * factor) / factor;
+    const rounded = Math.round(sum);
     return Math.min(rounded, 22);
 }
 
