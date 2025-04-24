@@ -4,6 +4,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
+import { API_BASE } from '@env';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -11,6 +12,7 @@ export default function Account() {
     const [windSpeed, setWindSpeed] = useState(0);
     const [humidity, setHumidity] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isDriver, setIsDriver] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
 
@@ -34,7 +36,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch('https://banana-bus.vercel.app/getAccountName', {
+                const response = await fetch(`${API_BASE}/getAccountName`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -55,6 +57,7 @@ export default function Account() {
         setHumidity(80);
         // TODO Fetch user role from API
         setIsAdmin(true);
+        setIsDriver(true);
         setRefresh(false);
     }, [refresh]);
 
@@ -78,6 +81,9 @@ export default function Account() {
                     <MenuItem title="Support" icon="📞" onPress={() => router.push('/support')} />
                     { isAdmin && (
                         <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('/adminPanel')} />
+                    )}
+                    { isDriver && (
+                        <MenuItem title="Driver Panel" icon="🚖" onPress={() => router.navigate('/driverPanel')} />
                     )}
                     <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')} />
                 </View>

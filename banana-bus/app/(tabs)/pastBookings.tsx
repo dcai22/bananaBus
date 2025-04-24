@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import axios from "axios";
 import { getItem } from "../helper";
 import { LoadingPage } from "@/components/LoadingPage";
+import { API_BASE } from '@env';
 
 export default function pastBookings() {
     interface Trip {
@@ -38,7 +39,7 @@ export default function pastBookings() {
         if (!refresh) return;
         const fetchData = async () => {
             const token = await getItem("token");
-            axios.get("https://banana-bus.vercel.app/pastBookings", {
+            axios.get(`${API_BASE}/pastBookings`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
