@@ -6,7 +6,6 @@ import axios from "axios";
 import { Vehicle } from "@/api/interface";
 import { LoadingButton, NoButton, YesButton } from "../Buttons";
 import { CustomModal } from "../Modal";
-import { API_BASE } from "@env";
 
 interface addVehicleButtonProps {
   onAddVehicle?: (newVehicle: Vehicle) => void
@@ -36,7 +35,7 @@ export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) 
   async function handleAdd() {
     const token = await getItem("token");
     setLoading(true)
-    axios.post(`${API_BASE}/manager/addVehicle`, 
+    axios.post(`${process.env.EXPO_PUBLIC_API_BASE}/manager/addVehicle`, 
       {
         maxCapacity: parseInt(capacity),
         maxLuggageCapacity: parseInt(luggage),

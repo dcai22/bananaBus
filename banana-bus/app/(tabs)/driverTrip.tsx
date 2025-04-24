@@ -7,7 +7,6 @@ import { Text, TouchableOpacity, View, StyleSheet, ScrollView } from "react-nati
 import { getItem } from "../helper";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
-import { API_BASE } from '@env';
 import { WarnButton, YesButton } from "@/components/Buttons";
 
 export default function driverTrip() {
@@ -58,7 +57,7 @@ export default function driverTrip() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`${API_BASE}/driver/getTrip?tripId=${tripId}`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/driver/getTrip?tripId=${tripId}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },

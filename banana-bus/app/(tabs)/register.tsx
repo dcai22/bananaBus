@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
-import { API_BASE } from '@env';
 import StyledTextInput from '@/components/StyledTextInput';
 
 export default function RegisterScreen() {
@@ -26,7 +25,7 @@ export default function RegisterScreen() {
         // Register user
 
         try {
-            const response = await fetch(`${API_BASE}/register`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -8,7 +8,6 @@ import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
-import { API_BASE } from '@env';
 import { FontAwesome } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window")
@@ -23,7 +22,7 @@ export default function Deals() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get(`${API_BASE}/getDeals`, {})
+        axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getDeals`, {})
         .then((res) => {
             setPromos(res.data)
         })

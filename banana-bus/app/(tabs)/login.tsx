@@ -6,7 +6,6 @@ import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
-import { API_BASE } from '@env';
 import StyledTextInput from '@/components/StyledTextInput';
 
 export default function LoginScreen() {
@@ -37,7 +36,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await fetch(`${API_BASE}/resetPasswordEmail`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/resetPasswordEmail`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -61,7 +60,7 @@ export default function LoginScreen() {
     const checkEmailCode = async () => {
         const paramToken = await getItem('resetToken');
         try {
-            const response = await fetch(`${API_BASE}/resetPasswordVerifyCode` + `?token=${paramToken}`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/resetPasswordVerifyCode` + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -94,7 +93,7 @@ export default function LoginScreen() {
             }
             if (token !== null) {
                 try {
-                    const response = await fetch(`${API_BASE}/autologin`, {
+                    const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/autologin`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -114,7 +113,7 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch(`${API_BASE}/login`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -154,7 +153,7 @@ export default function LoginScreen() {
                 const { user } = response.data;
                 const { email, givenName, familyName } = user;
                 console.log(user);
-                const loginResponse = await fetch(`${API_BASE}/googleLogin`, {
+                const loginResponse = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/googleLogin`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

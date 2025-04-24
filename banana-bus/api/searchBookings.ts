@@ -107,7 +107,7 @@ export async function createPaymentDetails(token: string, price: number) {
         paymentIntent: paymentIntent.client_secret,
         ephemeralKey: ephemeralKey.secret,
         customer: customer.id,
-        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+        publishableKey: process.env.process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     }
 }
 
