@@ -4,6 +4,9 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
+import { initStripe, CustomerSheetBeta } from '@stripe/stripe-react-native';
+import { FontAwesome } from '@expo/vector-icons';
+import { API_BASE, STRIPE_PUBLISHABLE_KEY } from '@env';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -11,8 +14,14 @@ export default function Account() {
     const [windSpeed, setWindSpeed] = useState(0);
     const [humidity, setHumidity] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isDriver, setIsDriver] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
+    const [customerSheetVisible, setCustomerSheetVisible] = useState(false);
+    const [customer, setCustomer] = useState('');
+    const [ephemeralKey, setEphemeralKey] = useState('');
+    const [intent, setIntent] = useState('');
+    const [sheetLoading, setSheetLoading] = useState(false);
 
     const router = useRouter();
 
@@ -34,7 +43,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch('https://banana-bus.vercel.app/getAccountName', {
+                const response = await fetch(`${API_BASE}/getAccountName`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -55,8 +64,81 @@ export default function Account() {
         setHumidity(80);
         // TODO Fetch user role from API
         setIsAdmin(true);
+        setIsDriver(true);
         setRefresh(false);
     }, [refresh]);
+
+    useEffect(() => {
+        async function initialise() {
+            await initStripe({
+                publishableKey: STRIPE_PUBLISHABLE_KEY,
+            });
+        }
+        initialise();
+    })
+
+    async function fetchCustomerKey() {
+        const token = await getItem('token');
+        try {
+            const response = await fetch(`${API_BASE}/createCustomerKey`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const { customer, ephemeralKey } = await response.json();
+                return { customer, ephemeralKey };
+            }
+        } catch (error) {
+            console.error('Error fetching customer details:', error);
+        }
+    }
+
+    async function fetchCustomerIntent() {
+        const token = await getItem('token');
+        try {
+            const response = await fetch(`${API_BASE}/createSetupIntent`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            if (response.ok) {
+                const { setupIntent } = await response.json();
+                return { setupIntent };
+            }
+        } catch (error) {
+            console.error('Error fetching payment intent:', error);
+        }
+    }
+
+    async function initialiseCustomerSheet() {
+        const customerKey = await fetchCustomerKey();
+        const customerIntent = await fetchCustomerIntent();
+        if (!customerKey || !customerIntent) {
+            console.error('Failed to fetch customer key or intent');
+            return;
+        }
+        const { customer, ephemeralKey } = customerKey;
+        const { setupIntent } = customerIntent;
+
+        const { error } = await CustomerSheetBeta.initialize({
+            setupIntentClientSecret: setupIntent,
+            customerEphemeralKeySecret: ephemeralKey,
+            customerId: customer,
+            headerTextForSelectionScreen: 'Manage cards',
+        });
+
+        if (!error) {
+            setIntent(setupIntent);
+            setCustomer(customer);
+            setEphemeralKey(ephemeralKey);
+        }
+    }
+
+    async function handlePayment() {
+        setSheetLoading(true);
+        await initialiseCustomerSheet();
+        setSheetLoading(false);
+        setCustomerSheetVisible(true);
+    }
 
     return (
         <Container>
@@ -67,29 +149,58 @@ export default function Account() {
             <View style={styles.overlay}>
                 <Text style={styles.greeting}>Good Morning, {loading ? <ActivityIndicator size="small" color="#ffffff"/> : userName}</Text>
                 <View style={styles.weatherContainer}>
-                    <Text style={styles.weatherText}>☀️ {temperature}°C</Text>
+                    <Text style={styles.weatherText}>☀️ {temperature}°C</Text>  
                     <Text style={styles.weatherText}>💨 {windSpeed} km/h</Text>
                     <Text style={styles.weatherText}>💧 {humidity}%</Text>
                 </View>
                 <View style={styles.menuContainer}>
-                    {/* TODO do these pages */}
-                    <MenuItem title="Payment" icon="💳" onPress={() => router.push('/payment')} />
-                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.push('/pastBookings')} />
-                    <MenuItem title="Support" icon="📞" onPress={() => router.push('/support')} />
+                    <MenuItem title="Payments" icon="credit-card" onPress={handlePayment} isLoading={sheetLoading}/>
+                    <MenuItem title="Past Bookings" icon="bus" onPress={() => router.navigate('/pastBookings')}/>
+                    <MenuItem title="Support" icon="phone" onPress={() => router.navigate('/support')}/>
                     { isAdmin && (
-                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('/adminPanel')} />
+                        <MenuItem title="Admin Panel" icon="folder" onPress={() => router.navigate('/adminPanel')}/>
                     )}
-                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')} />
+                    { isDriver && (
+                        <MenuItem title="Driver Panel" icon="truck" onPress={() => router.navigate('/driverPanel')} />
+                    )}
+                    <MenuItem title="Settings" icon="cog" onPress={() => router.push('/settings')} />
                 </View>
             </View>
+            <CustomerSheetBeta.CustomerSheet
+                visible={customerSheetVisible}
+                onResult={({error, paymentOption, paymentMethod}) => {
+                    setCustomerSheetVisible(false);
+                    if (error) {
+                        console.log('Error:', error);
+                        return;
+                    }
+                    if (paymentOption) {
+                        console.log('Payment Option:', paymentOption);
+                    }
+                    if (paymentMethod) {
+                        console.log('Payment Method:', paymentMethod);
+                    }
+                }}
+                customerId={customer}
+                customerEphemeralKeySecret={ephemeralKey}
+                setupIntentClientSecret={intent}
+                headerTextForSelectionScreen='Manage cards'
+            />
         </Container>
     );
 }
 
-function MenuItem({ title, icon, onPress }: { title: string; icon: string; onPress: () => void }) {
+function MenuItem({ title, icon, onPress, isLoading }: { title: string; icon: keyof typeof FontAwesome.glyphMap; onPress: () => void, isLoading?: boolean }) {
     return (
-        <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-            <Text style={styles.menuItemText}>{icon} {title}</Text>
+        <TouchableOpacity style={styles.menuItem} onPress={onPress} disabled={isLoading}>
+            {isLoading ? (
+                <ActivityIndicator size="small" style={styles.icons}/>
+            ) : (
+                <>
+                    <FontAwesome name={icon} style={styles.icons}/> 
+                    <Text style={styles.menuItemText}>{title}</Text>
+                </>
+            )}
         </TouchableOpacity>
     );
 }
@@ -131,9 +242,16 @@ const styles = StyleSheet.create({
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
+        marginVertical: 10,
     },
     menuItemText: {
-        fontSize: 18,
+        fontSize: 20,
+        marginLeft: 10,
     },
+    icons: {
+        color: '#4399dc',
+        fontSize: 24,
+        width: 30,
+        textAlign: 'center',
+    }
 });

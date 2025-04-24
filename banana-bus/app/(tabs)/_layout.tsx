@@ -71,12 +71,6 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="payment"
-                    options={{
-                        href: null,
-                    }}
-                />
-                <Tabs.Screen
                     name="index"
                     options={{
                         title: "Home",
@@ -126,13 +120,6 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="newPayment"
-                    options={{
-                        href: null,
-                        tabBarStyle: { display: "none" },
-                    }}
-                />
-                <Tabs.Screen
                     name="settings"
                     options={{
                         href: null,
@@ -145,13 +132,31 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
+                    name="driverPanel"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
                     name="adminPanel"
                     options={{
                         href: null,
                     }}
                 />
                 <Tabs.Screen
+                    name="driverTrip"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
                     name="manageVehicles"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
+                    name="driverReportProblem"
                     options={{
                         href: null,
                     }}

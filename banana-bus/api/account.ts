@@ -2,7 +2,8 @@ import HTTPError from "http-errors";
 import { compareHash, findUserByToken, getHash } from "./helper";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
-import { Card, User } from "./interface";
+import { Card } from "./interface";
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export async function getAccountName(token: string) {
     await connectToDatabase();
@@ -106,6 +107,10 @@ export async function deleteAccount(userId: ObjectId, token: string) {
     if (!userById._id.equals(userByToken._id)) {
         throw HTTPError(403, 'invalid data');
     }
+
+    const customerId = userById.customerId;
+
+    await stripe.customers.del(customerId);
 
     await collections.users?.deleteOne({ _id: new ObjectId(userId) });
     return {};

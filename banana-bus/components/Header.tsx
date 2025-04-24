@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     goBackArrow: {
-        fontSize: 15,
+        fontSize: 20,
     },
     titleContainer: {
         flexDirection: 'row',

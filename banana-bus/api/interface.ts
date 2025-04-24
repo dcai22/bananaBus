@@ -26,6 +26,7 @@ export interface User {
     bookings: ObjectId[];
     savedRoutes: RouteSection[];
     isManager: boolean;
+    isDriver: boolean;
     isExternal: boolean;
     cards: Card[];
 }
@@ -51,6 +52,7 @@ export class UserBuilder implements Partial<User> {
     bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
     isManager: boolean = false;
+    isDriver: boolean = false;
     isExternal: boolean = false;
     cards: Card[] = [];
 
@@ -199,13 +201,15 @@ export class RouteSection {
 export class Trip {
     _id: ObjectId;
     vehicleId: ObjectId;
+    driverId: ObjectId | null;
     routeId: ObjectId;
     stopTimes: Date[];
     bookings: ObjectId[];
 
-    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = []) {
+    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = [], driverId?: ObjectId) {
         this._id = _id;
         this.vehicleId = vehicleId;
+        this.driverId = driverId ?? null;
         this.routeId = routeId;
         this.stopTimes = stopTimes;
         this.bookings = bookings;
@@ -295,4 +299,10 @@ export interface Vehicle {
     hasAssist: boolean,
     model: string,
     numberPlate: string,
+    reports: Report[],
+}
+
+export interface Report {
+    date: Date,
+    text: string,
 }
