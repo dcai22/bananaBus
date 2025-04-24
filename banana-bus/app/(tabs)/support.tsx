@@ -6,6 +6,8 @@ import { NoButton } from '@/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
 import { getItem } from '../helper';
 import * as Device from "expo-device";
+import { Header } from '@/components/Header';
+import Container from '@/components/Container';
 
 export default function Payment() {
     const [enquiryType, setEnquiryType] = useState('');
@@ -94,11 +96,8 @@ export default function Payment() {
     );
 
     return (
-        <View style={styles.container}>
-            <View style={styles.headerBox}>
-                <Text style={styles.header}>Support</Text>
-                <FontAwesome name="life-ring" style={[styles.header, styles.headerIcon]}/>
-            </View>
+        <Container>
+            <Header title="Support" icon={<FontAwesome name="life-ring"/>} />
             <View style={styles.section}>
                 <TouchableOpacity
                     style={styles.dropdown}
@@ -150,15 +149,11 @@ export default function Payment() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </Container>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#e5f0fa',
-    },
     section: {
         flex: 1,
         padding: 20,
@@ -166,35 +161,6 @@ const styles = StyleSheet.create({
     header: {
         fontSize: 36,
         fontWeight: "bold",
-    },
-    headerIcon: {
-        fontSize: 48,
-        color: "#4399dc",
-    },
-    headerBox: {
-        backgroundColor: '#fff',
-        marginBottom: 24,
-        padding: 35,
-        minHeight: 150,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 6,
-        elevation: 6,
-    },
-    picker: {
-        backgroundColor: '#fff',
-        marginBottom: 20,
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        shadowColor: '#000',
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-		elevation: 2,
     },
     input: {
         backgroundColor: '#fff',

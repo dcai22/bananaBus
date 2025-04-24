@@ -43,12 +43,10 @@ export async function searchBookings(token: string, timeFrame: string, numBookin
         switch(timeFrame) {
             case 'past':
                 return { include: destTime < curTime, value: b };
-                
-                case 'upcoming':
-                    return { include: originTime > curTime, value: b };
-                case 'ongoing':
-                    return { include: originTime <= curTime && curTime <= destTime, value: b };
-
+            case 'upcoming':
+                return { include: originTime > curTime, value: b };
+            case 'ongoing':
+                return { include: originTime <= curTime && curTime <= destTime, value: b };
             default:
                 throw HTTPError(400, 'invalid timeframe');
         }
