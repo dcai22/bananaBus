@@ -14,12 +14,12 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const strippedToken = token.replace('Bearer ', '');
-    const user = await findUserByToken(strippedToken);
+    // const strippedToken = token.replace('Bearer ', '');
+    // const user = await findUserByToken(strippedToken);
 
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    } 
+    // if (!user) {
+    //     throw HTTPError(403, 'invalid token');
+    // } 
     
     const route = await getRouteById(routeId)
 
@@ -54,15 +54,19 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
     const tripBoxes = await Promise.all(
         trips.map(async (t) => {
             const vehicle = await getVehicleById(t.vehicleId);
-        
+            
+            const departTime = new Date(t.stopTimes[departIndex]);
+            const arriveTime = new Date(t.stopTimes[arriveIndex]);
+            const curCapacity = await calcCurrentCapacity(t);
+
             return {
                 tripId: t._id,
                 departId: departId,
                 arriveId: arriveId,
-                departureTime: new Date(t.stopTimes[departIndex]),
-                arrivalTime: new Date(t.stopTimes[arriveIndex]),
-                price: 20,
-                curCapacity: await calcCurrentCapacity(t),
+                departureTime: departTime,
+                arrivalTime: arriveTime,
+                price: Number(getPrice(vehicle.maxCapacity, curCapacity, departTime)), 
+                curCapacity: curCapacity,
                 maxCapacity: vehicle.maxCapacity,
                 curLuggageCapacity: await calcCurrentLuggageCapacity(t),
                 maxLuggageCapacity: vehicle.maxLuggageCapacity,
@@ -83,7 +87,7 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
 
 
 // Used to generate trips for a given day if no fixed trips are on day
-async function generateTrips(routeId: ObjectId, dateString: string) {
+export async function generateTrips(routeId: ObjectId, dateString: string) {
     await connectToDatabase();
     
     const route = await getRouteById(routeId)
@@ -135,6 +139,40 @@ async function generateTrips(routeId: ObjectId, dateString: string) {
     return trips
 }
 
+export function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
+    const now = new Date();
+    const basePrice = 8;
+
+    if ( now > timeOfDeparture ) {
+        return 14;
+    }
+
+    // // Logistic price - increases with % of capacity used
+    const f = curCapacity / maxCapacity;
+    const pMin = 8;
+    const pMaxSpot = 15;
+    const k = 10;
+    const pSpot = pMin + (pMaxSpot - pMin) /(1 + Math.exp(-k * (f - 0.5)));
+    
+    // linear price - increases with time to departure
+    const t = Math.max(0, (timeOfDeparture.getTime() - now.getTime()) / 36e5);
+    const alpha = 0.75;
+    const pTime = alpha*Math.max(0, 24 - t);
+
+    // Time of day pricing - increases smoothly with peak hours
+    const peakPrice = 3;
+    const peakHours = [9, 12, 5];
+    const sigma = 1.5;
+    const curTimeHour = now.getHours() + now.getMinutes() / 60;
+    const pSurge = peakHours.reduce((sum, mu) => { const delta = curTimeHour - mu; 
+                    return sum + peakPrice * Math.exp(- (delta * delta) / (2 * sigma * sigma)); }, 0);
+    
+    // Round tp nearest 5 cents
+    const sum =  basePrice + pTime + pSurge;        
+    const rounded = Math.round(sum);
+    return Math.min(rounded, 22);
+}
+
 // Get a trips info (for booking page)
 export async function getTrip(token: string, departId: ObjectId, arriveId: ObjectId, tripId: ObjectId): Promise<TripInfo> {
     await connectToDatabase();
@@ -159,6 +197,7 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
     const arriveName = arriveStop.name
     const departName = departStop.name
 
+    const curCapacity = await calcCurrentCapacity(trip);
 
     const tripBox = {
         tripId: tripId,
@@ -166,8 +205,8 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
         arriveId: arriveId,
         departureTime: trip.stopTimes[departIndex],
         arrivalTime: trip.stopTimes[arriveIndex],
-        price: 20,
-        curCapacity: await calcCurrentCapacity(trip), 
+        price: Number(getPrice(vehicle.maxCapacity, curCapacity, trip.stopTimes[departIndex])),
+        curCapacity: curCapacity, 
         maxCapacity: vehicle.maxCapacity,
         curLuggageCapacity: await calcCurrentLuggageCapacity(trip),
         maxLuggageCapacity: vehicle.maxLuggageCapacity,
@@ -182,7 +221,7 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
     })
 }
 
-async function calcCurrentCapacity(trip: Trip) {
+export async function calcCurrentCapacity(trip: Trip) {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
   if (!bookings) throw HTTPError(400, "Cant get bookings")
   // could probs calc through max of the interval
@@ -195,3 +234,4 @@ async function calcCurrentLuggageCapacity(trip: Trip) {
   // could probs calc through max of the interval
   return bookings.reduce((sum, b) => sum + b.numLuggage, 0)
 }
+
