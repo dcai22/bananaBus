@@ -5,7 +5,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useFocusEffect, router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, FlatList, TouchableOpacity, View, StyleSheet, ActivityIndicator } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator } from "react-native";
 import { API_BASE } from "@env";
 import { getItem } from "../helper";
 
@@ -74,7 +74,7 @@ export default function driverPanel() {
     
     return (
         <Container>
-            <Header title="Driver Panel" showGoBack={false} />
+            <Header title="Driver Panel" />
             <View style={styles.section}>
                 <View style={styles.sectionHeaderContainer}>
                     <Text style={styles.sectionHeader}>Designated Trips</Text>

@@ -209,5 +209,6 @@ const styles = StyleSheet.create({
     },
     buttons: {
         flex: 0,
+        marginHorizontal: 0,
     }
 });

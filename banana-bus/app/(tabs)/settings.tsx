@@ -5,7 +5,6 @@ import { getItem, saveItem } from "../helper";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
 import { CustomModal } from "@/components/Modal";
-import PasswordInput from "@/components/PasswordInput";
 import { API_BASE } from '@env';
 import { NoButton, StandardButton, WarnButton, YesButton } from "@/components/Buttons";
 import StyledTextInput from "@/components/StyledTextInput";

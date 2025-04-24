@@ -2,7 +2,6 @@ import { Text, View, StyleSheet, Alert, TouchableOpacity, ImageBackground } from
 import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { getItem } from '../helper';
-import PasswordInput from '@/components/PasswordInput';
 import { API_BASE } from '@env';
 import StyledTextInput from '@/components/StyledTextInput';
 

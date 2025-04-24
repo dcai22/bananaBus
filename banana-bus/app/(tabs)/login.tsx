@@ -6,8 +6,6 @@ import { saveItem, getItem } from '../helper';
 import { YesButton, NoButton } from '@/components/Buttons';
 import { CustomModal } from '@/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
-import { set } from 'date-fns';
-import PasswordInput from '@/components/PasswordInput';
 import { API_BASE } from '@env';
 import StyledTextInput from '@/components/StyledTextInput';
 

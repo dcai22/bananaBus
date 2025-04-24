@@ -1,14 +1,14 @@
 import Container from "@/components/Container";
-import { Header } from "@/components/Header";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format } from "date-fns";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, FlatList, TouchableOpacity, View, StyleSheet } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ScrollView } from "react-native";
 import { getItem } from "../helper";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
 import { API_BASE } from '@env';
+import { WarnButton, YesButton } from "@/components/Buttons";
 
 export default function driverTrip() {
     interface Vehicle {
@@ -99,167 +99,160 @@ export default function driverTrip() {
 
     return (
         <Container>
-            <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}></FontAwesome>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-                <View style = {styles.locationContainer}>
-                    <Text style = {styles.departText}>{departName}</Text>
+            <View style={styles.header}>
+                <Text style={styles.goBackText} onPress={() => router.back()}>
+                    <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
+                </Text>
+                <View style={styles.locationContainer}>
+                    <Text style={styles.departText}>{departName}</Text>
                     <View style={styles.arriveContainer}>
-                        <FontAwesome name="arrow-right" style = {styles.arriveArrow}></FontAwesome>
-                        <Text style = {styles.arriveText}>{arriveName}</Text>
+                        <FontAwesome name="arrow-right" style={styles.arriveArrow} />
+                        <Text style={styles.arriveText}>{arriveName}</Text>
                     </View>
                 </View>
             </View>
-            {loading
-                ? <LoadingPage />
-                : <View style={styles.section}>
-                    <View style={styles.upcomingList}>
-                        {vehicle &&
-                            <Text>Vehicle: {vehicle.numberPlate}. Capacity: {vehicle.maxCapacity}. Luggage capacity: {vehicle.maxLuggageCapacity}.</Text>
-                        }
-                        {stops && stops.length > 0 &&
-                            <View>
-                                {stops.map((s, i) => <Text key={i}>{i > 0 ? " -> " : ""}{s.name} ({format(s.stopTime, "hh:mm a")})</Text>)}
-                            </View>
-                        }
-                        {passengers &&
-                            <View>
-                                <Text>
-                                    Passengers:
+            {loading ? (
+                <LoadingPage />
+            ) : (
+                <ScrollView style={styles.content}>
+                    {vehicle && (
+                        <View style={[styles.infoCard, styles.vehicleInfo]}>
+                            <Text style={styles.sectionTitle}>Vehicle:</Text>
+                            <Text style={styles.numberPlate}>{vehicle.numberPlate}{"\n"}</Text>
+                            <Text style={styles.infoText}>
+                                Capacity: {vehicle.maxCapacity}{"\n"}
+                                Luggage Capacity: {vehicle.maxLuggageCapacity}
+                            </Text>
+                        </View>
+                    )}
+                    {stops && stops.length > 0 && (
+                        <View style={styles.infoCard}>
+                            <Text style={styles.sectionTitle}>Stops:</Text>
+                            {stops.map((s, i) => (
+                                <Text key={i} style={styles.infoText}>
+                                    {i > 0 ? " -> " : ""}
+                                    {s.name} ({format(s.stopTime, "hh:mm a")})
                                 </Text>
-                                {passengers.map((e, i) => <Text key={i}>
-                                    {e.firstName} {e.lastName} has {e.numTickets} ticket(s),
-                                </Text>)}
-                                <Text>
-                                    Total passengers: {passengers.reduce((accumulator, p) => accumulator + p.numTickets, 0)}
-                                </Text>
-                            </View>
-                        }
-                        {vehicle &&
-                            <TouchableOpacity onPress={handlePress}>
-                                <Text>Report problem with vehicle</Text>
-                            </TouchableOpacity>
-                        }
-                    </View>
-                </View>
-            }
+                            ))}
+                        </View>
+                    )}
+                    {passengers && (
+                        <View style={styles.infoCard}>
+                            <Text style={styles.sectionTitle}>Passengers:</Text>
+                            {passengers.length > 0 ? (
+                                passengers.map((e, i) => (
+                                    <Text key={i} style={styles.infoText}>
+                                        {e.firstName} {e.lastName} has {e.numTickets} ticket(s)
+                                    </Text>
+                                ))
+                            ) : (
+                                <Text style={styles.noPassengersText}>No passengers yet</Text>
+                            )}
+                            <Text style={styles.totalPassengers}>
+                                Total Passengers:{" "}
+                                {passengers.reduce(
+                                    (accumulator, p) => accumulator + p.numTickets,
+                                    0
+                                )}
+                            </Text>
+                        </View>
+                    )}
+                    {vehicle && (
+                        <WarnButton
+                            text="Report Problem with Vehicle"
+                            onPress={handlePress}
+                            style={styles.buttons}
+                        />
+                    )}
+                </ScrollView>
+            )}
         </Container>
     )
-}
+};
 
 const styles = StyleSheet.create({
-    section: {
-        flex: 1,
-        paddingHorizontal: 30,
-        marginBottom: 24,
-    },
-    sectionHeaderContainer:{
-        flexDirection: "row"
-    },
-    sectionHeader: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        marginBottom: 16,
-    },
-    tripItem: {
-        flexDirection: 'row',
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        marginBottom: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-        minHeight: 60,
-        alignItems: 'center',
-    },
-    route: {
-        fontWeight: 'bold',
-        fontSize: 22,
-    },
-    tripContent: {
-        flex: 1,
-        padding: 8,
-        marginLeft: 10,
-    },
-    accent: {
-        backgroundColor: '#2196F3',
-        borderTopLeftRadius: 12,
-        borderBottomLeftRadius: 12,
-        width: 12,
-        alignSelf: 'stretch',
-    },
-    watchList: {
-        flex: 1,
-        height: '55%',
-    },
-    upcomingList: {
-        flex: 1,
-        height: "60%",
-    },
-    arrow: {
-        fontSize: 18,
-    },
-    topLeftButton: {
-        position: 'absolute',
-        top: 20,
-        left: 20,
-        padding: 10,
-        backgroundColor: '#007aff',
-        borderRadius: 10,
-        elevation: 20,
-    },
-    topLeftButtonText: {
-        color: 'white',
-        fontSize: 12,
-    },
     header: {
         backgroundColor: "white",
         height: "22%",
         padding: 20,
-        boxShadow: "0px 0px 5px grey"
-    },
-    goBackContainer: {
-        height: "20%",
-        flexDirection: "row",
+        boxShadow: "0px 0px 5px grey",
     },
     goBackArrow: {
-        paddingTop: 5,
-        color: "#74b9f1",
-        fontSize: 20,
+        fontSize: 15,
     },
     goBackText: {   
         fontWeight: "bold",
         fontSize: 20,
-        color: "#009cff",
-        paddingLeft: 10,
+        color: "#74b9f1",
     },
     locationContainer: {
-        justifyContent: "center",
-        height: "80%" 
-    }, 
+        marginTop: 20,
+    },
     departText: {
+        fontSize: 22,
         fontWeight: "bold",
-        fontSize: 25,
-        marginTop: 10,
+        color: "#333",
     },
     arriveContainer: {
-        flexDirection: "row"
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 10,
     },
     arriveArrow: {
-        paddingTop: 5,
-        fontSize: 25,
+        fontSize: 20,
+        color: "#333",
     },
     arriveText: {
+        fontSize: 22,
         fontWeight: "bold",
-        fontSize: 25,
-        paddingLeft: 10,
+        color: "#333",
+        marginLeft: 10,
     },
-    screen: {
-        height: "100%",
-        backgroundColor: "#e5f0fa",
+    content: {
+        paddingHorizontal: 20,
+        flex: 1,
+    },
+    infoCard: {
+        backgroundColor: "#fff",
+        padding: 15,
+        borderRadius: 8,
+        marginVertical: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        flex: 0,
+    },
+    vehicleInfo: {
+        marginTop: 16,
+    },
+    sectionTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        marginBottom: 6,
+        color: "#4399dc",
+    },
+    infoText: {
+        fontSize: 16,
+    },
+    numberPlate: {
+        fontWeight: "bold",
+        fontSize: 20,
+    },
+    totalPassengers: {
+        fontSize: 16,
+        fontWeight: "bold",
+        marginTop: 10,
+        color: "#333",
+    },
+    buttons: {
+        flex: 0,
+        marginHorizontal: 0,
+    },
+    noPassengersText: {
+        fontSize: 16,
+        color: "#999",
+        fontStyle: "italic",
     },
 });

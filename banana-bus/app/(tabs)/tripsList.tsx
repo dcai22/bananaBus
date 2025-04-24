@@ -73,10 +73,9 @@ export default function tripsList() {
     function Header() {
         return(
             <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}></FontAwesome>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
+                <Text style = {styles.goBackText} onPress={() => router.back()}>
+                    <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
+                </Text>
                 <View style = {styles.locationContainer}>
                     <Text style = {styles.departText}>{departName}</Text>
                     <View style={styles.arriveContainer}>
@@ -138,23 +137,16 @@ const styles = StyleSheet.create({
     header: {
         backgroundColor: "white",
         height: "22%",
-        padding: 20,
+        padding: 28,
         boxShadow: "0px 0px 5px grey",
     },
-    goBackContainer: {
-        height: "20%",
-        flexDirection: "row",
-    },
     goBackArrow: {
-        paddingTop: 5,
-        color: "#74b9f1",
         fontSize: 20,
     },
     goBackText: {   
         fontWeight: "bold",
         fontSize: 20,
-        color: "#009cff",
-        paddingLeft: 10,
+        color: "#74b9f1",
     },
     locationContainer: {
         justifyContent: "center",

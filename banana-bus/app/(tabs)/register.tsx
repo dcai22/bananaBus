@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
-import PasswordInput from '@/components/PasswordInput';
 import { API_BASE } from '@env';
 import StyledTextInput from '@/components/StyledTextInput';
 
