@@ -6,6 +6,7 @@ import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { initStripe, CustomerSheetBeta } from '@stripe/stripe-react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { API_BASE, STRIPE_PUBLISHABLE_KEY } from '@env';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -13,6 +14,7 @@ export default function Account() {
     const [windSpeed, setWindSpeed] = useState(0);
     const [humidity, setHumidity] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isDriver, setIsDriver] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
     const [customerSheetVisible, setCustomerSheetVisible] = useState(false);
@@ -41,7 +43,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch('https://banana-bus.vercel.app/getAccountName', {
+                const response = await fetch(`${API_BASE}/getAccountName`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -62,13 +64,14 @@ export default function Account() {
         setHumidity(80);
         // TODO Fetch user role from API
         setIsAdmin(true);
+        setIsDriver(true);
         setRefresh(false);
     }, [refresh]);
 
     useEffect(() => {
         async function initialise() {
             await initStripe({
-                publishableKey: "pk_test_51RH2exQCoWz9CNH6HCkaSlX0P2ksn6Jd9NvcE7XzC492WF9W2GX5GgOx0SgINII4Burm48fsnMn7kdfZX1Cyd6AI00YJXaEQnw",
+                publishableKey: STRIPE_PUBLISHABLE_KEY,
             });
         }
         initialise();
@@ -77,7 +80,7 @@ export default function Account() {
     async function fetchCustomerKey() {
         const token = await getItem('token');
         try {
-            const response = await fetch('https://banana-bus.vercel.app/createCustomerKey', {
+            const response = await fetch(`${API_BASE}/createCustomerKey`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -93,7 +96,7 @@ export default function Account() {
     async function fetchCustomerIntent() {
         const token = await getItem('token');
         try {
-            const response = await fetch('https://banana-bus.vercel.app/createSetupIntent', {
+            const response = await fetch(`${API_BASE}/createSetupIntent`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -157,7 +160,10 @@ export default function Account() {
                     { isAdmin && (
                         <MenuItem title="Admin Panel" icon="folder" onPress={() => router.navigate('/adminPanel')}/>
                     )}
-                    <MenuItem title="Settings" icon="cog" onPress={() => router.push('/settings')}/>
+                    { isDriver && (
+                        <MenuItem title="Driver Panel" icon="🚖" onPress={() => router.navigate('/driverPanel')} />
+                    )}
+                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')} />
                 </View>
             </View>
             <CustomerSheetBeta.CustomerSheet

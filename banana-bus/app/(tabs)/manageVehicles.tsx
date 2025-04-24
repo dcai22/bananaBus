@@ -10,6 +10,7 @@ import axios from "axios";
 import { Vehicle } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import VehicleModal from "@/components/vehicleComponents/vehicleModal";
+import { API_BASE } from '@env';
 
 export default function manageVehicles() {
     const [loading, setLoading] = useState(true);
@@ -27,7 +28,7 @@ export default function manageVehicles() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus.vercel.app/manager/allVehicles", {
+            axios.get(`${API_BASE}/manager/allVehicles`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 }
@@ -45,7 +46,7 @@ export default function manageVehicles() {
 
 
     useEffect(() => {
-        if (vehicles.length === 0) return
+        if (!vehicles || vehicles.length === 0) return
         const filtered = vehicles.filter(v =>
         v.model.toLowerCase().includes(search.toLowerCase()) ||
         v.numberPlate.toLowerCase().includes(search.toLowerCase())
@@ -66,8 +67,8 @@ export default function manageVehicles() {
                 />
                 <AddVehicleButton
                     onAddVehicle={(newVehicle) => {
-                    //adds vehicle to state rather than refetch
-                    setVehicles(prev => [...prev, newVehicle])
+                        //adds vehicle to state rather than refetch
+                        setVehicles(prev => [...prev, newVehicle])
                     }}
                 />
                 </View>
@@ -76,37 +77,37 @@ export default function manageVehicles() {
                     <LoadingPage/>
                 ): (
                     <FlatList
-                    data={searchResult}
-                    keyExtractor={(item) => item._id.toString()}
-                    renderItem={({ item }) => 
-                        <VehicleBox 
-                        vehicle={item}
-                        onPress={() => {
-                            setVehicle(item)
-                            setVisible(true)
-                        }} 
-                        />
-                    }
-                    ListEmptyComponent={
-                        <View style= {styles.emptyListContainer}>
-                            <Text style={styles.emptyListText}>No vehicles found</Text>
-                        </View>
-                    }
+                        data={searchResult}
+                        keyExtractor={(item) => item._id.toString()}
+                        renderItem={({ item }) => 
+                            <VehicleBox 
+                            vehicle={item}
+                            onPress={() => {
+                                setVehicle(item)
+                                setVisible(true)
+                            }} 
+                            />
+                        }
+                        ListEmptyComponent={
+                            <View style= {styles.emptyListContainer}>
+                                <Text style={styles.emptyListText}>No vehicles found</Text>
+                            </View>
+                        }
                     />
                 )}
                 </View>
                 { vehicle &&
-                <VehicleModal 
-                    vehicle={vehicle} 
-                    visible={visible}
-                    setVisible={setVisible}
-                    onEditVehicle={(edited) => {
-                        setVehicles(prev => prev.map(v => v._id.toString() === edited._id.toString() ? edited : v));
-                    }}
-                    onDeleteVehicle={(deleted) => {
-                        setVehicles(prev => prev.filter(v => v._id.toString() !== deleted._id.toString()))
-                    }}
-                />
+                    <VehicleModal 
+                        vehicle={vehicle} 
+                        visible={visible}
+                        setVisible={setVisible}
+                        onEditVehicle={(edited) => {
+                            setVehicles(prev => prev.map(v => v._id.toString() === edited._id.toString() ? edited : v));
+                        }}
+                        onDeleteVehicle={(deleted) => {
+                            setVehicles(prev => prev.filter(v => v._id.toString() !== deleted._id.toString()))
+                        }}
+                    />
                 }
             </View>
         </Container>

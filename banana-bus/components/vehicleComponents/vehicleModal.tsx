@@ -7,6 +7,7 @@ import { getItem } from "expo-secure-store";
 import { Vehicle } from "@/api/interface";
 import { LoadingButton, NoButton, WarnButton, YesButton } from "../Buttons";
 import { CustomModal } from "../Modal";
+import { API_BASE } from "@env";
 
 interface VehicleModalProps {
   vehicle: Vehicle,
@@ -50,7 +51,7 @@ export default function VehicleModal({vehicle, visible, setVisible, onEditVehicl
   async function handleEdit() {
     const token = await getItem("token");
     setEditLoading(true)
-    axios.put("https://banana-bus.vercel.app/manager/editVehicle", 
+    axios.put(`${API_BASE}/manager/editVehicle`, 
       {
         vehicleId: vehicle._id,
         model: model,
@@ -92,7 +93,7 @@ export default function VehicleModal({vehicle, visible, setVisible, onEditVehicl
   async function handleDelete() {
     setDeleteLoading(true)
     const token = await getItem("token");
-    axios.delete("https://banana-bus.vercel.app/manager/deleteVehicle", {
+    axios.delete(`${API_BASE}/manager/deleteVehicle`, {
       headers: {
         "Authorization": `Bearer ${token}`,
       },

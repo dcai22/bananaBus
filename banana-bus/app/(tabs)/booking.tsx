@@ -12,6 +12,7 @@ import { getItem } from "../helper";
 import Container from "@/components/Container";
 import { CheckoutHeader } from "@/components/Header";
 import { initStripe, useStripe } from "@stripe/stripe-react-native";
+import { API_BASE, STRIPE_PUBLISHABLE_KEY } from '@env';
 
 // TODO: fix up stack/tabs so router back works properly
 
@@ -62,7 +63,7 @@ export default function booking() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus.vercel.app/getTrip", {
+            axios.get(`${API_BASE}/getTrip`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -89,7 +90,7 @@ export default function booking() {
     useEffect(() => {
         async function initialise() {
             await initStripe({
-                publishableKey: "pk_test_51RH2exQCoWz9CNH6HCkaSlX0P2ksn6Jd9NvcE7XzC492WF9W2GX5GgOx0SgINII4Burm48fsnMn7kdfZX1Cyd6AI00YJXaEQnw",
+                publishableKey: STRIPE_PUBLISHABLE_KEY,
             });
         }
         initialise();
@@ -150,7 +151,7 @@ export default function booking() {
         const token = await getItem("token");
         const price = totalPrice * 100;
         try {
-            const response = await fetch('https://banana-bus.vercel.app/createPaymentDetails', {
+            const response = await fetch(`${API_BASE}/createPaymentDetails`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -202,7 +203,7 @@ export default function booking() {
         } else {
             const token = await getItem("token");
             try {
-                const res = await fetch('https://banana-bus.vercel.app/createBooking', {
+                const res = await fetch(`${API_BASE}/createBooking`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
