@@ -86,6 +86,9 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
         })
     );
 
+    // sorts trips by departure time
+    tripBoxes.sort((a, b) => a.departureTime.getTime() - b.departureTime.getTime());
+    
     return {
         departName,
         arriveName,
