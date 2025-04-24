@@ -19,9 +19,9 @@ import DatePicker from "react-native-date-picker";
 import Container from "@/components/Container";
 
 interface IRouteSection {
-    routeId: number;
-    originId: number;
-    destId: number;
+    routeId: string;
+    originId: string;
+    destId: string;
 }
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{
@@ -66,10 +66,10 @@ export default function tripsList() {
                 );
 
                 const savedRoutes = response.data.savedRoutes;
+                console.log("saved", savedRoutes);
                 setIsSaved(
                     savedRoutes.some(
-                        (route: IRouteSection) =>
-                            route.routeId === Number(routeId)
+                        (route) => route.route._id.toString() === routeId
                     )
                 );
             } catch (err) {
@@ -77,7 +77,7 @@ export default function tripsList() {
             }
         };
         checkRouteSaved();
-    }, []);
+    }, [refresh]);
 
     useEffect(() => {
         setRefresh(true);
@@ -124,11 +124,11 @@ export default function tripsList() {
             const endpoint = isSaved ? "/unsaveRoute" : "/saveRoute";
 
             await axios.post(
-                `https://banana-bus.vercel.app${endpoint}`,
+                `${process.env.EXPO_PUBLIC_API_BASE}/${endpoint}`,
                 {
-                    routeId: Number(routeId),
-                    departId: Number(departId),
-                    arriveId: Number(arriveId),
+                    routeId: routeId,
+                    originId: departId,
+                    destId: arriveId,
                 },
                 {
                     headers: {

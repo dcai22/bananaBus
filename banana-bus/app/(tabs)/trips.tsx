@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    ActivityIndicator,
+} from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { format } from "date-fns";
@@ -18,7 +24,7 @@ export default function Trips() {
         destName: string;
         departureTime: Date;
     }
-    
+
     interface Route {
         route: {
             routeId: string;
@@ -33,90 +39,104 @@ export default function Trips() {
 
     const [error, setError] = useState("");
     const [refresh, setRefresh] = useState(true);
-    
+
     const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
     const [upcomingLoading, setUpcomingLoading] = useState(true);
 
     const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
-    const [watchlistLoading, setWatchlistLoading] = useState(true)
+    const [watchlistLoading, setWatchlistLoading] = useState(true);
 
     useFocusEffect(
-        useCallback(() => { 
-            setRefresh(true)
+        useCallback(() => {
+            setRefresh(true);
             // Makes sure to reload page upon leaving page
             return () => {
-                setUpcomingLoading(true)
+                setUpcomingLoading(true);
+                setWatchlistLoading(true);
             };
         }, [])
-    )
-        
+    );
+
     useEffect(() => {
         if (!refresh) return;
-    
+
         const fetchData = async () => {
             const token = await getItem("token");
-            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/upcomingBookings`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                },
-            })
-            .then((tripsResponse) => {
-                setUpcomingBookings(tripsResponse.data);
-            })
-            .catch((err) => {
-                setError(err.response?.data?.error || "An error occurred");
-            })
-            .finally(() => {
-                setUpcomingLoading(false);
-            });
-    
-            axios.get(`${API_BASE}/getSavedRoutes`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                },
-            })
-            .then((watchlistResponse) => {
-                setWatchlistRoutes(watchlistResponse.data);
-            })
-            .catch((err) => {
-                setError(err.response?.data?.error || "An error occurred");
-            })
-            .finally(() => {
-                setWatchlistLoading(false);
-                setRefresh(false);
-            });
+            axios
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/upcomingBookings`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+                .then((tripsResponse) => {
+                    setUpcomingBookings(tripsResponse.data);
+                })
+                .catch((err) => {
+                    setError(err.response?.data?.error || "An error occurred");
+                })
+                .finally(() => {
+                    setUpcomingLoading(false);
+                });
+
+            axios
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+                .then((watchlistResponse) => {
+                    setWatchlistRoutes(watchlistResponse.data.savedRoutes);
+                })
+                .catch((err) => {
+                    setError(err.response?.data?.error || "An error occurred");
+                })
+                .finally(() => {
+                    setWatchlistLoading(false);
+                    setRefresh(false);
+                });
         };
-    
+
         fetchData();
     }, [refresh]);
 
     if (error) {
-        return(
-            <Text>Error: {error}</Text>
-        )
+        return <Text>Error: {error}</Text>;
     }
 
     const handlePress = (route: Route) => {
         router.push({
-            pathname: '/tripsList',
+            pathname: "/tripsList",
             params: {
                 routeId: route.route.routeId,
                 departId: route.route.stops[route.originIndex],
                 arriveId: route.route.stops[route.destIndex],
-            }
-        })
+            },
+        });
     };
 
     return (
         <Container>
-            <Header title="My Trips" icon={<FontAwesome name="calendar"/>} showGoBack={false} />
+            <Header
+                title="My Trips"
+                icon={<FontAwesome name="calendar" />}
+                showGoBack={false}
+            />
             <ScrollView>
                 <View style={styles.section}>
                     <View style={styles.sectionHeaderContainer}>
-                        <Text style={styles.sectionHeader}>My Upcoming Trips</Text>
-                        { upcomingLoading &&
-                            <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
-                        }
+                        <Text style={styles.sectionHeader}>
+                            My Upcoming Trips
+                        </Text>
+                        {upcomingLoading && (
+                            <ActivityIndicator
+                                size="small"
+                                color="#007AFF"
+                                style={{
+                                    marginBottom: 14,
+                                    paddingHorizontal: 10,
+                                }}
+                            />
+                        )}
                     </View>
                     {upcomingBookings.length > 0 ? (
                         upcomingBookings.map((item, index) => (
@@ -141,13 +161,22 @@ export default function Trips() {
                             </View>
                         ))
                     ) : (
-                        <Text style={styles.emptyMessage}>Book some trips!</Text>
+                        <Text style={styles.emptyMessage}>
+                            Book some trips!
+                        </Text>
                     )}
                     <View style={styles.sectionHeaderContainer}>
                         <Text style={styles.sectionHeader}>My Watchlist</Text>
-                        { watchlistLoading &&
-                            <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
-                        }
+                        {watchlistLoading && (
+                            <ActivityIndicator
+                                size="small"
+                                color="#007AFF"
+                                style={{
+                                    marginBottom: 14,
+                                    paddingHorizontal: 10,
+                                }}
+                            />
+                        )}
                     </View>
                     {watchlistRoutes.length > 0 ? (
                         watchlistRoutes.map((item, index) => (
@@ -171,7 +200,9 @@ export default function Trips() {
                             </TouchableOpacity>
                         ))
                     ) : (
-                        <Text style={styles.emptyMessage}>Watchlist some trips!</Text>
+                        <Text style={styles.emptyMessage}>
+                            Watchlist some trips!
+                        </Text>
                     )}
                 </View>
             </ScrollView>
@@ -185,29 +216,29 @@ const styles = StyleSheet.create({
         paddingHorizontal: 30,
         marginBottom: 24,
     },
-    sectionHeaderContainer:{
-        flexDirection: "row"
+    sectionHeaderContainer: {
+        flexDirection: "row",
     },
     sectionHeader: {
         fontSize: 28,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 16,
     },
     tripItem: {
-        flexDirection: 'row',
-        backgroundColor: '#fff',
+        flexDirection: "row",
+        backgroundColor: "#fff",
         borderRadius: 12,
         marginBottom: 8,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
         minHeight: 60,
-        alignItems: 'center',
+        alignItems: "center",
     },
     route: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
         fontSize: 22,
     },
     tripContent: {
@@ -216,11 +247,11 @@ const styles = StyleSheet.create({
         marginLeft: 10,
     },
     accent: {
-        backgroundColor: '#2196F3',
+        backgroundColor: "#2196F3",
         borderTopLeftRadius: 12,
         borderBottomLeftRadius: 12,
         width: 12,
-        alignSelf: 'stretch',
+        alignSelf: "stretch",
     },
     arrow: {
         fontSize: 18,
