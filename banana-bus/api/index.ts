@@ -6,8 +6,7 @@ import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEm
 import { getTrip, tripsList } from './tripsList';
 import { createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
-import { deleteAccount,
-            getAccountName, 
+import { deleteAccount, 
             getUserDetails,
             updateUserDetails,
             updateUserPassword,
@@ -232,16 +231,6 @@ app.delete("/unsaveRoute", async (req: Request, res: Response, next) => {
     } catch (err) {
         next(err);
     }
-});
-
-app.get("/getAccountName", async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        res.json(await getAccountName(token));
-    } catch (error) {
-        next(error);
-    }
-    return;
 });
 
 app.get("/getAccountDetails", async (req: Request, res: Response, next) => {

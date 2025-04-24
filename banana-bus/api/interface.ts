@@ -29,6 +29,7 @@ export interface User {
     isDriver: boolean;
     isExternal: boolean;
     cards: Card[];
+    customerId: string;
 }
 
 export class User implements User {

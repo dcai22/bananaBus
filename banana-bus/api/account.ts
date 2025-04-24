@@ -5,21 +5,6 @@ import { ObjectId } from "mongodb";
 import { Card } from "./interface";
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-export async function getAccountName(token: string) {
-    await connectToDatabase();
-
-    if (!collections.users) {
-        throw HTTPError(500, 'Database collection is not initialized');
-    }
-
-    const strippedToken = token.replace('Bearer ', '');
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    }
-    return { firstName: user?.firstName, lastName: user?.lastName };
-}
-
 export async function getUserDetails(token: string) {
     await connectToDatabase();
 
@@ -37,6 +22,8 @@ export async function getUserDetails(token: string) {
         lastName: user?.lastName,
         email: user?.email,
         isExternal: user?.isExternal,
+        isManager: user?.isManager,
+        isDriver: user?.isDriver,
     };
 }
 
