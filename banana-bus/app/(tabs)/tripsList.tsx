@@ -1,14 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
-import { format } from "date-fns"
+import {
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    Alert,
+} from "react-native";
+import { format } from "date-fns";
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
-import DatePicker from 'react-native-date-picker'
+import DatePicker from "react-native-date-picker";
 import Container from "@/components/Container";
 
 interface IRouteSection {
@@ -49,11 +56,14 @@ export default function tripsList() {
         const checkRouteSaved = async () => {
             try {
                 const token = await getItem("token");
-                const response = await axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                const response = await axios.get(
+                    `${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
 
                 const savedRoutes = response.data.savedRoutes;
                 setIsSaved(
@@ -74,32 +84,36 @@ export default function tripsList() {
     }, [date]);
 
     useEffect(() => {
-        if (!refresh) return
-        setError("")
+        if (!refresh) return;
+        setError("");
         const fetchData = async () => {
             const token = await getItem("token");
-            setLoading(true)
-            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                },
-                params: {
-                    routeId,
-                    departId,
-                    arriveId,
-                    date
-                }
-            }).then((res) => {
-                setDepartName(res.data.departName)
-                setArriveName(res.data.arriveName)
-                setTrips(res.data.trips)
-            }).catch((err) => {
-                setError(err.response.data.error)
-            }).finally(() => {
-                setLoading(false)
-                setRefresh(false)
-            })
-        }
+            setLoading(true);
+            axios
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    params: {
+                        routeId,
+                        departId,
+                        arriveId,
+                        date,
+                    },
+                })
+                .then((res) => {
+                    setDepartName(res.data.departName);
+                    setArriveName(res.data.arriveName);
+                    setTrips(res.data.trips);
+                })
+                .catch((err) => {
+                    setError(err.response.data.error);
+                })
+                .finally(() => {
+                    setLoading(false);
+                    setRefresh(false);
+                });
+        };
 
         fetchData();
     }, [date, routeId, departId, arriveId, refresh]);
@@ -189,12 +203,21 @@ export default function tripsList() {
                         style={styles.tripDateArrow}
                     ></FontAwesome>
                 </TouchableOpacity>
-                { trips.length > 0 ? (
+                {trips.length > 0 ? (
                     <View>
-                        {trips.map((t, index )=> <TripListBox key={index} trip={t} disabled={false}/>)}
+                        {trips.map((t, index) => (
+                            <TripListBox
+                                key={index}
+                                trip={t}
+                                disabled={false}
+                            />
+                        ))}
                     </View>
-                ): (
-                    <Text style={styles.emptyMessage}>No available trips for this date! {"\n"} Please try again later.</Text>
+                ) : (
+                    <Text style={styles.emptyMessage}>
+                        No available trips for this date! {"\n"} Please try
+                        again later.
+                    </Text>
                 )}
             </ScrollView>
             <DatePicker
@@ -278,6 +301,9 @@ const styles = StyleSheet.create({
         color: "#74b9f1",
     },
     // Star styles
+    starButton: {
+        padding: 8,
+    },
     starIcon: {
         fontSize: 24,
         color: "#FFD700",
