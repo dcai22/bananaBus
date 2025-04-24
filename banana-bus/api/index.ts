@@ -690,11 +690,11 @@ app.get('/driver/getUpcomingTrips', async (req: Request, res: Response, next) =>
     }
 
     try {
-        const now = new Date().toISOString();
+        const now = new Date();
         const allTrips = await collections.trips?.find<Trip>({
             driverId: user._id,
         }).toArray();
-        const upcomingTrips = allTrips?.filter(t => t.stopTimes[0].toString() > now);
+        const upcomingTrips = allTrips?.filter(t => t.stopTimes[0] > now);
         if (!upcomingTrips) {
             res.json({ upcomingTrips: [] });
             return;
