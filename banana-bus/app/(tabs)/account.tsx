@@ -5,6 +5,7 @@ import * as Device from 'expo-device';
 import { getItem } from '../helper';
 import Container from '@/components/Container';
 import { initStripe, CustomerSheetBeta } from '@stripe/stripe-react-native';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function Account() {
     const [userName, setUserName] = useState('');
@@ -150,13 +151,13 @@ export default function Account() {
                     <Text style={styles.weatherText}>💧 {humidity}%</Text>
                 </View>
                 <View style={styles.menuContainer}>
-                    <MenuItem title="Payment" icon="💳" onPress={handlePayment} isLoading={sheetLoading}/>
-                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.navigate('/tripsList')}/>
-                    <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')}/>
+                    <MenuItem title="Payments" icon="credit-card" onPress={handlePayment} isLoading={sheetLoading}/>
+                    <MenuItem title="Past Bookings" icon="bus" onPress={() => router.navigate('/tripsList')}/>
+                    <MenuItem title="Support" icon="phone" onPress={() => router.navigate('/support')}/>
                     { isAdmin && (
-                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('/adminPanel')}/>
+                        <MenuItem title="Admin Panel" icon="folder" onPress={() => router.navigate('/adminPanel')}/>
                     )}
-                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')}/>
+                    <MenuItem title="Settings" icon="cog" onPress={() => router.push('/settings')}/>
                 </View>
             </View>
             <CustomerSheetBeta.CustomerSheet
@@ -183,13 +184,16 @@ export default function Account() {
     );
 }
 
-function MenuItem({ title, icon, onPress, isLoading }: { title: string; icon: string; onPress: () => void, isLoading?: boolean }) {
+function MenuItem({ title, icon, onPress, isLoading }: { title: string; icon: keyof typeof FontAwesome.glyphMap; onPress: () => void, isLoading?: boolean }) {
     return (
         <TouchableOpacity style={styles.menuItem} onPress={onPress} disabled={isLoading}>
             {isLoading ? (
                 <ActivityIndicator size="small" color="#000"/>
             ) : (
-                <Text style={styles.menuItemText}>{icon} {title}</Text>
+                <>
+                    <FontAwesome name={icon} style={styles.icons}/> 
+                    <Text style={styles.menuItemText}>{title}</Text>
+                </>
             )}
         </TouchableOpacity>
     );
@@ -232,9 +236,16 @@ const styles = StyleSheet.create({
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
+        marginVertical: 10,
     },
     menuItemText: {
-        fontSize: 18,
+        fontSize: 20,
+        marginLeft: 10,
     },
+    icons: {
+        color: '#4399dc',
+        fontSize: 24,
+        width: 30,
+        textAlign: 'center',
+    }
 });
