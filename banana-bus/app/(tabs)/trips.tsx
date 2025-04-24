@@ -11,20 +11,20 @@ import { ScrollView } from "react-native";
 import { API_BASE } from '@env';
 
 export default function Trips() {
-    interface Trip {
-        bookingId: number;
-        userId: number;
-        tripId: number;
+    interface Booking {
+        bookingId: string;
+        userId: string;
+        tripId: string;
         originName: string;
         destName: string;
-        departureTime: string;
+        departureTime: Date;
     }
     
     interface Route {
         route: {
-            routeId: number;
-            stops: number[];
-            trips: number[];
+            routeId: string;
+            stops: string[];
+            trips: string[];
         };
         originIndex: number;
         originName: string;
@@ -35,7 +35,7 @@ export default function Trips() {
     const [error, setError] = useState("");
     const [refresh, setRefresh] = useState(true);
     
-    const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
+    const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
     const [upcomingLoading, setUpcomingLoading] = useState(true);
 
     const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
@@ -63,7 +63,7 @@ export default function Trips() {
                 },
             })
             .then((tripsResponse) => {
-                setUpcomingTrips(tripsResponse.data);
+                setUpcomingBookings(tripsResponse.data);
             })
             .catch((err) => {
                 setError(err.response?.data?.error || "An error occurred");
@@ -102,10 +102,9 @@ export default function Trips() {
         router.push({
             pathname: '/tripsList',
             params: {
-                routeId: "67f678743fb87d7a2df89c40",
-                departId: "67f6789907015b5d0c6ab38f",
-                arriveId: "67f678d207015b5d0c6ab391",
-                date: new Date().toISOString(),
+                routeId: route.route.routeId,
+                departId: route.route.stops[route.originIndex],
+                arriveId: route.route.stops[route.destIndex],
             }
         })
     };
@@ -121,8 +120,8 @@ export default function Trips() {
                             <ActivityIndicator size="small" color="#007AFF" style={{marginBottom: 14, paddingHorizontal: 10}}/>
                         }
                     </View>
-                    {upcomingTrips.length > 0 ? (
-                        upcomingTrips.map((item, index) => (
+                    {upcomingBookings.length > 0 ? (
+                        upcomingBookings.map((item, index) => (
                             <View style={styles.tripItem} key={index}>
                                 <View style={styles.accent} />
                                 <View style={styles.tripContent}>
