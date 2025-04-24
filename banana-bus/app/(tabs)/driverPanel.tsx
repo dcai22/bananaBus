@@ -5,7 +5,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useFocusEffect, router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
 import { API_BASE } from "@env";
 import { getItem } from "../helper";
 
@@ -75,7 +75,7 @@ export default function driverPanel() {
     return (
         <Container>
             <Header title="Driver Panel" />
-            <View style={styles.section}>
+            <ScrollView style={styles.section}>
                 <View style={styles.sectionHeaderContainer}>
                     <Text style={styles.sectionHeader}>Designated Trips</Text>
                     { upcomingLoading &&
@@ -110,7 +110,7 @@ export default function driverPanel() {
                         : <Text style={styles.emptyMessage}>No upcoming trips</Text>
                     }
                 </View>
-            </View>
+            </ScrollView>
         </Container>
     )
 }
@@ -119,7 +119,6 @@ const styles = StyleSheet.create({
     section: {
         flex: 1,
         paddingHorizontal: 30,
-        marginBottom: 24,
     },
     sectionHeaderContainer:{
         flexDirection: "row"
