@@ -150,14 +150,13 @@ export default function Account() {
                     <Text style={styles.weatherText}>💧 {humidity}%</Text>
                 </View>
                 <View style={styles.menuContainer}>
-                    {/* TODO do these pages */}
-                    <MenuItem title="Payment" icon="💳" onPress={handlePayment} />
-                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.navigate('/tripsList')} />
-                    <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')} />
+                    <MenuItem title="Payment" icon="💳" onPress={handlePayment} isLoading={sheetLoading}/>
+                    <MenuItem title="Past Bookings" icon="🚌" onPress={() => router.navigate('/tripsList')}/>
+                    <MenuItem title="Support" icon="📞" onPress={() => router.navigate('/support')}/>
                     { isAdmin && (
-                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('/adminPanel')} />
+                        <MenuItem title="Admin Panel" icon="🗂️" onPress={() => router.navigate('/adminPanel')}/>
                     )}
-                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')} />
+                    <MenuItem title="Settings" icon="⚙️" onPress={() => router.push('/settings')}/>
                 </View>
             </View>
             <CustomerSheetBeta.CustomerSheet
@@ -184,10 +183,14 @@ export default function Account() {
     );
 }
 
-function MenuItem({ title, icon, onPress }: { title: string; icon: string; onPress: () => void }) {
+function MenuItem({ title, icon, onPress, isLoading }: { title: string; icon: string; onPress: () => void, isLoading?: boolean }) {
     return (
-        <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-            <Text style={styles.menuItemText}>{icon} {title}</Text>
+        <TouchableOpacity style={styles.menuItem} onPress={onPress} disabled={isLoading}>
+            {isLoading ? (
+                <ActivityIndicator size="small" color="#000"/>
+            ) : (
+                <Text style={styles.menuItemText}>{icon} {title}</Text>
+            )}
         </TouchableOpacity>
     );
 }
