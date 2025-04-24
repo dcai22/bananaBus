@@ -49,7 +49,7 @@ export default function Payment() {
         }
 
         try {
-            const response = await fetch('https://banana-psi-lemon.vercel.app/sendEnquiry', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/sendEnquiry`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
