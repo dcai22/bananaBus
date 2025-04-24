@@ -8,6 +8,7 @@ export default function Index() {
             webClientId: "800099148650-9cvgb86han5qvg54u0v8qbldaq7d2j1v.apps.googleusercontent.com"
         });
     })
-    return <Redirect href="/(tabs)/login" />;
-    // return <Redirect href="/(tabs)" />;
+    return (
+            <Redirect href="/(tabs)/login" />
+    );
 }
