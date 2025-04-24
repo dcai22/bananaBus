@@ -70,6 +70,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-typescript": "^7.26.0",
+    "ts-node": "^10.x",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.12",
