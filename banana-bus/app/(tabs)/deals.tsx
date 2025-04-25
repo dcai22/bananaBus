@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions, Alert } from "react-native";
 import AnimatedDotsCarousel, { DecreasingDot, DotConfig } from "react-native-animated-dots-carousel";
 import PromoPage from "@/components/promoComponents/PromoPage";
 import PromoModal from "@/components/promoComponents/PromoModal";
@@ -8,6 +8,7 @@ import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
 import { Header } from "@/components/Header";
 import Container from "@/components/Container";
+import { FontAwesome } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window")
 
@@ -21,37 +22,32 @@ export default function Deals() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get("https://banana-bus.vercel.app/getDeals", {})
+        axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getDeals`, {})
         .then((res) => {
             setPromos(res.data)
         })
         .catch((err) => {
-            setError(err.response.data.error)
+            Alert.alert(`Error ${err.response.data.error}`)
         })
         .finally(() => {
             setLoading(false)
         })
     }, [])
-
-    function DealsHeader() {
-        return (
-            <Header title="Deals" showGoBack={false} style={styles.header}/>
-        )
-    }
         
     if (loading) {
         return(
             <Container>
-                <DealsHeader/>
+                <Header title="Deals" icon={<FontAwesome name="tags"/>} showGoBack={false} style={styles.header} />
                 <LoadingPage/>
             </Container>
         )
     }
 
-    // make nicer or pop up
     if (error) {
         return(
-            <Text>Error:{error}</Text>
+            <Container>
+                <Header title="Deals" icon={<FontAwesome name="tags"/>} showGoBack={false} style={styles.header} />
+            </Container>
         )
     }
 
@@ -63,7 +59,7 @@ export default function Deals() {
     
     return (
         <Container>
-            <DealsHeader/>
+            <Header title="Deals" icon={<FontAwesome name="tags"/>} showGoBack={false} style={styles.header} />
             <View style={styles.promoPages}>
                 <FlatList
                     data={pageDataArray}

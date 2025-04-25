@@ -26,8 +26,10 @@ export interface User {
     bookings: ObjectId[];
     savedRoutes: RouteSection[];
     isManager: boolean;
+    isDriver: boolean;
     isExternal: boolean;
     cards: Card[];
+    customerId: string;
 }
 
 export class User implements User {
@@ -51,6 +53,7 @@ export class UserBuilder implements Partial<User> {
     bookings: ObjectId[] = [];
     savedRoutes: RouteSection[] = [];
     isManager: boolean = false;
+    isDriver: boolean = false;
     isExternal: boolean = false;
     cards: Card[] = [];
 
@@ -199,13 +202,15 @@ export class RouteSection {
 export class Trip {
     _id: ObjectId;
     vehicleId: ObjectId;
+    driverId: ObjectId;
     routeId: ObjectId;
     stopTimes: Date[];
     bookings: ObjectId[];
 
-    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = []) {
+    constructor(_id: ObjectId, vehicleId: ObjectId, routeId: ObjectId, stopTimes: Date[], bookings: ObjectId[] = [], driverId: ObjectId) {
         this._id = _id;
         this.vehicleId = vehicleId;
+        this.driverId = driverId;
         this.routeId = routeId;
         this.stopTimes = stopTimes;
         this.bookings = bookings;
@@ -231,24 +236,6 @@ export class Booking {
         if (typeof numTickets !== "undefined") this.numTickets = numTickets;
         this.bookingTime = new Date();
     }
-
-    async asDisplayBooking() {
-        const trip = await getTripById(this.tripId);
-        const route = await getRouteById(trip.routeId);
-
-        const origin = await getStopById(this.originId);
-        const dest = await getStopById(this.destId);
-        const departureTime = trip.stopTimes[route.stops.findIndex(s => s.equals(this.originId))];
-
-        return {
-            _id: this._id,
-            userId: this.userId,
-            tripId: this.tripId,
-            originName: origin.name,
-            destName: dest.name,
-            departureTime: departureTime,
-        };
-    }
 }
 
 export interface TripList {
@@ -269,7 +256,7 @@ export interface TripBox {
     curLuggageCapacity: number,
     maxLuggageCapacity: number,
     luggagePrice: number,
-    hasAssist: boolean, 
+    hasAssist: boolean,
 }
 
 export interface TripInfo {
@@ -293,5 +280,12 @@ export interface Vehicle {
     maxCapacity: number,
     maxLuggageCapacity: number,
     hasAssist: boolean,
+    model: string,
     numberPlate: string,
+    reports: Report[],
+}
+
+export interface Report {
+    date: Date,
+    text: string,
 }

@@ -1,17 +1,41 @@
 import React, { useCallback, useEffect, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { format } from "date-fns"
+import {
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
+    TouchableOpacity,
+    Alert,
+} from "react-native";
+import { format, set } from "date-fns";
 import TripListBox from "@/components/TripListBox";
 import axios from "axios";
 import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
-import DatePicker from 'react-native-date-picker'
+import DatePicker from "react-native-date-picker";
+import Container from "@/components/Container";
+
+interface Route {
+    route: {
+        _id: string;
+        stops: string[];
+        trips: string[];
+    };
+    originIndex: number;
+    originName: string;
+    destIndex: number;
+    destName: string;
+}
 
 export default function tripsList() {
-    const { routeId, departId, arriveId } = useLocalSearchParams<{routeId: string; departId: string; arriveId: string}>()
+    const { routeId, departId, arriveId } = useLocalSearchParams<{
+        routeId: string;
+        departId: string;
+        arriveId: string;
+    }>();
 
     const [refresh, setRefresh] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -21,153 +45,239 @@ export default function tripsList() {
     const [trips, setTrips] = useState<TripBox[]>([]);
     const [date, setDate] = useState(new Date());
     const [open, setOpen] = useState(false);
-    
+    const [isSaved, setIsSaved] = useState(false);
+
     useFocusEffect(
-        useCallback(() => { 
-            setRefresh(true)
+        useCallback(() => {
+            setRefresh(true);
+            setError("");
             // Makes sure to reload page upon leaving page
             return () => {
-                setLoading(true)
+                setLoading(true);
             };
         }, [])
-    )
-    
+    );
+
+    // Check if the route is saved on load
+    useEffect(() => {
+        const checkRouteSaved = async () => {
+            try {
+                const token = await getItem("token");
+                const response = await axios.get(
+                    `${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                const savedRoutes = response.data.savedRoutes;
+                setIsSaved(
+                    savedRoutes.some(
+                        (route : Route) => route.route._id.toString() === routeId
+                    )
+                );
+            } catch (err) {
+                console.error("Error checking route save:", err);
+            }
+        };
+        checkRouteSaved();
+    }, [refresh]);
+
     useEffect(() => {
         setRefresh(true);
     }, [date]);
 
     useEffect(() => {
-        if (!refresh) return
+        if (!refresh) return;
+        setError("");
         const fetchData = async () => {
             const token = await getItem("token");
-            setLoading(true)
-            axios.get("https://banana-bus.vercel.app/tripsList", {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                },
-                params: {
-                    routeId,
-                    departId,
-                    arriveId,
-                    date
-                }
-            }).then((res) => {
-                setDepartName(res.data.departName)
-                setArriveName(res.data.arriveName)
-                setTrips(res.data.trips)
-            }).catch((err) => {
-                setError(err.response.data.error)
-            }).finally(() => {
-                setLoading(false)
-                setRefresh(false)
-            })
-        }
+            setLoading(true);
+            axios
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    params: {
+                        routeId,
+                        departId,
+                        arriveId,
+                        date,
+                    },
+                })
+                .then((res) => {
+                    setDepartName(res.data.departName);
+                    setArriveName(res.data.arriveName);
+                    setTrips(res.data.trips);
+                })
+                .catch((err) => {
+                    setError(err.response.data.error);
+                })
+                .finally(() => {
+                    setLoading(false);
+                    setRefresh(false);
+                });
+        };
 
         fetchData();
-    }, [date, routeId, departId, arriveId, refresh])
+    }, [date, routeId, departId, arriveId, refresh]);
 
+    const toggleSaveRoute = async () => {
+        try {
+            const token = await getItem("token");
+            const endpoint = isSaved ? "/unsaveRoute" : "/saveRoute";
+            setIsSaved(!isSaved);
+            await axios.post(
+                `${process.env.EXPO_PUBLIC_API_BASE}/${endpoint}`,
+                {
+                    routeId: routeId,
+                    originId: departId,
+                    destId: arriveId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+        } catch (err) {
+            console.error("Error toggling route save:", err);
+            Alert.alert("Error", "Failed to save/unsave route");
+            setIsSaved(isSaved); // Revert the state if the request fails
+        }
+    };
 
     function Header() {
-        return(
-            <View style= {styles.header}>
-                <View style={styles.goBackContainer}>
-                    <FontAwesome name="arrow-left" style = {styles.goBackArrow} onPress={() => router.back()}></FontAwesome>
-                    <Text style = {styles.goBackText} onPress={() => router.back()}>go back</Text>
-                </View>
-                <View style = {styles.locationContainer}>
-                    <Text style = {styles.departText}>{departName}</Text>
-                    <View style={styles.arriveContainer}>
-                        <FontAwesome name="arrow-right" style = {styles.arriveArrow}></FontAwesome>
-                        <Text style = {styles.arriveText}>{arriveName}</Text>
+        return (
+            <View style={styles.header}>
+                <Text style={styles.goBackText} onPress={() => router.back()}>
+                    <FontAwesome name="arrow-left" style={styles.goBackArrow} />{" "}
+                    go back
+                </Text>
+                <View style={styles.locationContainer}>
+                    <View>
+                        <Text style={styles.departText}>{departName}</Text>
+                        <View style={styles.arriveContainer}>
+                            <FontAwesome
+                                name="arrow-right"
+                                style={styles.arriveArrow}
+                            ></FontAwesome>
+                            <Text style={styles.arriveText}>{arriveName}</Text>
+                        </View>
                     </View>
+                    <TouchableOpacity
+                        onPress={toggleSaveRoute}
+                        style={styles.starButton}
+                    >
+                        <FontAwesome
+                            name={isSaved ? "star" : "star-o"}
+                            style={styles.starIcon}
+                        />
+                    </TouchableOpacity>
                 </View>
             </View>
-        )
+        );
     }
 
-    // TODO: add refresh
     if (loading) {
-        return(
-            <View style={styles.screen}>
-                <Header/>
-                <LoadingPage/>
-            </View>
-        )
+        return (
+            <Container>
+                <Header />
+                <LoadingPage />
+            </Container>
+        );
     }
 
-    // make nicer or pop up
     if (error) {
+        Alert.alert(`Error ${error}`)
         return(
-            <Text>Error: {error}</Text>
+            <Container>
+                <Header/>
+            </Container>
         )
     }
 
-    return(
-        <View style={styles.screen}>
-            <Header/>
+    return (
+        <Container>
+            <Header />
             <ScrollView style={styles.tripListContainer}>
-                <TouchableOpacity style={styles.tripListDate} onPress={() => setOpen(true)}>
-                    <Text style={styles.tripListDateText}>{format(date, "E, do LLL y")}</Text>
-                    <FontAwesome name="chevron-down" style={styles.tripDateArrow}></FontAwesome>
+                <TouchableOpacity
+                    style={styles.tripListDate}
+                    onPress={() => setOpen(true)}
+                >
+                    <Text style={styles.tripListDateText}>
+                        {format(date, "E, do LLL y")}
+                    </Text>
+                    <FontAwesome
+                        name="chevron-down"
+                        style={styles.tripDateArrow}
+                    ></FontAwesome>
                 </TouchableOpacity>
-                <View>
-                    {trips.map((t, index )=> <TripListBox key={index} trip={t} disabled={false}/>)}
-                </View>
+                {trips.length > 0 ? (
+                    <View>
+                        {trips.map((t, index) => (
+                            <TripListBox
+                                key={index}
+                                trip={t}
+                                disabled={false}
+                            />
+                        ))}
+                    </View>
+                ) : (
+                    <Text style={styles.emptyMessage}>
+                        No available trips for this date! {"\n"} Please try
+                        again later.
+                    </Text>
+                )}
             </ScrollView>
             <DatePicker
                 modal
                 open={open}
                 date={date}
+                mode="date"
                 minimumDate={new Date()}
                 onConfirm={(date) => {
-                    setOpen(false)
-                    setDate(date)
+                    setOpen(false);
+                    setDate(date);
                 }}
                 onCancel={() => {
-                    setOpen(false)
+                    setOpen(false);
                 }}
             />
-        </View>
+        </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        height: "100%",
-        backgroundColor: "#e5f0fa",
-    },
     header: {
         backgroundColor: "white",
         height: "22%",
-        padding: 20,
-        boxShadow: "0px 0px 5px grey"
-    },
-    goBackContainer: {
-        height: "20%",
-        flexDirection: "row",
+        padding: 28,
+        boxShadow: "0px 0px 5px grey",
     },
     goBackArrow: {
-        paddingTop: 5,
-        color: "#74b9f1",
         fontSize: 20,
     },
-    goBackText: {   
+    goBackText: {
         fontWeight: "bold",
         fontSize: 20,
-        color: "#009cff",
-        paddingLeft: 10,
+        color: "#74b9f1",
     },
     locationContainer: {
-        justifyContent: "center",
-        height: "80%" 
-    }, 
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        height: "80%",
+    },
     departText: {
         fontWeight: "bold",
         fontSize: 25,
         marginTop: 10,
     },
     arriveContainer: {
-        flexDirection: "row"
+        flexDirection: "row",
     },
     arriveArrow: {
         paddingTop: 5,
@@ -179,10 +289,10 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
     },
     tripListContainer: {
-        padding: 20,
+        paddingHorizontal: 20,
     },
     tripListDate: {
-        marginBottom: 20,
+        marginVertical: 20,
         padding: 10,
         borderRadius: 10,
         backgroundColor: "#fff",
@@ -203,5 +313,20 @@ const styles = StyleSheet.create({
         fontSize: 20,
         alignSelf: "center",
         color: "#74b9f1",
+    },
+    // Star styles
+    starButton: {
+        padding: 8,
+    },
+    starIcon: {
+        fontSize: 24,
+        color: "#FFD700",
+    },
+    emptyMessage: {
+        fontSize: 18,
+        fontStyle: "italic",
+        color: "#888",
+        textAlign: "center",
+        marginBottom: 14,
     },
 });

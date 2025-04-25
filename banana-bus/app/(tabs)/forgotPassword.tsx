@@ -1,8 +1,8 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
+import { Text, View, StyleSheet, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { getItem } from '../helper';
-import PasswordInput from '@/components/PasswordInput';
+import StyledTextInput from '@/components/StyledTextInput';
 
 export default function ForgotPasswordScreen() {
     const [pass, setPass] = useState("");
@@ -20,7 +20,7 @@ export default function ForgotPasswordScreen() {
         const paramToken = await getItem("resetToken");
 
         try {
-            const response = await fetch("https://banana-bus.vercel.app/resetPassword" + `?token=${paramToken}`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/resetPassword` + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -58,31 +58,17 @@ export default function ForgotPasswordScreen() {
                     <Text style={styles.title}>Enter new password</Text>
                 </View>
                 <View style={styles.form}>
-                    {/* <TextInput
-                        style={styles.input}
-                        placeholder="new password"
+                    <StyledTextInput
+                        password={true}
                         value={pass}
                         onChangeText={setPass}
-                        secureTextEntry
-                        autoCapitalize='none'
+                        label="new password"
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="confirm new password"
+                    <StyledTextInput
+                        password={true}
                         value={confirmPass}
                         onChangeText={setConfirmPass}
-                        secureTextEntry
-                        autoCapitalize='none'
-                    /> */}
-                    <PasswordInput
-                        value={pass}
-                        onChangeText={setPass}
-                        placeholder="new password"
-                    />
-                    <PasswordInput
-                        value={confirmPass}
-                        onChangeText={setConfirmPass}
-                        placeholder="confirm new password"
+                        label="confirm new password"
                     />
                     <TouchableOpacity
                         style={[styles.button, styles.loginButton]}
@@ -121,24 +107,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginBottom: 15,
     },
-    icon: {
-        width: 50,
-        height: 50,
-        marginBottom: 20,
-    },
     form: {
         width: "80%",
         alignItems: "center",
-    },
-    input: {
-        width: "100%",
-        padding: 10,
-        paddingHorizontal: 20,
-        margin: 8,
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 8,
-        backgroundColor: "#fff",
     },
     button: {
         width: "100%",
@@ -151,24 +122,12 @@ const styles = StyleSheet.create({
     loginButton: {
         backgroundColor: "#ccff00",
     },
-    registerButton: {
-        backgroundColor: "#2A8AE4",
-    },
     buttonText: {
         fontWeight: "bold",
         fontSize: 15,
     },
     loginText: {
         color: "#2A8AE4",
-    },
-    registerText: {
-        color: "#fff",
-    },
-    forgotPassword: {
-        marginBottom: 10,
-        alignSelf: "flex-end",
-        color: "#c5e1ec",
-        fontSize: 12
     },
     goBack: {
         alignSelf: 'flex-start',

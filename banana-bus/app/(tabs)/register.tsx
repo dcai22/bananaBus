@@ -1,10 +1,10 @@
-import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, ImageBackground } from 'react-native';
+import { Text, View, StyleSheet, Alert, TouchableOpacity, ImageBackground } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { YesButton } from '@/components/Buttons';
 import { saveItem } from '../helper';
-import PasswordInput from '@/components/PasswordInput';
+import StyledTextInput from '@/components/StyledTextInput';
 
 export default function RegisterScreen() {
     const [email, setEmail] = useState('');
@@ -25,7 +25,7 @@ export default function RegisterScreen() {
         // Register user
 
         try {
-            const response = await fetch('https://banana-bus.vercel.app/register', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,38 +76,39 @@ export default function RegisterScreen() {
                 </TouchableOpacity>
                 <Text style={styles.title}>banana bus      🚌</Text>
                 <View style={styles.form}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="first name"
+                    <StyledTextInput
+                        label="first name"
                         value={firstName}
                         onChangeText={setFirstName}
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="last name"
+                    <StyledTextInput
+                        label="last name"
                         value={lastName}
                         onChangeText={setLastName}
                     />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="email"
+                    <StyledTextInput
+                        label="email"
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-                    <PasswordInput
+                    <StyledTextInput
+                        password={true}
                         value={password}
                         onChangeText={setPassword}
+                        label="password"
                     />
-                    <PasswordInput
+                    <StyledTextInput
+                        password={true}
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
-                        placeholder="confirm password"
+                        label="confirm password"
                     />
                     <YesButton
                         text="Register"
                         onPress={handleRegister}
+                        style={styles.button}
                     />
                 </View>
             </View>
@@ -150,28 +151,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 48,
         marginBottom: 15,
     },
-    input: {
-        width: '100%',
-        padding: 10,
-        paddingHorizontal: 20,
-        marginVertical: 8,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        backgroundColor: '#fff',
-    },
     button: {
         width: '100%',
-        padding: 12,
-        marginVertical: 8,
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#2A8AE4',
-    },
-    buttonText: {
-        fontWeight: 'bold',
-        fontSize: 15,
-        color: '#fff',
+        flex: 0,
     },
 });

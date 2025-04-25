@@ -23,7 +23,7 @@ async function getAllStops(): Promise<IStop[]> {
     try {
         const token = await getItem("token");
         const response = await axios.get(
-            "https://banana-bus.vercel.app/manager/allStops",
+            `${process.env.EXPO_PUBLIC_API_BASE}/manager/allStops`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -51,7 +51,7 @@ async function getPossibleDestinations(
     try {
         const token = await getItem("token");
         const response = await axios.get(
-            "https://banana-bus.vercel.app/stops/reachableFrom",
+            `${process.env.EXPO_PUBLIC_API_BASE}/stops/reachableFrom`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -6,7 +6,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 interface HeaderProps {
     title?: string;
     showGoBack?: boolean;
-    emoji?: string;
+    icon?: React.ReactNode;
     style?: ViewStyle
     resetPage?: () => void;
 }
@@ -24,10 +24,10 @@ interface HeaderProps {
  * - `resetPage` (function, optional): A callback function to reset the page state when the "go back" button is pressed.
  * 
  * Example Usage:
- * <Header title="Home" emoji="🏠" showGoBack={false} />
+ * <Header title="Home" icon="🏠" showGoBack={false} />
  * 
  */
-export const Header: React.FC<HeaderProps> = ({ title = '', emoji, showGoBack = true, style, resetPage }) => {
+export const Header: React.FC<HeaderProps> = ({ title = '', icon, showGoBack = true, style, resetPage }) => {
     return (
         <View style={[styles.headerBox, style]}>
             {showGoBack && (
@@ -43,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', emoji, showGoBack = 
             )}
             <View style={styles.titleContainer}>
                 <Text style={styles.header}>{title}</Text>
-                {emoji && <Text style={styles.header}>{emoji}</Text>}
+                {icon && <View>{React.cloneElement(icon as React.ReactElement, { style: styles.header })}</View>}
             </View>
         </View>
     );
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     goBackArrow: {
-        fontSize: 15,
+        fontSize: 20,
     },
     titleContainer: {
         flexDirection: 'row',

@@ -1,13 +1,12 @@
-import express, { json, Request, Response } from "express";
+import express, { json, request, Request, Response } from "express";
 import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
 import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode, authGoogleLogin, removeExpiredSessions } from './auth';
 import { getTrip, tripsList } from './tripsList';
-import { searchBookings } from './searchBookings';
+import { createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
-import { deleteAccount,
-            getAccountName, 
+import { deleteAccount, 
             getUserDetails,
             updateUserDetails,
             updateUserPassword,
@@ -18,11 +17,11 @@ import { deleteAccount,
             getUserCards, 
             sendEnquiry} from './account';
 import { getDeals } from './getDeals';
-import { Route, RouteSection } from './interface';
+import { Booking, Route, RouteSection, Trip } from './interface';
 import { ObjectId } from 'mongodb';
-import { addManager, removeManager } from './manager';
-import { closeConnection, collections, connectToDatabase } from './mongoUtil';
-import { findUserByToken } from './helper';
+import { addManager, removeManager, addVehicle, deleteVehicle, editVehicle } from './manager';
+import { collections, connectToDatabase, closeConnection } from './mongoUtil';
+import { driverGetTrip, findUserByToken, getRouteById, getStopById } from './helper';
 
 const app = express();
 
@@ -164,6 +163,18 @@ app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
     return;
 });
 
+app.get("/pastBookings", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
+        const bookings = await searchBookings(token, 'past', numBookings);
+        res.json(bookings);
+    } catch (err) {
+        next(err);
+    }
+    return;
+});
+
 app.get("/tripsList", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
@@ -202,9 +213,9 @@ app.get("/getSavedRoutes", async (req: Request, res: Response, next) => {
 
 app.post("/saveRoute", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const routeId = req.body.routeId as ObjectId;
-    const originId = req.body.originId as ObjectId;
-    const destId = req.body.destId as ObjectId;
+    const routeId = new ObjectId(req.body.routeId as string);
+    const originId = new ObjectId(req.body.originId as string);
+    const destId = new ObjectId(req.body.destId as string);
     try {
         res.json(await saveRoute(token, routeId, originId, destId));
     } catch (err) {
@@ -212,24 +223,16 @@ app.post("/saveRoute", async (req: Request, res: Response, next) => {
     }
 });
 
-app.delete("/unsaveRoute", async (req: Request, res: Response, next) => {
+app.post("/unsaveRoute", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const routeSection = req.body.routeSection as RouteSection;
+    const routeId = new ObjectId(req.body.routeId as string);
+    const originId = new ObjectId(req.body.originId as string);
+    const destId = new ObjectId(req.body.destId as string);
     try {
-        res.json(await unsaveRoute(token, routeSection));
+        res.json(await unsaveRoute(token, routeId, originId, destId));
     } catch (err) {
         next(err);
     }
-});
-
-app.get("/getAccountName", async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        res.json(await getAccountName(token));
-    } catch (error) {
-        next(error);
-    }
-    return;
 });
 
 app.get("/getAccountDetails", async (req: Request, res: Response, next) => {
@@ -297,12 +300,14 @@ app.post("/createBooking", async (req: Request, res: Response, next) => {
 
     try {
         const dbRes = await collections.bookings?.insertOne({
+            _id: new ObjectId(),
             userId: user._id,
             tripId,
             originId,
             destId,
             numTickets,
             numLuggage,
+            bookingTime: new Date(),
         });
         await collections.trips?.updateOne(
             { _id: tripId },
@@ -426,6 +431,7 @@ app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
 
 app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     try {
+        await connectToDatabase();
         const allVehicles = await collections.vehicles?.find().toArray();
         res.json({ vehicles: allVehicles });
     } catch (err) {
@@ -433,6 +439,91 @@ app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     }
     return;
 })
+
+app.post('/manager/addVehicle', async (req: Request, res: Response, next) => {
+    
+    const token = req.headers.authorization as string;
+    const maxCapacity = req.body.maxCapacity as number;
+    const maxLuggageCapacity = req.body.maxLuggageCapacity as number;
+    const hasAssist = req.body.hasAssist as boolean;
+    const numberPlate = req.body.numberPlate as string;
+    const model = req.body.model;
+
+    await connectToDatabase();
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: "user is not a manager" });
+        return;
+    }
+
+    try {   
+        res.json(await addVehicle(maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
+    } catch (err) {
+        next(err);
+    }
+    return;
+})  
+
+
+app.put('/manager/editVehicle', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
+    const maxCapacity = req.body.maxCapacity as number;
+    const maxLuggageCapacity = req.body.maxLuggageCapacity as number;
+    const hasAssist = req.body.hasAssist as boolean;
+    const numberPlate = req.body.numberPlate as string;
+    const model = req.body.model;
+
+    await connectToDatabase();
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: "user is not a manager" });
+        return;
+    }
+
+    try {   
+        res.json(await editVehicle(vehicleId, maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
+    } catch (err) {
+        next(err);
+    }
+    return;
+})
+
+app.delete('/manager/deleteVehicle', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string; 
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
+
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isManager) {
+        res.status(403).json({ error: "user is not a manager" });
+        return;
+    }
+    try{
+        res.json(await deleteVehicle(vehicleId));
+    } catch (err) {
+        next(err);
+    }
+
+})
+
 
 app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
     await connectToDatabase();
@@ -576,6 +667,90 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
     }
 });
 
+app.get('/driver/getUpcomingTrips', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    if (!user.isDriver) {
+        res.status(403).json({ error: "user is not a driver" });
+        return;
+    }
+
+    try {
+        const now = new Date();
+        const allTrips = await collections.trips?.find<Trip>({
+            driverId: user._id,
+        }).toArray();
+        const upcomingTrips = allTrips?.filter(t => t.stopTimes[0] > now);
+        if (!upcomingTrips) {
+            res.json({ upcomingTrips: [] });
+            return;
+        }
+
+        const formattedUpcomingTrips = await Promise.all(
+            upcomingTrips.map(async (t) => {
+                const route = await getRouteById(t.routeId);
+                const origin = await getStopById(route.stops[0]);
+                const dest = await getStopById(route.stops[route.stops.length - 1]);
+                return {
+                    _id: t._id.toString(),
+                    stopTimes: t.stopTimes,
+                    originName: origin.name,
+                    destName: dest.name,
+                };
+            })
+        );
+
+        res.json({ upcomingTrips: formattedUpcomingTrips });
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.get('/driver/getTrip', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const tripId = new ObjectId(req.query.tripId as string);
+
+    try {
+        res.json(await driverGetTrip(token, tripId));
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.put('/driver/reportVehicle', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        res.status(403).json({ error: "invalid token" });
+        return;
+    }
+    
+    const vehicleId = new ObjectId(req.body.vehicleId as string);
+    const reportText = req.body.reportText as string;
+
+    console.log(req);
+
+    await connectToDatabase();
+    
+    try {
+        await collections.vehicles?.updateOne(
+            { _id: vehicleId },
+            { $push: { reports: { date: new Date(), text: reportText } } }
+        );
+        res.json();
+    } catch (err) {
+        next(err);
+    }
+});
+
 app.get('/removeExpiredSessions', async (req: Request, res: Response, next) => {
     try {
         res.json(await removeExpiredSessions());
@@ -596,5 +771,37 @@ app.post('/closeConnection', async (req: Request, res: Response, next) => {
     res.json(await closeConnection());
     return;
 });
+
+app.post('/createPaymentDetails', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const price = parseInt(req.body.price);
+        res.json(await createPaymentDetails(token, price));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
+app.post('/createCustomerKey', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await createCustomerKey(token));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
+app.post('/createSetupIntent', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await createSetupIntent(token));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
 
 app.use(errorHandler());

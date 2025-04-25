@@ -8,6 +8,7 @@ import { connectToDatabase } from "./mongoUtil";
 import dotenv from "dotenv";
 var jwt = require('jsonwebtoken');
 dotenv.config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
     await connectToDatabase();
@@ -24,7 +25,13 @@ export async function authRegister(email: string, password: string, firstName: s
     const hashedPassword = await getHash(password);
     const sessionId = crypto.randomBytes(64).toString('hex');
 
+    const customer = await stripe.customers.create({
+        name: `${firstName} ${lastName}`,
+        email: email,
+    })
+
     const newUser = {
+        _id: new ObjectId(),
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -43,8 +50,10 @@ export async function authRegister(email: string, password: string, firstName: s
         bookings: [],
         savedRoutes: [],
         isManager: false,
+        isDriver: false,
         isExternal: false,
         cards: [],
+        customerId: customer.id,
     }
 
     const userId = await collections.users.insertOne(newUser);
@@ -66,11 +75,11 @@ export async function authLogin(email: string, password: string) {
 
     const user = await collections.users.findOne({ email: email });
     if (!user) {
-        throw HTTPError(400, 'email not found');
+        throw HTTPError(400, 'incorrect email or password');
     }
 
     if (!(await compareHash(password, user.password))) {
-        throw HTTPError(400, 'incorrect password');
+        throw HTTPError(400, 'incorrect email or password');
     }
 
     
@@ -258,12 +267,12 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const checkUser = await collections.users?.findOne({ email: email });
-    if (checkUser && checkUser.isExternal) {
+    const checkUser = await collections.users?.findOne({ email: email, isExternal: true });
+    if (checkUser) {
         const sessionId = crypto.randomBytes(64).toString('hex');
         const expiry = new Date(Date.now() + 120 * 60 * 1000);
         const token = jwt.sign({ userId: checkUser._id.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
-        await collections.users.updateOne({ email: email }, { $push: { sessions: { sessionId, expiry } } } as any);
+        await collections.users.updateOne({ _id: checkUser._id }, { $push: { sessions: { sessionId, expiry } } } as any);
         return {
             userId: checkUser._id,
             token: token,
@@ -273,8 +282,14 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
     const sessionId = crypto.randomBytes(64).toString('hex');
     const expiry = new Date(Date.now() + 120 * 60 * 1000);
 
+    const customer = await stripe.customers.create({
+        name: `${firstName} ${lastName}`,
+        email: email,
+    });
+
     // note: google members should not have a password, and cannot reset email or password
     const newUser = {
+        _id: new ObjectId(),
         firstName: firstName,
         lastName: lastName,
         email: email,
@@ -291,8 +306,10 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
         bookings: [],
         savedRoutes: [],
         isManager: false,
+        isDriver: false,
         isExternal: true,
         cards: [],
+        customerId: customer.id,
     }
 
     const userId = await collections.users?.insertOne(newUser);

@@ -10,24 +10,8 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
-import { CheckoutHeader } from "@/components/Header";
-
-// TODO: fix up stack/tabs so router back works properly
-
-const tripBox  = {
-    tripId: "hello",
-    departId: "hello",
-    arriveId: "hello",
-    departureTime: new Date(),
-    arrivalTime: new Date(),
-    price: 20,
-    curCapacity: 20,
-    maxCapacity: 20,
-    curLuggageCapacity: 20,
-    maxLuggageCapacity: 20,
-    luggagePrice: 20,
-    hasAssist: true, 
-}
+import { CheckoutHeader, Header } from "@/components/Header";
+import { initStripe, useStripe } from "@stripe/stripe-react-native";
 
 export default function booking() {
     const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
@@ -40,13 +24,13 @@ export default function booking() {
     const [error, setError] = useState("");
     const [departName, setDepartName] = useState("");
     const [arriveName, setArriveName] = useState("");
-    const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"});
     
     const [isCheckout, setIsCheckout] = useState(false);
 
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+    const [totalPrice, setTotalPrice] = useState(0);
+
     const router = useRouter();
-    
-    // TODO: backend to retrieve card details
     
     useFocusEffect(
          useCallback(() => { 
@@ -61,11 +45,20 @@ export default function booking() {
     )
 
     useEffect(() => {
+        if (!trip) {
+            setTotalPrice(0)
+            return;
+        }
+        setTotalPrice(numPassenger * trip.price + numLuggage * trip.luggagePrice);
+    }, [numPassenger, numLuggage, trip, isCheckout]);
+
+    useEffect(() => {
         if (!refresh) return
+        setError("");
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get("https://banana-bus.vercel.app/getTrip", {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getTrip`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -89,6 +82,15 @@ export default function booking() {
         fetchData();
     }, [tripId, departId, arriveId, refresh])
 
+    useEffect(() => {
+        async function initialise() {
+            await initStripe({
+                publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY as string,
+            });
+        }
+        initialise();
+    })
+
     if (loading) {
         return(
             <Container>
@@ -98,17 +100,12 @@ export default function booking() {
         )
     }
 
-    
-    // make nicer or pop up
-    if (error) {
+    if (error || !trip) {
+        Alert.alert(`Error ${error}`)
         return(
-            <Text>Error:{error}</Text>
-        )
-    }    
-    
-    if(!trip) {
-        return (
-            <Text> Trip not found</Text>
+            <Container>
+                <CheckoutHeader/>
+            </Container>
         )
     }
 
@@ -132,51 +129,87 @@ export default function booking() {
         setNumLuggage(num => (num > 0 ? num - 1 : num))
     }
 
-    function totalPrice() {
-        if (!trip) return 0;
-        return (numPassenger * trip.price) + (numLuggage * trip.luggagePrice)
-    }
-
-    // TODO: API calls to backend or navigate to new routes
-    function handleSelectSeat() {
-    
-    }
-
-    function handleCardChange() {
-
-    }
-    
-    async function handleCheckout() {
-        // TODO: handle payment
-        if (numPassenger === 0) {
-            Alert.alert("Please select at least 1 passenger");
-            return
-        }
-        setIsCheckout(true)
+    async function fetchPaymentSheetParams() {
         const token = await getItem("token");
+        const price = totalPrice * 100;
         try {
-            const res = await fetch('https://banana-bus.vercel.app/createBooking', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/createPaymentDetails`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ token, tripId, originId: departId, destId: arriveId, numTickets: numPassenger, numLuggage }),
+                body: JSON.stringify({ price }),
             });
-
-            if (res.ok) {
-                const data = await res.json();
-                setIsCheckout(false);
-                // console.log(`Created booking with id ${data.insertedId}`);
-                // TODO probably change to something better
-                Alert.alert("Booking confirmed");
-                router.navigate("/(tabs)");
-            } else {
-                const errorData = await res.json();
-                Alert.alert('Error', errorData.error || 'Booking failed');
+            const { paymentIntent, ephemeralKey, customer } = await response.json();
+            return {
+                paymentIntent,
+                ephemeralKey,
+                customer,
             }
-        } catch (err) {
-            Alert.alert('Error', 'An error occurred. Please try again.');
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function initialisePaymentSheet() {
+        const paymentSheetParams = await fetchPaymentSheetParams();
+        if (!paymentSheetParams) {
+            console.error("Failed to fetch payment sheet parameters");
+            return;
+        }
+        const { paymentIntent, ephemeralKey, customer } = paymentSheetParams;
+
+        const { error } = await initPaymentSheet({
+            merchantDisplayName: 'Banana Bus',
+            customerId: customer,
+            customerEphemeralKeySecret: ephemeralKey,
+            paymentIntentClientSecret: paymentIntent,
+            allowsDelayedPaymentMethods: true, 
+        })
+    }
+    
+    async function handleCheckout() {
+        if (numPassenger === 0) {
+            Alert.alert("Please select at least 1 passenger");
+            return
+        }
+        setIsCheckout(true)
+        await initialisePaymentSheet();
+
+        const { error } = await presentPaymentSheet();
+
+        if (error) {
+            setIsCheckout(false)
+            return;
+        } else {
+            const token = await getItem("token");
+            try {
+                const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/createBooking`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ token, tripId, originId: departId, destId: arriveId, numTickets: numPassenger, numLuggage }),
+                });
+    
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsCheckout(false);
+                    // console.log(`Created booking with id ${data.insertedId}`);
+                    // TODO probably change to something better
+                    Alert.alert("Booking confirmed");
+                    router.navigate("/(tabs)");
+                } else {
+                    setIsCheckout(false);
+                    const errorData = await res.json();
+                    Alert.alert('Error', errorData.error || 'Booking failed');
+                }
+            } catch (err) {
+                Alert.alert('Error', 'An error occurred. Please try again.');
+                setIsCheckout(false);
+            }
         }
     }
 
@@ -228,53 +261,19 @@ export default function booking() {
                         </View>
                     </View>
                     <View style={styles.optionsContainer}>
-                        <Text style={styles.optionsText}>Select Seats</Text>
-                        <TouchableOpacity style={styles.seatsButton} onPress={handleSelectSeat}>
-                            <FontAwesome name="arrow-right" style={styles.seatsArrow}/>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.optionsContainer}>
                         <Text style={styles.optionsText}>Promo Code</Text>
                         {/* to implement functionality*/}
                         <TextInput style={styles.promoInput}></TextInput>
                     </View>
                     <View style={styles.totalContainer}>
                         <Text style={styles.optionsText}>Total</Text>
-                        <Text style={styles.optionsText}>RM {totalPrice()}</Text>
+                        <Text style={styles.optionsText}>RM {totalPrice}</Text>
                     </View>
                 </View>
-
-                <View style={styles.paymentContainer}>
-                    <View style = {styles.cardContainer}>
-                        {/* maybe move to a component */}
-                        <View style={styles.cardIcon}>
-                            <View style={styles.typeIcon}>
-                                {/* checking card type. could be function*/}
-                                { defaultCard.type === "Mastercard" &&
-                                    <Image 
-                                        source={require("../../assets/images/mastercard.png")}
-                                        style={styles.typeImage}
-                                    />
-                                }
-                            </View> 
-                        </View>
-                        <View style={styles.cardInfoContainer}>
-                            <Text style={styles.cardType}>
-                                {defaultCard.type}
-                            </Text>
-                            <Text>
-                                ending in {defaultCard.lastFour}
-                            </Text>
-                        </View>
-                    </View>
-                    <TouchableOpacity style= {styles.cardChangeButton} onPress={handleCardChange}>
-                        <Text style= {styles.cardChangeText}>Change</Text>
-                    </TouchableOpacity>
-                </View> 
             </ScrollView>
 
             <View style= {styles.checkoutBar}>
-                <Text style= {styles.checkoutTotal}>Total: RM {totalPrice()}</Text>
+                <Text style= {styles.checkoutTotal}>Total: RM {totalPrice}</Text>
                 <TouchableOpacity style={styles.checkoutButton} disabled={isCheckout || numPassenger === 0}>
                     {isCheckout ? (
                         <ActivityIndicator size="small" color="white"/>
@@ -288,34 +287,6 @@ export default function booking() {
 }
 
 const styles = StyleSheet.create({
-    header: {
-        backgroundColor: "#060c40",
-        height: "10%",
-        padding: 20,
-        boxShadow: "0px 0px 5px grey",
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
-    goBackContainer: {
-        height: "100%",
-        flexDirection: "row",
-    },
-    goBackArrow: {
-        paddingTop: 5,
-        color: "#009cff",
-        fontSize: 20,
-    },
-    goBackText: {   
-        fontWeight: "bold",
-        fontSize: 20,
-        color: "#009cff",
-        paddingLeft: 10,
-    },
-    headerText: {
-        color: "white",
-        fontSize: 22,
-        alignContent: "center"
-    },
     checkoutInfo: {
         padding: 20,
     },
@@ -381,14 +352,6 @@ const styles = StyleSheet.create({
         fontWeight:"bold",
         paddingHorizontal: 10
     },
-    seatsButton: {
-        justifyContent: "center",
-        paddingHorizontal: 5,
-    },
-    seatsArrow:{
-        fontSize: 15,
-        color: "#2095ec",
-    },
     promoInput: {
         backgroundColor: "#e0f4ff",
         padding: 3,
@@ -404,46 +367,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         padding: 15,
     },
-    paymentContainer: {
-        backgroundColor: "white",
-        borderRadius: 10,
-        boxShadow: "0px 2px 5px -2px grey",
-        flexDirection: "row",
-        paddingVertical: 15,
-        paddingHorizontal: 20, 
-        justifyContent: "space-between",
-    },
-    cardContainer: {
-        flexDirection: "row"
-    },
-    cardIcon: {
-        backgroundColor: "grey",
-        width: 80,
-        height: 60,
-        borderRadius: 15
-    },
-    typeIcon: {
-        position: "absolute",
-        bottom: 10,
-        right: 10,
-    },
-    typeImage: {
-        width:25, 
-        height: 20,
-    },
-    cardInfoContainer: {
-        paddingLeft: 7, justifyContent: "flex-end"
-    },
-    cardType: {
-        fontWeight:"500",
-    },
-    cardChangeButton:{
-        justifyContent: "center"
-    },
-    cardChangeText: {
-        fontWeight: "bold",
-        color: "#2a8cdf"
-    },
+    
     checkoutBar: {
         backgroundColor: "#042C5C",
         alignItems: "center",

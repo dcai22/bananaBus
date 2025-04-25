@@ -2,22 +2,8 @@ import HTTPError from "http-errors";
 import { compareHash, findUserByToken, getHash } from "./helper";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
-import { Card, User } from "./interface";
-
-export async function getAccountName(token: string) {
-    await connectToDatabase();
-
-    if (!collections.users) {
-        throw HTTPError(500, 'Database collection is not initialized');
-    }
-
-    const strippedToken = token.replace('Bearer ', '');
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    }
-    return { firstName: user?.firstName, lastName: user?.lastName };
-}
+import { Card } from "./interface";
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 export async function getUserDetails(token: string) {
     await connectToDatabase();
@@ -36,6 +22,8 @@ export async function getUserDetails(token: string) {
         lastName: user?.lastName,
         email: user?.email,
         isExternal: user?.isExternal,
+        isManager: user?.isManager,
+        isDriver: user?.isDriver,
     };
 }
 
@@ -107,6 +95,10 @@ export async function deleteAccount(userId: ObjectId, token: string) {
         throw HTTPError(403, 'invalid data');
     }
 
+    const customerId = userById.customerId;
+
+    await stripe.customers.del(customerId);
+
     await collections.users?.deleteOne({ _id: new ObjectId(userId) });
     return {};
 }
@@ -127,11 +119,12 @@ export async function sendEnquiry(token: string, heading: string, body: string) 
     const ticketNumber = Math.floor(Math.random() * 899999 + 100000).toString();
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
+        host: 'smtp.gmail.com',
         port: 587,
+        secure: false,
         auth: {
-            user: 'delphine.batz@ethereal.email',
-            pass: 'djexbJqVg88mr4u38u'
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
         },
     });
 
@@ -149,9 +142,10 @@ export async function sendEnquiry(token: string, heading: string, body: string) 
 
     const mailOptions = {
         from: 'Customer Enquiry',
-        to: 'beanslover65@hotmail.com',
+        to: 'bananabus846@gmail.com',
         subject: `Enquiry from ${user.firstName} ${user.lastName} (${email}) - Ticket Number: ${ticketNumber}`,
-        text: `${heading}\n\n${body}`,
+        html: `<h1 style="font-size: 24px; font-weight: bold;">${heading}</h1>
+                <p style="font-size: 16px;">${body}</p>`,
     }
 
     await new Promise((resolve, reject) => {

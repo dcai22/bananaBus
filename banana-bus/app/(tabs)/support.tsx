@@ -2,16 +2,19 @@ import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, FlatList, K
 import React, { useState } from 'react';
 import Modal from 'react-native-modal';
 import { useFocusEffect } from '@react-navigation/native';
-import { NoButton } from '@/components/Buttons';
+import { LoadingButton, NoButton, YesButton } from '@/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
 import { getItem } from '../helper';
 import * as Device from "expo-device";
+import { Header } from '@/components/Header';
+import Container from '@/components/Container';
 
 export default function Payment() {
     const [enquiryType, setEnquiryType] = useState('');
     const [customHeading, setCustomHeading] = useState('');
     const [enquiryText, setEnquiryText] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const enquiryOptions = [
         { label: 'Billing Issue', value: 'billing' },
@@ -24,7 +27,24 @@ export default function Payment() {
         // TODO make an API call to send the email
         // generate a ticket number as well
         // const ticketNumber = `TICKET-${Math.floor(Math.random() * 1000000)}`;
-        const heading = enquiryType === 'other' ? customHeading : enquiryType;
+
+        let heading;
+        switch (enquiryType) {
+            case 'billing':
+                heading = 'Billing Issue';
+                break;
+            case 'technical':
+                heading = 'Technical Support';
+                break;
+            case 'general':
+                heading = 'General Inquiry';
+                break;
+            case 'other':
+                heading = customHeading;
+                break;
+            default:
+                break;
+        }
         const body = enquiryText;
         if (!heading) {
             Alert.alert('Error', 'Please select an enquiry type or enter a custom heading.');
@@ -46,8 +66,10 @@ export default function Payment() {
             return;
         }
 
+        setLoading(true);
+
         try {
-            const response = await fetch('https://banana-psi-lemon.vercel.app/sendEnquiry', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/sendEnquiry`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,6 +92,8 @@ export default function Payment() {
         } catch (error) {
             Alert.alert('Error', 'Failed to send your enquiry. Please try again later.');
             return;
+        } finally {
+            setLoading(false);
         }
         setEnquiryType('');
         setCustomHeading('');
@@ -94,11 +118,8 @@ export default function Payment() {
     );
 
     return (
-        <View style={styles.container}>
-            <View style={styles.headerBox}>
-                <Text style={styles.header}>Support</Text>
-                <FontAwesome name="life-ring" style={[styles.header, styles.headerIcon]}/>
-            </View>
+        <Container>
+            <Header title="Support" icon={<FontAwesome name="life-ring"/>} />
             <View style={styles.section}>
                 <TouchableOpacity
                     style={styles.dropdown}
@@ -123,7 +144,11 @@ export default function Payment() {
                     onChangeText={setEnquiryText}
                     multiline
                 />
-                <NoButton text="Send" onPress={handleSend} />
+                {loading ? (
+                    <LoadingButton style={styles.buttons} type='yes' />
+                ) : (
+                    <YesButton text="Send" onPress={handleSend} style={styles.buttons} />
+                )}
             </View>
             <Modal
                 isVisible={modalVisible}
@@ -150,15 +175,11 @@ export default function Payment() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </Container>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#e5f0fa',
-    },
     section: {
         flex: 1,
         padding: 20,
@@ -166,35 +187,6 @@ const styles = StyleSheet.create({
     header: {
         fontSize: 36,
         fontWeight: "bold",
-    },
-    headerIcon: {
-        fontSize: 48,
-        color: "#4399dc",
-    },
-    headerBox: {
-        backgroundColor: '#fff',
-        marginBottom: 24,
-        padding: 35,
-        minHeight: 150,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 6,
-        elevation: 6,
-    },
-    picker: {
-        backgroundColor: '#fff',
-        marginBottom: 20,
-        borderRadius: 10,
-        paddingHorizontal: 10,
-        shadowColor: '#000',
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-		elevation: 2,
     },
     input: {
         backgroundColor: '#fff',
@@ -241,4 +233,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#000',
     },
+    buttons: {
+        flex: 0,
+        marginHorizontal: 0,
+    }
 });
