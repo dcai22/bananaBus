@@ -4,6 +4,7 @@ import {
     StyleSheet,
     TouchableOpacity,
     ActivityIndicator,
+    Alert,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import { router, useFocusEffect } from "expo-router";
@@ -59,6 +60,7 @@ export default function Trips() {
 
     useEffect(() => {
         if (!refresh) return;
+        setError("");
 
         const fetchData = async () => {
             const token = await getItem("token");
@@ -100,7 +102,12 @@ export default function Trips() {
     }, [refresh]);
 
     if (error) {
-        return <Text>Error: {error}</Text>;
+        Alert.alert(`Error ${error}`)
+        return(
+            <Container>
+                <Header/>
+            </Container>
+        )
     }
 
     const handlePress = (route: Route) => {

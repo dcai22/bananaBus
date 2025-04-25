@@ -191,7 +191,12 @@ export default function tripsList() {
     }
 
     if (error) {
-        return <Text>Error: {error}</Text>;
+        Alert.alert(`Error ${error}`)
+        return(
+            <Container>
+                <Header/>
+            </Container>
+        )
     }
 
     return (

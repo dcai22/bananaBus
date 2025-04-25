@@ -3,7 +3,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format } from "date-fns";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, TouchableOpacity, View, StyleSheet, ScrollView } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Alert } from "react-native";
 import { getItem } from "../helper";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
@@ -55,7 +55,7 @@ export default function driverTrip() {
     useEffect(() => {
         if (!refresh) return
         const fetchData = async () => {
-            const token = await getItem("token");
+            const token = await getItem("tokend");
             setLoading(true)
             axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/driver/getTrip?tripId=${tripId}`, {
                 headers: {
@@ -66,7 +66,7 @@ export default function driverTrip() {
                 setStops(res.data.stops);
                 setPassengers(res.data.passengers);
             }).catch((err) => {
-                setError(err.response.data.error);
+                Alert.alert(`Error ${err.response.data.error}`);
             }).finally(() => {
                 setLoading(false);
                 setRefresh(false);
@@ -75,13 +75,6 @@ export default function driverTrip() {
 
         fetchData();
     }, [tripId, refresh]);
-
-    // make nicer or pop up
-    if (error) {
-        return(
-            <Text>Error: {error}</Text>
-        )
-    }
 
     const handlePress = () => {
         router.push({
@@ -157,7 +150,7 @@ export default function driverTrip() {
                         </View>
                     )}
                     {vehicle && (
-                        <WarnButton
+                        <YesButton
                             text="Report Problem with Vehicle"
                             onPress={handlePress}
                             style={styles.buttons}
