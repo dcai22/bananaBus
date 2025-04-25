@@ -55,7 +55,7 @@ export default function driverTrip() {
     useEffect(() => {
         if (!refresh) return
         const fetchData = async () => {
-            const token = await getItem("tokend");
+            const token = await getItem("token");
             setLoading(true)
             axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/driver/getTrip?tripId=${tripId}`, {
                 headers: {
