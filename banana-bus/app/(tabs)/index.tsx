@@ -35,11 +35,16 @@ interface RouteGeometry {
     coordinates: number[][];
 }
 
+const DEFAULT_COORDINATES = {
+    lat: 2.7567602,
+    lng: 101.7007533, // Default to Bus Terminal, KLIA 1
+};
+
 export default function Index() {
-    const [location, setLocation] = useState({
-        lat: 2.7567602,
-        lng: 101.7007533, // Default to Bus Terminal, KLIA 1
-    });
+    const [location, setLocation] = useState<{
+        lat: number | null;
+        lng: number | null;
+    }>({ lat: null, lng: null });
     const [compassHeading, setCompassHeading] = useState(0);
     const [routeGeometry, setRouteGeometry] = useState<RouteGeometry | null>(
         null
@@ -106,6 +111,10 @@ export default function Index() {
             );
         } catch (error) {
             console.error("Error watching location:", error);
+            setLocation({
+                lat: null,
+                lng: null,
+            });
             Alert.alert(
                 "Something went wrong!",
                 "Unable to track your location",
@@ -117,9 +126,16 @@ export default function Index() {
     // TODO: Debug its a little glitchy sometimes idk why
     const pinpoint = async () => {
         try {
-            if (cameraRef.current) {
+            if (
+                cameraRef.current &&
+                location.lat !== null &&
+                location.lng !== null
+            ) {
                 cameraRef.current.setCamera({
-                    centerCoordinate: [location.lng, location.lat],
+                    centerCoordinate: [
+                        location.lng ?? DEFAULT_COORDINATES.lng,
+                        location.lat ?? DEFAULT_COORDINATES.lat,
+                    ],
                     zoomLevel: 15,
                     animationDuration: 1000,
                 });
@@ -139,9 +155,16 @@ export default function Index() {
 
             setLocation(newLocation);
 
-            if (cameraRef.current) {
+            if (
+                cameraRef.current &&
+                location.lat !== null &&
+                location.lng !== null
+            ) {
                 cameraRef.current.setCamera({
-                    centerCoordinate: [location.lng, location.lat],
+                    centerCoordinate: [
+                        location.lng ?? DEFAULT_COORDINATES.lng,
+                        location.lat ?? DEFAULT_COORDINATES.lat,
+                    ],
                     zoomLevel: 15,
                     animationDuration: 1000,
                 });
@@ -291,7 +314,10 @@ export default function Index() {
                     <Mapbox.Camera
                         ref={cameraRef}
                         defaultSettings={{
-                            centerCoordinate: [location.lng, location.lat],
+                            centerCoordinate: [
+                                location.lng ?? DEFAULT_COORDINATES.lng,
+                                location.lat ?? DEFAULT_COORDINATES.lat,
+                            ],
                             zoomLevel: 14,
                         }}
                     />
@@ -315,12 +341,15 @@ export default function Index() {
                     )}
 
                     {/* Location marker */}
-                    <Mapbox.PointAnnotation
-                        id="currentLocation"
-                        coordinate={[location.lng, location.lat]}
-                    >
-                        <View style={styles.marker} />
-                    </Mapbox.PointAnnotation>
+                    {/* If location is null, don't render the marker */}
+                    {location.lat !== null && location.lng !== null && (
+                        <Mapbox.PointAnnotation
+                            id="currentLocation"
+                            coordinate={[location.lng, location.lat]}
+                        >
+                            <View style={styles.marker} />
+                        </Mapbox.PointAnnotation>
+                    )}
 
                     {/* From marker */}
                     {fromLoc.lng !== null && fromLoc.lat !== null && (
@@ -458,6 +487,7 @@ export default function Index() {
                     toLoc={toLoc}
                     setFromLoc={setFromLoc}
                     setToLoc={setToLoc}
+                    currentLocation={location}
                 />
             </View>
         </SafeAreaView>
