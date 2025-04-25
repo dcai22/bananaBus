@@ -15,12 +15,12 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    // const strippedToken = token.replace('Bearer ', '');
-    // const user = await findUserByToken(strippedToken);
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
 
-    // if (!user) {
-    //     throw HTTPError(403, 'invalid token');
-    // } 
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    } 
     
     const route = await getRouteById(routeId);
 

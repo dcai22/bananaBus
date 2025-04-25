@@ -144,7 +144,8 @@ export async function sendEnquiry(token: string, heading: string, body: string) 
         from: 'Customer Enquiry',
         to: 'bananabus846@gmail.com',
         subject: `Enquiry from ${user.firstName} ${user.lastName} (${email}) - Ticket Number: ${ticketNumber}`,
-        text: `${heading}\n\n${body}`,
+        html: `<h1 style="font-size: 24px; font-weight: bold;">${heading}</h1>
+                <p style="font-size: 16px;">${body}</p>`,
     }
 
     await new Promise((resolve, reject) => {
