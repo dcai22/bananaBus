@@ -8,6 +8,7 @@ import { CustomModal } from "@/components/Modal";
 import { NoButton, StandardButton, WarnButton, YesButton } from "@/components/Buttons";
 import StyledTextInput from "@/components/StyledTextInput";
 import { FontAwesome } from "@expo/vector-icons";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
@@ -206,6 +207,13 @@ export default function Settings() {
                 body: JSON.stringify({ userId }),
             });
             if (response.ok) {
+                if (isExternal) {
+                    try {
+                        await GoogleSignin.signOut();
+                    } catch (error) {
+                        console.error("Error signing out from Google:", error);
+                    }
+                }
                 alert("You have been logged out.");
                 
             } else {

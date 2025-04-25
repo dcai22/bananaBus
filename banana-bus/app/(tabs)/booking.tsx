@@ -10,10 +10,8 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
-import { CheckoutHeader } from "@/components/Header";
+import { CheckoutHeader, Header } from "@/components/Header";
 import { initStripe, useStripe } from "@stripe/stripe-react-native";
-
-// TODO: fix up stack/tabs so router back works properly
 
 export default function booking() {
     const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
@@ -26,7 +24,6 @@ export default function booking() {
     const [error, setError] = useState("");
     const [departName, setDepartName] = useState("");
     const [arriveName, setArriveName] = useState("");
-    const [defaultCard, setDefaultCard] = useState({cardId: 1, type: "Mastercard", lastFour: "1234"});
     
     const [isCheckout, setIsCheckout] = useState(false);
 
@@ -34,8 +31,6 @@ export default function booking() {
     const [totalPrice, setTotalPrice] = useState(0);
 
     const router = useRouter();
-    
-    // TODO: backend to retrieve card details
     
     useFocusEffect(
          useCallback(() => { 
@@ -59,6 +54,7 @@ export default function booking() {
 
     useEffect(() => {
         if (!refresh) return
+        setError("");
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
@@ -104,16 +100,12 @@ export default function booking() {
         )
     }
 
-    // make nicer or pop up
-    if (error) {
+    if (error || !trip) {
+        Alert.alert(`Error ${error}`)
         return(
-            <Text>Error:{error}</Text>
-        )
-    }    
-    
-    if(!trip) {
-        return (
-            <Text> Trip not found</Text>
+            <Container>
+                <CheckoutHeader/>
+            </Container>
         )
     }
 
@@ -135,15 +127,6 @@ export default function booking() {
 
     function handleLuggageDecrease() {
         setNumLuggage(num => (num > 0 ? num - 1 : num))
-    }
-
-    // TODO: API calls to backend or navigate to new routes
-    function handleSelectSeat() {
-    
-    }
-
-    function handleCardChange() {
-
     }
 
     async function fetchPaymentSheetParams() {

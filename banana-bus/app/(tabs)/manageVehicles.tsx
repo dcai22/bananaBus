@@ -60,6 +60,7 @@ export default function manageVehicles() {
                 <View style={styles.searchAndAddContainer}>
                 <TextInput
                     placeholder="Search by model or plate..."
+                    numberOfLines={1}
                     value={search}
                     onChangeText={setSearch}
                     style={styles.searchBar}

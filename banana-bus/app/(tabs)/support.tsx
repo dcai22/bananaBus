@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, FlatList, K
 import React, { useState } from 'react';
 import Modal from 'react-native-modal';
 import { useFocusEffect } from '@react-navigation/native';
-import { NoButton } from '@/components/Buttons';
+import { LoadingButton, NoButton, YesButton } from '@/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
 import { getItem } from '../helper';
 import * as Device from "expo-device";
@@ -14,6 +14,7 @@ export default function Payment() {
     const [customHeading, setCustomHeading] = useState('');
     const [enquiryText, setEnquiryText] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const enquiryOptions = [
         { label: 'Billing Issue', value: 'billing' },
@@ -26,7 +27,24 @@ export default function Payment() {
         // TODO make an API call to send the email
         // generate a ticket number as well
         // const ticketNumber = `TICKET-${Math.floor(Math.random() * 1000000)}`;
-        const heading = enquiryType === 'other' ? customHeading : enquiryType;
+
+        let heading;
+        switch (enquiryType) {
+            case 'billing':
+                heading = 'Billing Issue';
+                break;
+            case 'technical':
+                heading = 'Technical Support';
+                break;
+            case 'general':
+                heading = 'General Inquiry';
+                break;
+            case 'other':
+                heading = customHeading;
+                break;
+            default:
+                break;
+        }
         const body = enquiryText;
         if (!heading) {
             Alert.alert('Error', 'Please select an enquiry type or enter a custom heading.');
@@ -48,8 +66,10 @@ export default function Payment() {
             return;
         }
 
+        setLoading(true);
+
         try {
-            const response = await fetch('https://banana-psi-lemon.vercel.app/sendEnquiry', {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/sendEnquiry`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -72,6 +92,8 @@ export default function Payment() {
         } catch (error) {
             Alert.alert('Error', 'Failed to send your enquiry. Please try again later.');
             return;
+        } finally {
+            setLoading(false);
         }
         setEnquiryType('');
         setCustomHeading('');
@@ -122,7 +144,11 @@ export default function Payment() {
                     onChangeText={setEnquiryText}
                     multiline
                 />
-                <NoButton text="Send" onPress={handleSend} style={styles.buttons}/>
+                {loading ? (
+                    <LoadingButton style={styles.buttons} type='yes' />
+                ) : (
+                    <YesButton text="Send" onPress={handleSend} style={styles.buttons} />
+                )}
             </View>
             <Modal
                 isVisible={modalVisible}
