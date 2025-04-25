@@ -213,9 +213,9 @@ app.get("/getSavedRoutes", async (req: Request, res: Response, next) => {
 
 app.post("/saveRoute", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const routeId = req.body.routeId as ObjectId;
-    const originId = req.body.originId as ObjectId;
-    const destId = req.body.destId as ObjectId;
+    const routeId = new ObjectId(req.body.routeId as string);
+    const originId = new ObjectId(req.body.originId as string);
+    const destId = new ObjectId(req.body.destId as string);
     try {
         res.json(await saveRoute(token, routeId, originId, destId));
     } catch (err) {
@@ -223,11 +223,13 @@ app.post("/saveRoute", async (req: Request, res: Response, next) => {
     }
 });
 
-app.delete("/unsaveRoute", async (req: Request, res: Response, next) => {
+app.post("/unsaveRoute", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const routeSection = req.body.routeSection as RouteSection;
+    const routeId = new ObjectId(req.body.routeId as string);
+    const originId = new ObjectId(req.body.originId as string);
+    const destId = new ObjectId(req.body.destId as string);
     try {
-        res.json(await unsaveRoute(token, routeSection));
+        res.json(await unsaveRoute(token, routeId, originId, destId));
     } catch (err) {
         next(err);
     }

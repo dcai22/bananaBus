@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { findUserByToken } from "./helper";
+import { findUserByToken, getRouteById, getStopById } from "./helper";
 import { Route, RouteSection } from "./interface";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
@@ -14,7 +14,7 @@ export async function saveRoute(token: string, routeId: ObjectId, originId: Obje
         throw HTTPError(403, 'invalid token');
     }
 
-    const route = await collections.routes?.findOne<Route>({ routeId: routeId });
+    const route = await collections.routes?.findOne<Route>({ _id: routeId });
     if (!route) {
         throw HTTPError(400, 'route not found');
     }
@@ -24,21 +24,21 @@ export async function saveRoute(token: string, routeId: ObjectId, originId: Obje
         throw HTTPError(400, 'route section is invalid');
     }
 
-    if (user.savedRoutes.some((savedRoute: RouteSection) => { return savedRoute === routeSection; })) {
+    if (user.savedRoutes.some((savedRoute: RouteSection) => {
+        return savedRoute.routeId.equals(routeSection.routeId) && savedRoute.originId.equals(routeSection.originId) && savedRoute.destId.equals(routeSection.destId);
+    })) {
         throw HTTPError(400, 'route is already saved');
     }
 
-    user.savedRoutes.push(routeSection);
 
-    await collections.users?.replaceOne(
-        { userId: user._id },
-        user,
-    );
+    console.log(routeSection);
+
+    await collections.users?.updateOne({ _id: user._id }, { $push : { savedRoutes: routeSection } });
 
     return {};
 }
 
-export async function unsaveRoute(token: string, routeSection: RouteSection) {
+export async function unsaveRoute(token: string, routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
     await connectToDatabase();
     
     const strippedToken = token.replace('Bearer ', '');
@@ -48,16 +48,25 @@ export async function unsaveRoute(token: string, routeSection: RouteSection) {
         throw HTTPError(403, 'invalid token');
     }
 
-    if (!user.savedRoutes.some((savedRoute: RouteSection) => { return savedRoute.equals(routeSection); })) {
-        throw HTTPError(400, 'route was not saved')
+    const route = await collections.routes?.findOne<Route>({ _id: routeId });
+    if (!route) {
+        throw HTTPError(400, 'route not found');
     }
 
-    user.savedRoutes = user.savedRoutes.filter((savedRoute: RouteSection) => { return !savedRoute.equals(routeSection); });
+    const routeSection = new RouteSection(routeId, originId, destId);
+    if (!routeSection.isValid()) {
+        throw HTTPError(400, 'route section is invalid');
+    }
 
-    collections.users?.replaceOne(
-        { userId: user._id },
-        user,
-    );
+    if (!user.savedRoutes.some((savedRoute: RouteSection) => {
+        return savedRoute.routeId.equals(routeSection.routeId) && savedRoute.originId.equals(routeSection.originId) && savedRoute.destId.equals(routeSection.destId);
+    })) {
+        throw HTTPError(400, 'route was not saved')
+    }
+    
+    console.log(routeSection);
+
+    await collections.users?.updateOne({ _id: user._id }, { $pull : { savedRoutes: { routeId: routeSection.routeId, originId: routeSection.originId, destId: routeSection.destId } } });
 
     return {};
 }
@@ -71,5 +80,18 @@ export async function getSavedRoutes(token: string) {
         throw HTTPError(403, 'invalid token');
     }
     
-    return { savedRoutes: user.savedRoutes.map((savedRoute: RouteSection) => { return savedRoute.asDisplayRouteSection() }) };
+    return { savedRoutes: await Promise.all(
+        user.savedRoutes.map(async (savedRoute: RouteSection) => {
+        const route = await getRouteById(savedRoute.routeId);
+        const origin = await getStopById(savedRoute.originId);
+        const dest = await getStopById(savedRoute.destId);
+
+        return {
+            route: route,
+            originIndex: route.stops.findIndex(s => s.equals(savedRoute.originId)),
+            originName: origin.name,
+            destIndex: route.stops.findIndex(s => s.equals(savedRoute.destId)),
+            destName: dest.name,
+        };
+    }))};
 }
