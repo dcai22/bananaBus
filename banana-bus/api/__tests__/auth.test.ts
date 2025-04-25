@@ -4,6 +4,9 @@ import { ObjectId } from 'mongodb';
 const request = require("supertest");
 const app = require("../index");
 
+// authPasswordResetEmail, authPasswordVerifyCode, authPasswordReset, authGoogleLogin are untested
+// because they require external services
+
 beforeEach(async () => {
     // Clear users before each test
     await request(app)
@@ -20,7 +23,7 @@ describe('Register', () => {
         const response = await request(app)
             .post('/register')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
                 firstName: 'first',
                 lastName: 'last',
@@ -34,7 +37,7 @@ describe('Register', () => {
         await request(app)
             .post('/register')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
                 firstName: 'first',
                 lastName: 'last',
@@ -42,7 +45,7 @@ describe('Register', () => {
         const response = await request(app)
             .post('/register')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
                 firstName: 'first',
                 lastName: 'last',
@@ -56,7 +59,7 @@ describe('Login', () => {
         await request(app)
             .post('/register')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
                 firstName: 'first',
                 lastName: 'last',
@@ -64,7 +67,7 @@ describe('Login', () => {
         const response = await request(app)
             .post('/login')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
             });
         expect(response.status).toBe(200);
@@ -76,7 +79,7 @@ describe('Login', () => {
         await request(app)
             .post('/register')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
                 firstName: 'first',
                 lastName: 'last',
@@ -84,7 +87,7 @@ describe('Login', () => {
         const response = await request(app)
             .post('/login')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'wrong',
             });
         expect(response.status).toBe(400);
@@ -94,11 +97,30 @@ describe('Login', () => {
         const response = await request(app)
             .post('/login')
             .send({
-                email: 'email',
+                email: 'email@gmail.com',
                 password: 'password',
             });
         expect(response.status).toBe(400);
     })
+
+    test('autologin', async () => {
+        const response1 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { userId, token } = response1.body;
+        const response2 = await request(app)
+            .post('/autologin')
+            .set('Authorization', `Bearer ${token}`);
+        expect(response2.status).toBe(200);
+        expect(response2.body.userId).toBe(userId);
+        expect(response2.body.token).toBeTruthy();
+    });
+            
 })
 
 describe('Logout', () => {
@@ -106,7 +128,7 @@ describe('Logout', () => {
         const response1 = await request(app)
             .post('/register')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
                 firstName: 'first',
                 lastName: 'last',
@@ -127,7 +149,7 @@ describe('Delete', () => {
         const response1 = await request(app)
             .post('/register')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
                 firstName: 'first',
                 lastName: 'last',
@@ -144,7 +166,7 @@ describe('Delete', () => {
         const response3 = await request(app)
             .post('/login')
             .send({
-                email: 'email@email',
+                email: 'email@email.com',
                 password: 'password',
             });
         expect(response3.status).toBe(400);

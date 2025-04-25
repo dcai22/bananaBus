@@ -9,7 +9,6 @@
     },
     "jsx": "react",
     "esModuleInterop": true,
-    "typeRoots": ["./types"],
   },
   "include": [
     "**/*.ts",
