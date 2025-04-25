@@ -9,7 +9,8 @@
     },
     "jsx": "react",
     "esModuleInterop": true,
-    "typeRoots": ["./types"],
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "types": ["jest"],
   },
   "include": [
     "**/*.ts",
