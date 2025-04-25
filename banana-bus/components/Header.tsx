@@ -29,7 +29,7 @@ interface HeaderProps {
  */
 export const Header: React.FC<HeaderProps> = ({ title = '', icon, showGoBack = true, style, resetPage }) => {
     return (
-        <View style={[styles.headerBox, style]}>
+        <View style={[styles.headerBox, style]} testID="header-container">
             {showGoBack && (
                 <Text
                     onPress={() => {
@@ -37,13 +37,14 @@ export const Header: React.FC<HeaderProps> = ({ title = '', icon, showGoBack = t
                         router.back();
                     }}
                     style={styles.goBack}
+                    testID="go-back-button"
                 >
                     <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
                 </Text>
             )}
-            <View style={styles.titleContainer}>
-                <Text style={styles.header}>{title}</Text>
-                {icon && <View>{React.cloneElement(icon as React.ReactElement, { style: styles.header })}</View>}
+            <View style={styles.titleContainer} testID="title-container">
+                <Text style={styles.header} testID="header-title">{title}</Text>
+                {icon && <View testID="header-icon">{React.cloneElement(icon as React.ReactElement, { style: styles.header })}</View>}
             </View>
         </View>
     );
@@ -66,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({ title = '', icon, showGoBack = t
  */
 export const CheckoutHeader: React.FC<HeaderProps> = ({ title = 'Secure Checkout', showGoBack = true, style, resetPage }) => {
     return (
-        <View style= {styles.checkoutHeader}>
+        <View style= {[styles.checkoutHeader, style]} testID="header-container">
             {showGoBack && (
                 <Text 
                     onPress={() => {
@@ -74,11 +75,12 @@ export const CheckoutHeader: React.FC<HeaderProps> = ({ title = 'Secure Checkout
                         router.back();
                     }}
                     style={styles.goBack}
+                    testID="go-back-button"
                 >
                     <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
                 </Text>
             )}
-            <Text style ={styles.checkoutText}>{title}</Text>
+            <Text style ={styles.checkoutText} testID="header-title">{title}</Text>
         </View>
     )
 }

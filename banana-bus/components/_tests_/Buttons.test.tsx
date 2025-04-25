@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import { LoadingButton, NoButton, StandardButton, WarnButton, YesButton } from '../Buttons';
 
 describe('StandardButton component', () => {
@@ -65,6 +64,14 @@ describe('WarnButton component', () => {
 });
 
 describe('LoadingButton component', () => {
+	test('renders with default type "no"', () => {
+		const { getByTestId } = render(<LoadingButton />);
+		const activityIndicator = getByTestId('loading-indicator');
+
+		expect(activityIndicator.props.color).toBe('#2A8AE4');
+		expect(getByTestId('button')).toHaveStyle({ backgroundColor: '#2A8AE4' });
+	});
+
 	test('renders with correct styles for "yes" type', () => {
 		const { getByTestId } = render(<LoadingButton type="yes" />);
 		const activityIndicator = getByTestId('loading-indicator');
