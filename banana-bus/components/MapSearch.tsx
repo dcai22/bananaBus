@@ -10,13 +10,14 @@ import {
     Animated,
     BackHandler,
 } from "react-native";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Stop, Route } from "@/api/interface";
 import { FontAwesome } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { IStop, IRoute } from "@/app/(tabs)";
 import { getItem } from "@/app/helper";
 import axios from "axios";
+import { useFocusEffect } from "expo-router";
 
 // Helper function to fetch all stops
 async function getAllStops(): Promise<IStop[]> {
@@ -207,6 +208,15 @@ export default function MapSearch({
         Keyboard.dismiss();
         return true;
     };
+
+    useFocusEffect(
+        useCallback(() => {
+            // close search when user leaves screen
+            return () => {
+                closeSearch();
+            };
+        }, [closeSearch])
+    );
 
     // Handle Back button
     useEffect(() => {
