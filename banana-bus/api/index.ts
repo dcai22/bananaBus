@@ -231,7 +231,7 @@ app.get("/getAccountDetails", async (req: Request, res: Response, next) => {
     }
 });
 
-app.post("/updateAccountDetails", async (req: Request, res: Response, next) => {
+app.put("/updateAccountDetails", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const firstName = req.body.firstName as string;
@@ -244,20 +244,17 @@ app.post("/updateAccountDetails", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.post(
-    "/updateAccountPassword",
-    async (req: Request, res: Response, next) => {
-        try {
-            const token = req.headers.authorization as string;
-            const oldPassword = req.body.oldPassword as string;
-            const newPassword = req.body.newPassword as string;
-            res.json(await updateUserPassword(token, oldPassword, newPassword));
-        } catch (error) {
-            next(error);
-        }
-        return;
+app.put("/updateAccountPassword", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const oldPassword = req.body.oldPassword as string;
+        const newPassword = req.body.newPassword as string;
+        res.json(await updateUserPassword(token, oldPassword, newPassword));
+    } catch (error) {
+        next(error);
     }
-);
+    return;
+});
 
 app.get("/getDeals", async (req: Request, res: Response, next) => {
     try {

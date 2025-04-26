@@ -1,5 +1,6 @@
 import express, { json, Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
+import { collections, connectToDatabase, closeConnection } from '../mongoUtil';
 
 const request = require("supertest");
 const app = require("../index");
@@ -9,13 +10,12 @@ const app = require("../index");
 
 beforeEach(async () => {
     // Clear users before each test
-    await request(app)
-        .del('/clearUsers')
+    await connectToDatabase();
+    await collections.users?.deleteMany({});
 });
 
 afterAll(async () => {
-    await request(app)
-        .post('/closeConnection')
+    await closeConnection();
 });
 
 describe('Register', () => {
