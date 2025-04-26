@@ -10,20 +10,21 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 // Past bookings have already arrived at their destination,
 // upcoming bookings are yet to depart from their origin,
 // and so on.
-export async function searchBookings(token: string, timeFrame: string, numBookings?: number) {
+export async function searchBookings(token: string, timeFrame: string) {
     await connectToDatabase();
 
     const strippedToken = token.replace('Bearer ', '');
     const user = await findUserByToken(strippedToken);
-
+    
     if (!user) {
         throw HTTPError(403, 'invalid token');
     }
-
+    
     let bookings = await collections.bookings?.find<Booking>({ userId: user._id }).toArray();
     if (!bookings) {
         throw HTTPError(400, 'user not found');
     }
+    console.log("Bookings: ", bookings);
 
     const curTime = new Date();
     const bookingsWithIncludes = await Promise.all(bookings.map(async (b) => {
@@ -56,9 +57,8 @@ export async function searchBookings(token: string, timeFrame: string, numBookin
     }))
 
     bookings = bookingsWithIncludes.filter(b => b.include).map((b) => b.value)
-    
-    const sliced = numBookings === undefined ? bookings: bookings.slice(0, numBookings);
-    const userBookings = await Promise.all(sliced.map(async (b) => {
+
+    const userBookings = await Promise.all(bookings.map(async (b) => {
         const trip = await getTripById(b.tripId);
         const route = await getRouteById(trip.routeId);
 

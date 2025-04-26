@@ -71,7 +71,7 @@ export default function Trips() {
                     },
                 })
                 .then((tripsResponse) => {
-                    setUpcomingBookings(tripsResponse.data);
+                    setUpcomingBookings(tripsResponse.data.bookings);
                 })
                 .catch((err) => {
                     setError(err.response?.data?.error || "An error occurred");
@@ -145,7 +145,7 @@ export default function Trips() {
                             />
                         )}
                     </View>
-                    {upcomingBookings.length > 0 ? (
+                    {upcomingBookings && upcomingBookings.length > 0 ? (
                         upcomingBookings.map((item, index) => (
                             <View style={styles.tripItem} key={index}>
                                 <View style={styles.accent} />

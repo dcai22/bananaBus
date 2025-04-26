@@ -141,9 +141,8 @@ app.delete("/deleteAccount", async (req: Request, res: Response, next) => {
 app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
-        const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
-        const bookings = await searchBookings(token, 'upcoming', numBookings);
-        res.json(bookings);
+        const bookings = await searchBookings(token, 'upcoming');
+        res.json({ bookings });
     } catch (err) {
         next(err);
     }
@@ -153,8 +152,7 @@ app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
 app.get("/pastBookings", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
-        const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
-        const bookings = await searchBookings(token, 'past', numBookings);
+        const bookings = await searchBookings(token, 'past');
         res.json({ bookings });
     } catch (err) {
         next(err);

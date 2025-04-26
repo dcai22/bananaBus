@@ -290,3 +290,12 @@ export interface Report {
     date: Date,
     text: string,
 }
+
+export interface DisplayBooking {
+    _id: string,
+    userId: string,
+    tripId: string,
+    originName: string,
+    destName: string,
+    departureTime: string,
+}
