@@ -10,7 +10,15 @@ var jwt = require('jsonwebtoken');
 dotenv.config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-export async function authRegister(email: string, password: string, firstName: string, lastName: string) {
+/**
+ * Registers a new user in the database.
+ * @param {string} email
+ * @param {string} password 
+ * @param {string} firstName 
+ * @param {string} lastName 
+ * @returns {Promise<{ userId: ObjectId; token: string; }>} the associated userId and token of the new user
+ */
+export async function authRegister(email: string, password: string, firstName: string, lastName: string): Promise<{ userId: ObjectId; token: string; }> {
     await connectToDatabase();
 
     if (!collections.users) {
@@ -71,7 +79,13 @@ export async function authRegister(email: string, password: string, firstName: s
     };
 }
 
-export async function authLogin(email: string, password: string) {
+/**
+ * Logs in a user with the given email and password.
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<{ userId: ObjectId; token: string; }>} the associated userId and token of the user
+ */
+export async function authLogin(email: string, password: string): Promise<{ userId: ObjectId; token: string; }> {
     await connectToDatabase();
 
     if (!collections.users) {
@@ -99,6 +113,11 @@ export async function authLogin(email: string, password: string) {
     }
 }
 
+/**
+ * Automatically logs in a user with the given token.
+ * @param {string} token
+ * @returns {Promise<{ userId: ObjectId; token: string; }>} the associated userId and token of the user
+ */
 export async function authAutoLogin(token: string) {
     await connectToDatabase();
 
@@ -116,6 +135,12 @@ export async function authAutoLogin(token: string) {
     }
 }
 
+/**
+ * Logs out a user with the given userId and token.
+ * @param {ObjectId} userId
+ * @param {string} token
+ * @returns {Promise<{ message: string; }>} a message indicating that the user has been logged out
+ */
 export async function authLogout(userId: ObjectId, token: string) {
     await connectToDatabase();
 
@@ -144,7 +169,12 @@ export async function authLogout(userId: ObjectId, token: string) {
     return { message: 'logged out' };
 }
 
-export async function authPasswordResetEmail(email: string) {
+/**
+ * Sends a password reset email to the user with the given email address.
+ * @param {string} email
+ * @returns {Promise<{ message: string; token: string; }>} a message indicating that the email has been sent and the token for the reset
+ */
+export async function authPasswordResetEmail(email: string): Promise<{ message: string; token: string; }> {
     await connectToDatabase();
 
     if (!collections.users) {
@@ -219,6 +249,12 @@ export async function authPasswordResetEmail(email: string) {
 }
 
 // checks the token in the query of the url is correct, ensures that this person is actually trying to reset their password
+/**
+ * Verifies the password reset code for the user with the given token.
+ * @param {string} token
+ * @param {string} code
+ * @returns {Promise<{ token: string; }>} a new token for the user, to be verified when resetting the password
+ */
 export async function authPasswordVerifyCode(token: string, code: string) {
     await connectToDatabase();
 
@@ -245,6 +281,12 @@ export async function authPasswordVerifyCode(token: string, code: string) {
     }
 }
 
+/**
+ * Resets the password for the user with the given token and new password.
+ * @param {string} token
+ * @param {string} password
+ * @returns {Promise<{ message: string; }>} a message indicating that the password has been reset
+ */
 export async function authPasswordReset(token: string, password: string) {
     await connectToDatabase();
 
@@ -265,6 +307,13 @@ export async function authPasswordReset(token: string, password: string) {
     }
 }
 
+/**
+ * Signs in a user with Google method. Registers the user if they do not exist.
+ * @param {string} email
+ * @param {string} firstName
+ * @param {string} lastName
+ * @returns {Promise<{ userId: ObjectId; token: string; }>} the associated userId and token of the user
+ */
 export async function authGoogleLogin(email: string, firstName: string, lastName: string) {
     await connectToDatabase();
 
@@ -330,7 +379,9 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
     }
 }
 
-
+/**
+ * Removes expired sessions from all users in the database.
+ */
 export async function removeExpiredSessions() {
     await connectToDatabase();
 
