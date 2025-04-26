@@ -21,7 +21,7 @@ interface ContainerProps {
  * 
  */
 const Container: React.FC<ContainerProps> = ({ children, style }) => {
-  return <View style={[styles.container, style]}>{children}</View>;
+  return <View testID='container' style={[styles.container, style]}>{children}</View>;
 };
 
 const styles = StyleSheet.create({

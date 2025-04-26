@@ -44,9 +44,10 @@ export default function StyledTextInput({
         secureTextEntry={!isTextVisible}
         autoCapitalize={password ? "none" : props.autoCapitalize}
         {...props}
+        testID='text-input'
       />
       { password && (
-        <TouchableOpacity onPress={toggleTextVisibility} style={styles.eyeIcon}>
+        <TouchableOpacity onPress={toggleTextVisibility} style={styles.eyeIcon} testID='eye-icon'>
             <Ionicons
                 name={isTextVisible ? "eye-off" : "eye"}
                 size={20}

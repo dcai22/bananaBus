@@ -5,12 +5,12 @@ import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
 jest.mock('@expo/vector-icons', () => {
-const { Text } = require('react-native');
-return {
-	FontAwesome: ({ name, style }: { name: string; style: any }) => (
-	<Text style={style}>{name}</Text>
-	),
-};
+	const { Text } = require('react-native');
+	return {
+		FontAwesome: ({ name, style }: { name: string; style: any }) => (
+			<Text style={style}>{name}</Text>
+		),
+	};
 });
 
 jest.mock('expo-font', () => ({

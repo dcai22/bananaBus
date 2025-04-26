@@ -39,8 +39,9 @@ export const CustomModal: React.FC<CustomModalProps> = ({ visible, onCancel, chi
             isVisible={visible}
             onBackButtonPress={onCancel}
             onBackdropPress={onCancel}
+            testID="modal-backdrop"
         >
-            <View style={styles.modalContent}>
+            <View style={styles.modalContent} testID="modal-container">
                 {headerText && <Text style={styles.headerText}>{headerText}</Text>}
                 {infoText && <Text style={styles.infoText}>{infoText}</Text>}
                 {children}

@@ -3,17 +3,17 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { LoadingButton, NoButton, StandardButton, WarnButton, YesButton } from '../Buttons';
 
 describe('StandardButton component', () => {
-test('calls onPress when pressed', () => {
-	const mockOnPress = jest.fn();
-	const { getByText } = render(
-	<StandardButton onPress={mockOnPress} text="Click Me" />
-	);
+	test('calls onPress when pressed', () => {
+		const mockOnPress = jest.fn();
+		const { getByText } = render(
+		<StandardButton onPress={mockOnPress} text="Click Me" />
+		);
 
-	const button = getByText('Click Me');
-	fireEvent.press(button);
+		const button = getByText('Click Me');
+		fireEvent.press(button);
 
-	expect(mockOnPress).toHaveBeenCalledTimes(1);
-});
+		expect(mockOnPress).toHaveBeenCalledTimes(1);
+	});
 });
 describe('YesButton component', () => {
 	test('renders with correct styles and calls onPress when pressed', () => {

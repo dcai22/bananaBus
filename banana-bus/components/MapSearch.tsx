@@ -7,14 +7,12 @@ import {
     StyleSheet,
     FlatList,
     Keyboard,
-    Animated,
     BackHandler,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
-import { Stop, Route } from "@/api/interface";
 import { FontAwesome } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { IStop, IRoute } from "@/app/(tabs)";
+import { IStop } from "@/app/(tabs)";
 import { getItem } from "@/app/helper";
 import axios from "axios";
 
