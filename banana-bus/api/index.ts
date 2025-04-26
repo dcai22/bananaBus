@@ -412,8 +412,23 @@ app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
 })
 
 app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+
     try {
         await connectToDatabase();
+
+        const strippedToken = token.replace("Bearer ", "");
+        const user = await findUserByToken(strippedToken);
+        if (!user) {
+            res.status(403).json({ error: "invalid token" });
+            return;
+        }
+        if (!user.isManager) {
+            res.status(403).json({ error: "user is not a manager" });
+            return;
+        }
+
+        
         const allVehicles = await collections.vehicles?.find().toArray();
         res.json({ vehicles: allVehicles });
     } catch (err) {
@@ -488,6 +503,7 @@ app.delete('/manager/deleteVehicle', async (req: Request, res: Response, next) =
     const vehicleId = new ObjectId(req.body.vehicleId as string);
 
     await connectToDatabase();
+    
     const strippedToken = token.replace("Bearer ", "");
     const user = await findUserByToken(strippedToken);
     if (!user) {
@@ -498,6 +514,7 @@ app.delete('/manager/deleteVehicle', async (req: Request, res: Response, next) =
         res.status(403).json({ error: "user is not a manager" });
         return;
     }
+
     try{
         res.json(await deleteVehicle(vehicleId));
     } catch (err) {
