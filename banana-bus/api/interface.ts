@@ -119,6 +119,7 @@ export interface DataStore {
     bookings: Booking[],
     routes: Route[],
     stops: Stop[],
+    vehicles: Vehicle[],
 }
 
 export interface resetToken {

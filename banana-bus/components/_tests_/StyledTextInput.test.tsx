@@ -58,19 +58,19 @@ describe('StyledTextInput', () => {
 		);
 		const textInput = getByTestId('text-input');
 		const eyeIcon = getByTestId('eye-icon');
-	
+
 		// Initially, the text should be hidden
 		expect(textInput.props.secureTextEntry).toBe(true);
-	
+
 		// Toggle visibility
 		fireEvent.press(eyeIcon);
 		expect(textInput.props.secureTextEntry).toBe(false);
-	
+
 		// Toggle back to hidden
 		fireEvent.press(eyeIcon);
 		expect(textInput.props.secureTextEntry).toBe(true);
 	});
-	
+
 	it('does not render the eye icon if password prop is false', () => {
 		const { queryByTestId } = render(<StyledTextInput />);
 		const eyeIcon = queryByTestId('eye-icon');
