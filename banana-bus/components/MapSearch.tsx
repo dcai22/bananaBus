@@ -10,13 +10,13 @@ import {
     Animated,
     BackHandler,
 } from "react-native";
-import React, { useState, useRef, useEffect } from "react";
-import { Stop, Route } from "@/api/interface";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { IStop, IRoute } from "@/app/(tabs)";
+import { IStop } from "@/app/(tabs)";
 import { getItem } from "@/app/helper";
 import axios from "axios";
+import { useFocusEffect } from "expo-router";
 
 // Helper function to fetch all stops
 async function getAllStops(): Promise<IStop[]> {
@@ -80,11 +80,52 @@ async function getPossibleDestinations(
     }
 }
 
+// Helper function to calculate distance from two sets of coordinates
+function calculateDistance(
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+) {
+    if (!lat1 || !lng1 || !lat2 || !lng2) return 0;
+    // Haversine formula
+    // a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
+    // c = 2 ⋅ atan2( √a, √(1−a) )
+    // d = R ⋅ c
+
+    const R = 6371000; // earth radius in meters
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+            Math.cos((lat2 * Math.PI) / 180) *
+            Math.sin(dLng / 2) *
+            Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c;
+    return d;
+}
+
+// Helper function that takes a distance in meters and returns a formatted string
+function formatDistance(meters: number): string {
+    if (meters < 1000) {
+        return `${meters.toLocaleString()} m`;
+    } else {
+        const kilometers = (meters / 1000).toFixed(2);
+        return `${Number(kilometers).toLocaleString()} km`;
+    }
+}
+
 interface MapProps {
     fromLoc: IStop;
     toLoc: IStop;
     setFromLoc: (stopID: IStop) => void;
     setToLoc: (stopID: IStop) => void;
+    currentLocation: {
+        lat: number | null;
+        lng: number | null;
+    };
 }
 
 export default function MapSearch({
@@ -92,12 +133,13 @@ export default function MapSearch({
     toLoc,
     setFromLoc,
     setToLoc,
+    currentLocation,
 }: MapProps) {
     const [fromSearchActive, setFromSearchActive] = useState(false);
     const [toSearchActive, setToSearchActive] = useState(false);
     const [fromSearchQuery, setFromSearchQuery] = useState("");
     const [toSearchQuery, setToSearchQuery] = useState("");
-    const [loadingResults, setLoadingResults] = useState(false);
+    const [loadingQuery, setLoadingQuery] = useState(false);
 
     // State for storing fetched data
     const [allStops, setAllStops] = useState<IStop[]>([]);
@@ -107,8 +149,29 @@ export default function MapSearch({
 
     const isSearchActive = fromSearchActive || toSearchActive;
 
-    const fromInputRef = useRef(null);
-    const toInputRef = useRef(null);
+    const fromInputRef = useRef<TextInput>(null);
+    const toInputRef = useRef<TextInput>(null);
+
+    const getStopDistance = (stop: IStop) => {
+        if (
+            currentLocation.lat == null ||
+            currentLocation.lng == null ||
+            !currentLocation ||
+            !stop.lat ||
+            !stop.lng
+        ) {
+            return null;
+        }
+
+        const distance = calculateDistance(
+            currentLocation.lat,
+            currentLocation.lng,
+            stop.lat,
+            stop.lng
+        );
+
+        return formatDistance(distance);
+    };
 
     // Fetch stops on component mount
     useEffect(() => {
@@ -163,14 +226,12 @@ export default function MapSearch({
         setFromSearchQuery("");
 
         activateToSearch();
-        // Keyboard.dismiss();
     };
 
     const handleToSelect = (stop: IStop) => {
         console.log(stop);
         setToLoc(stop);
         setToSearchActive(false);
-        // setSearchQuery("");
         Keyboard.dismiss();
     };
 
@@ -178,7 +239,6 @@ export default function MapSearch({
         console.log("from search selected");
         setFromSearchActive(true);
         setToSearchActive(false);
-        // setFromSearchQuery("");
 
         // Focus the from input after a short delay to ensure the component has updated
         setTimeout(() => {
@@ -192,7 +252,6 @@ export default function MapSearch({
         console.log("to search selected");
         setToSearchActive(true);
         setFromSearchActive(false);
-        // setToSearchQuery(toLoc.name || "");
 
         setTimeout(() => {
             if (toInputRef.current) {
@@ -201,12 +260,21 @@ export default function MapSearch({
         }, 50);
     };
 
-    const closeSearch = () => {
+    const closeSearch = useCallback(() => {
         setFromSearchActive(false);
         setToSearchActive(false);
         Keyboard.dismiss();
         return true;
-    };
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            // close search when user leaves screen
+            return () => {
+                closeSearch();
+            };
+        }, [closeSearch])
+    );
 
     // Handle Back button
     useEffect(() => {
@@ -220,7 +288,11 @@ export default function MapSearch({
     }, [isSearchActive]);
 
     // Search result component
-    const renderStopItem = ({ item, index }, onSelect, distance = null) => (
+    const renderStopItem = (
+        { item, index }: { item: IStop; index: number },
+        onSelect: (stop: IStop) => void,
+        distance: string | null
+    ) => (
         <TouchableOpacity
             style={styles.listItem}
             onPress={() => onSelect(item)}
@@ -343,17 +415,16 @@ export default function MapSearch({
                         data={
                             fromSearchActive
                                 ? filteredFromStops.slice(0, 4)
-                                : filteredToStops
-                            // : filteredToStops.slice(0, 4)
+                                : filteredToStops.slice(0, 4)
                         }
-                        keyExtractor={(item) => item._id.toString()}
+                        keyExtractor={(item) => item._id!.toString()}
                         renderItem={(props) =>
                             renderStopItem(
                                 { ...props, index: props.index },
                                 fromSearchActive
                                     ? handleFromSelect
                                     : handleToSelect,
-                                fromSearchActive ? "-1m" : "" // TODO: Fix this to actually calculate length
+                                getStopDistance(props.item)
                             )
                         }
                         style={[styles.list, { height: LIST_HEIGHT }]}
