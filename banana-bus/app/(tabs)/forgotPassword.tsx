@@ -4,13 +4,22 @@ import { useRouter } from "expo-router";
 import { getItem } from '../helper';
 import StyledTextInput from '@/components/StyledTextInput';
 
+/**
+ * Forgot Password Screen
+ * 
+ * Allows users to reset their password by entering a new password and confirming it.
+ * The new password is sent to the backend for updating.
+ */
 export default function ForgotPasswordScreen() {
     const [pass, setPass] = useState("");
     const [confirmPass, setConfirmPass] = useState("");
     const router = useRouter();
 
+    /**
+     * Handles the password reset process.
+     * Validates the input and sends the new password to the backend API.
+     */
     const handleReset = async () => {
-        // TODO remove debug msg
         if (pass !== confirmPass) {
             Alert.alert("Error", "Passwords don't match!");
             setConfirmPass("");
@@ -47,6 +56,7 @@ export default function ForgotPasswordScreen() {
         >
             <View style={styles.overlay} />
             <View style={styles.container}>
+                {/* Go Back Button */}
                 <TouchableOpacity
                     style={styles.goBack} onPress={() => {
                         router.back();
@@ -54,9 +64,11 @@ export default function ForgotPasswordScreen() {
                 >
                     <Text style={styles.goBack}>← go back</Text>
                 </TouchableOpacity>
+                {/* Header */}
                 <View style={styles.title}>
                     <Text style={styles.title}>Enter new password</Text>
                 </View>
+                {/* Form */}
                 <View style={styles.form}>
                     <StyledTextInput
                         password={true}

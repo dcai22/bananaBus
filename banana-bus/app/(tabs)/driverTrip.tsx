@@ -3,13 +3,20 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format } from "date-fns";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, TouchableOpacity, View, StyleSheet, ScrollView, Alert } from "react-native";
+import { Text, View, StyleSheet, ScrollView, Alert } from "react-native";
 import { getItem } from "../helper";
 import axios from "axios";
 import { LoadingPage } from "@/components/LoadingPage";
-import { WarnButton, YesButton } from "@/components/Buttons";
+import { YesButton } from "@/components/Buttons";
 
+/**
+ * Driver Trip Screen
+ * 
+ * This screen displays details about a specific trip assigned to the driver, including vehicle information,
+ * stops, and passenger details. Drivers can also report issues with the vehicle.
+ */
 export default function driverTrip() {
+    // Interfaces for vehicle, stop, and passenger details
     interface Vehicle {
         _id: string,
         maxCapacity: number,
@@ -28,7 +35,6 @@ export default function driverTrip() {
         firstName: string,
         lastName: string,
         numTickets: number,
-        // needAssist: boolean,
     }
 
     const { tripId, departName, arriveName } = useLocalSearchParams<{tripId: string, departName: string, arriveName: string}>();
@@ -39,19 +45,23 @@ export default function driverTrip() {
     const [vehicle, setVehicle] = useState<Vehicle>();
     const [stops, setStops] = useState<Stop[]>([]);
     const [passengers, setPassengers] = useState<Passenger[]>([]);
-    
 
+    /**
+     * Refreshes the page on every visit.
+     */
     useFocusEffect(
         useCallback(() => { 
             setRefresh(true)
             setError("");
-            // Makes sure to reload page upon leaving page
             return () => {
                 setLoading(true)
             };
         }, [])
     )
 
+    /**
+     * Fetches trip details from the API when the page is refreshed.
+     */
     useEffect(() => {
         if (!refresh) return
         const fetchData = async () => {
@@ -76,6 +86,9 @@ export default function driverTrip() {
         fetchData();
     }, [tripId, refresh]);
 
+    /**
+     * Navigates to the "Report Problem" screen with vehicle details.
+     */
     const handlePress = () => {
         router.push({
             pathname: "/driverReportProblem",
@@ -91,6 +104,7 @@ export default function driverTrip() {
 
     return (
         <Container>
+            {/* Header Section */}
             <View style={styles.header}>
                 <Text style={styles.goBackText} onPress={() => router.back()}>
                     <FontAwesome name="arrow-left" style={styles.goBackArrow}/> go back
@@ -103,10 +117,12 @@ export default function driverTrip() {
                     </View>
                 </View>
             </View>
+            {/* Content Section */}
             {loading ? (
                 <LoadingPage />
             ) : (
                 <ScrollView style={styles.content}>
+                    {/* Vehicle Information */}
                     {vehicle && (
                         <View style={[styles.infoCard, styles.vehicleInfo]}>
                             <Text style={styles.sectionTitle}>Vehicle:</Text>
@@ -117,6 +133,7 @@ export default function driverTrip() {
                             </Text>
                         </View>
                     )}
+                    {/* Stops Information */}
                     {stops && stops.length > 0 && (
                         <View style={styles.infoCard}>
                             <Text style={styles.sectionTitle}>Stops:</Text>
@@ -128,6 +145,7 @@ export default function driverTrip() {
                             ))}
                         </View>
                     )}
+                    {/* Passenger Information */}
                     {passengers && (
                         <View style={styles.infoCard}>
                             <Text style={styles.sectionTitle}>Passengers:</Text>
@@ -149,6 +167,7 @@ export default function driverTrip() {
                             </Text>
                         </View>
                     )}
+                    {/* Report Problem Button */}
                     {vehicle && (
                         <YesButton
                             text="Report Problem with Vehicle"

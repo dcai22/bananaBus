@@ -12,6 +12,12 @@ import { FontAwesome } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window")
 
+/**
+ * Deals Screen
+ * 
+ * Displays promotional deals available at 1 Utama Mall. Scraps deals from webpage,
+ * displays them in a horizontal scrollable list, and allows users to view more details about each deal.
+ */
 export default function Deals() {
     const [promos, setPromos] = useState<Promotion[]>([])
     const [loading, setLoading] = useState(true);
@@ -20,6 +26,9 @@ export default function Deals() {
     const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
 
+    /**
+     * Fetches promotional deals from the API when the component mounts.
+     */
     useEffect(() => {
         setLoading(true)
         axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getDeals`, {})
@@ -33,7 +42,7 @@ export default function Deals() {
             setLoading(false)
         })
     }, [])
-        
+
     if (loading) {
         return(
             <Container>
@@ -53,13 +62,14 @@ export default function Deals() {
 
     const itemsPerPage = 4;
     const numPages = Math.ceil(promos.length/ itemsPerPage);
-
     //group promos into pages
     const pageDataArray = [...Array(numPages)].map((_, i) => promos.slice(i * itemsPerPage, (i + 1) * itemsPerPage))
     
     return (
         <Container>
+            {/* Header Component */}
             <Header title="Deals" icon={<FontAwesome name="tags"/>} showGoBack={false} style={styles.header} />
+            {/* Promo Pages */}
             <View style={styles.promoPages}>
                 <FlatList
                     data={pageDataArray}

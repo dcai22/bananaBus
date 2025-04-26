@@ -16,6 +16,18 @@ interface VehicleModalProps {
   onDeleteVehicle?: (deletedVehicle: Vehicle) => void;
 }
 
+/**
+ * VehicleModal Component
+ * 
+ * A modal component that displays vehicle details and allows editing or deleting the vehicle.
+ * 
+ * Props:
+ * - `vehicle` (Vehicle): The vehicle object containing details to display in the modal.
+ * - `visible` (boolean): Controls the visibility of the modal.
+ * - `setVisible` (function): Callback function to set the visibility of the modal.
+ * - `onEditVehicle` (function): Callback function to handle the editing of a vehicle.
+ * - `onDeleteVehicle` (function): Callback function to handle the deletion of a vehicle.
+ */
 export default function VehicleModal({vehicle, visible, setVisible, onEditVehicle, onDeleteVehicle}: VehicleModalProps) {
   const [error, setError] = useState("");
 

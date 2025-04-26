@@ -8,6 +8,12 @@ import { CustomModal } from '@/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import StyledTextInput from '@/components/StyledTextInput';
 
+/**
+ * Login Screen
+ * 
+ * Allows users to log in using their email and password or via Google Sign-In.
+ * It also provides options for password recovery and registration.
+ */
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -27,6 +33,9 @@ export default function LoginScreen() {
         setModalVisible(false);
     }
 
+    /**
+     * Sends a password reset email with a generated code to the user.
+     */
     const sendResetMail = async () => {
         setModalType("enterCode");
         alert("Confirmation email sent. Check your email!");
@@ -57,6 +66,9 @@ export default function LoginScreen() {
         
     }
 
+    /**
+     * Verifies the email confirmation code entered by the user.
+     */
     const checkEmailCode = async () => {
         const paramToken = await getItem('resetToken');
         try {
@@ -83,6 +95,9 @@ export default function LoginScreen() {
         }
     }
 
+    /**
+     * Automatically logs in the user if a valid token is found.
+     */
     useEffect(() => {
         const autoLogin = async () => {
             let token;
@@ -110,7 +125,9 @@ export default function LoginScreen() {
         autoLogin();
     }, []);
 
-
+    /**
+     * Handles the login process using email and password.
+     */
     const handleLogin = async () => {
         try {
             const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/login`, {
@@ -145,6 +162,9 @@ export default function LoginScreen() {
         }
     };
 
+    /**
+     * Handles the login process using Google Sign-In.
+     */
     const handleGoogleLogin = async () => {
         try {
             await GoogleSignin.hasPlayServices();
@@ -203,9 +223,11 @@ export default function LoginScreen() {
         >
             <View style={styles.overlay} />
             <View style={styles.container}>
+                {/* Header */}
                 <View style={styles.title}>
                     <Text style={styles.title}>banana bus 🚌</Text>
                 </View>
+                {/* Login Form */}
                 <View style={styles.form}>
                     <StyledTextInput
                         label="email"
@@ -231,11 +253,13 @@ export default function LoginScreen() {
                         setPassword("");
                         router.navigate("/register");
                     }} text="Register" style={styles.buttons} />
+                    {/* Separator bar for google sign in*/}
                     <View style={styles.separatorContainer}>
                         <View style={styles.separatorLine} />
                         <Text style={styles.separatorText}>or</Text>
                         <View style={styles.separatorLine} />
                     </View>
+                    {/* Google Sign-In */}
                     <GoogleSigninButton
                         size={GoogleSigninButton.Size.Wide}
                         color={GoogleSigninButton.Color.Light}
@@ -243,6 +267,7 @@ export default function LoginScreen() {
                         onPress={(handleGoogleLogin)}
                     />
                 </View>
+                {/* Password Recovery Modals */}
                 <CustomModal
                     visible={modalVisible}
                     onCancel={closeModal}

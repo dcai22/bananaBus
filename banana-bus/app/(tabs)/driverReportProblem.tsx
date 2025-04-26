@@ -2,19 +2,28 @@ import Container from "@/components/Container";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, View, StyleSheet, TextInput, Alert } from "react-native";
+import { View, StyleSheet, TextInput, Alert } from "react-native";
 import axios from "axios";
-import { NoButton, YesButton } from "@/components/Buttons";
+import { YesButton } from "@/components/Buttons";
 import { getItem } from "../helper";
 import { Header } from "@/components/Header";
 
+/**
+ * Driver Report Problem Screen
+ * 
+ * Allows drivers to report issues with their assigned vehicles. Drivers can enter
+ * a description of the problem and submit it to the database.
+ */
 export default function driverReportProblem() {
     const { vehicleId, numberPlate } = useLocalSearchParams<{vehicleId: string, numberPlate: string}>();
 
     const [error, setError] = useState("");
     const [reportText, setReportText] = useState("");
     const [done, setDone] = useState(false);
-    
+
+    /**
+     * Resets the form and error state on every visit.
+     */
     useFocusEffect(
         useCallback(() => { 
             setError("");
@@ -22,11 +31,18 @@ export default function driverReportProblem() {
             setDone(false);
         }, [])
     )
-    
+
+    /**
+     * Handles the submission of the report. If the report is successful, it navigates back to the previous screen.
+     */
     useEffect(() => {
         if (done) router.back();
     }, [done]);
     
+    /**
+     * Handles the submission of the report. It checks if the report text is empty, and if not, sends it to the backend API.
+     * If an error occurs, it sets the error state to display an alert.
+     */
     const handleSend = async () => {
         if (reportText === "") {
             setError("Please enter a report text.");
@@ -55,7 +71,6 @@ export default function driverReportProblem() {
         });
     }
 
-    // make nicer or pop up
     if (error) {
         Alert.alert(`Error ${error}`)
         setError("");
@@ -63,7 +78,9 @@ export default function driverReportProblem() {
     
     return (
         <Container>
+            {/* Header */}
             <Header title="Report Problem" icon={<FontAwesome name="exclamation-circle"/>} />
+            {/* Report Form */}
             <View style={styles.section}>
                 <TextInput
                     style={[styles.input, styles.textArea]}

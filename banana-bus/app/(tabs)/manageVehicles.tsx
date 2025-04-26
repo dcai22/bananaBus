@@ -11,6 +11,12 @@ import { Vehicle } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import VehicleModal from "@/components/vehicleComponents/vehicleModal";
 
+/**
+ * Manage Vehicles Screen
+ * 
+ * Allows managers to view, add, edit, and delete vehicles in the system. Fetches the list of vehicles the backend,
+ * and displays them in a list. Allows searching for vehicles by model or plate number.
+ */
 export default function manageVehicles() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -23,6 +29,9 @@ export default function manageVehicles() {
     const [visible, setVisible] = useState(false)
     const [vehicle, setVehicle] = useState<Vehicle | null>(null)
 
+    /**
+     * Fetches the list of vehicles from the backend API.
+     */
     useEffect(() => {
         const fetchData = async () => {
             const token = await getItem("token");
@@ -43,7 +52,9 @@ export default function manageVehicles() {
         fetchData();
     }, [])
 
-
+    /**
+     * Filters the vehicle list based on the search query.
+     */
     useEffect(() => {
         if (!vehicles || vehicles.length === 0) return
         const filtered = vehicles.filter(v =>
@@ -55,8 +66,10 @@ export default function manageVehicles() {
 
     return (
         <Container>
+            {/* Header */}
             <Header title="Vehicles" showGoBack={true} style={styles.header}/>
             <View style={styles.screen}>
+                {/* Search Bar and Add Vehicle Button */}
                 <View style={styles.searchAndAddContainer}>
                 <TextInput
                     placeholder="Search by model or plate..."
@@ -72,6 +85,7 @@ export default function manageVehicles() {
                     }}
                 />
                 </View>
+                {/* Vehicle List */}
                 <View style ={styles.listContainer}>
                 { loading ? (
                     <LoadingPage/>
@@ -96,6 +110,7 @@ export default function manageVehicles() {
                     />
                 )}
                 </View>
+                {/* Vehicle Modal */}
                 { vehicle &&
                     <VehicleModal 
                         vehicle={vehicle} 

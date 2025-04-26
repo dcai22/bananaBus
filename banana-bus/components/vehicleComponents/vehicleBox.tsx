@@ -8,6 +8,19 @@ interface VehicleBoxProps {
   onPress: () => void
 }
 
+/**
+ * VehicleBox Component
+ * 
+ * A card component that displays vehicle information, including model, number plate,
+ * maximum capacity, luggage capacity, and assistance availability.
+ * 
+ * Props:
+ * - `vehicle` (Vehicle): The vehicle data to display in the card.
+ * - `onPress` (function): Callback function to handle card press events.
+ * 
+ * Example Usage:
+ * <VehicleBox vehicle={vehicleData} onPress={() => console.log("Card pressed")} /> 
+ */
 export default function VehicleBox({vehicle, onPress}: VehicleBoxProps) {
 
   return(

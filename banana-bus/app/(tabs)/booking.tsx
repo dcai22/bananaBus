@@ -10,9 +10,15 @@ import { TripBox } from "@/api/interface";
 import { LoadingPage } from "@/components/LoadingPage";
 import { getItem } from "../helper";
 import Container from "@/components/Container";
-import { CheckoutHeader, Header } from "@/components/Header";
+import { CheckoutHeader } from "@/components/Header";
 import { initStripe, useStripe } from "@stripe/stripe-react-native";
 
+/**
+ * Booking Screen
+ * 
+ * Allows users to book a trip by selecting the number of passengers and luggage,
+ * and proceeding to checkout using Stripe for payment processing.
+ */
 export default function booking() {
     const { departId, arriveId, tripId } = useLocalSearchParams<{departId: string; arriveId: string, tripId: string}>()
     const [ numPassenger, setNumPassenger ] = useState<number>(0)
@@ -32,6 +38,9 @@ export default function booking() {
 
     const router = useRouter();
     
+    /**
+     * Refreshes the page on every visit
+     */
     useFocusEffect(
          useCallback(() => { 
             setRefresh(true)
@@ -44,6 +53,9 @@ export default function booking() {
         }, [])
     )
 
+    /**
+     * Updates the total price whenever the number of passengers, luggage, or trip details change.
+     */
     useEffect(() => {
         if (!trip) {
             setTotalPrice(0)
@@ -52,6 +64,9 @@ export default function booking() {
         setTotalPrice(numPassenger * trip.price + numLuggage * trip.luggagePrice);
     }, [numPassenger, numLuggage, trip, isCheckout]);
 
+    /**
+     * Fetches trip details from the API when the page is refreshed.
+     */
     useEffect(() => {
         if (!refresh) return
         setError("");
@@ -82,6 +97,9 @@ export default function booking() {
         fetchData();
     }, [tripId, departId, arriveId, refresh])
 
+    /**
+     * Initializes Stripe when the component is mounted.
+     */
     useEffect(() => {
         async function initialise() {
             await initStripe({
@@ -129,6 +147,9 @@ export default function booking() {
         setNumLuggage(num => (num > 0 ? num - 1 : num))
     }
 
+    /**
+     * Fetches payment sheet parameters from the API.
+     */
     async function fetchPaymentSheetParams() {
         const token = await getItem("token");
         const price = totalPrice * 100;
@@ -152,6 +173,9 @@ export default function booking() {
         }
     }
 
+    /**
+     * Initializes the Stripe payment sheet.
+     */
     async function initialisePaymentSheet() {
         const paymentSheetParams = await fetchPaymentSheetParams();
         if (!paymentSheetParams) {
@@ -168,7 +192,10 @@ export default function booking() {
             allowsDelayedPaymentMethods: true, 
         })
     }
-    
+
+    /**
+     * Handles the checkout process, including payment and booking creation.
+     */
     async function handleCheckout() {
         if (numPassenger === 0) {
             Alert.alert("Please select at least 1 passenger");
@@ -218,6 +245,7 @@ export default function booking() {
         <Container>
             <CheckoutHeader/>
             <ScrollView style={styles.checkoutInfo}>
+                {/* Trip Details */}
                 <View style={styles.tripDetails}>
                     <View style={styles.dateContainer}>
                         <Text style={styles.dateText}>Trip Summary for </Text>
@@ -236,6 +264,7 @@ export default function booking() {
                     <View style= {styles.tripBoxContainer}>
                         <TripListBox trip={trip}/>
                     </View>
+                    {/* Passenger and Luggage Options */}
                     <View style={styles.optionsContainer}>
                         <Text style={styles.optionsText}>Add Passengers</Text>
                         <View style={styles.incrementContainer}>
@@ -272,6 +301,7 @@ export default function booking() {
                 </View>
             </ScrollView>
 
+            {/* Checkout Bar */}
             <View style= {styles.checkoutBar}>
                 <Text style= {styles.checkoutTotal}>Total: RM {totalPrice}</Text>
                 <TouchableOpacity style={styles.checkoutButton} disabled={isCheckout || numPassenger === 0}>

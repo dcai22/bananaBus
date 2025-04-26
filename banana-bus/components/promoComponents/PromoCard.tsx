@@ -9,6 +9,18 @@ interface PromotionCard {
     onPress: () => void,
 }
 
+/**
+ * PromoCard Component
+ * 
+ * A card component that displays promotional information, including an image, title, and validity dates.
+ * 
+ * Props:
+ * - `promo` (Promotion): The promotional data to display in the card.
+ * - `onPress` (function): Callback function to handle card press events.
+ * 
+ * Example Usage:
+ * <PromoCard promo={promoData} onPress={() => console.log("Card pressed")} /> 
+ */
 export default function PromoCard({promo, onPress}: PromotionCard) {
     const [ isImgLoading, setIsImgLoading ] = useState(true)
     
