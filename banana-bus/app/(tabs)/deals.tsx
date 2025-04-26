@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions, Alert } from "react-native";
 import AnimatedDotsCarousel, { DecreasingDot, DotConfig } from "react-native-animated-dots-carousel";
 import PromoPage from "@/components/promoComponents/PromoPage";
 import PromoModal from "@/components/promoComponents/PromoModal";
@@ -27,7 +27,7 @@ export default function Deals() {
             setPromos(res.data)
         })
         .catch((err) => {
-            setError(err.response.data.error)
+            Alert.alert(`Error ${err.response.data.error}`)
         })
         .finally(() => {
             setLoading(false)
@@ -43,10 +43,11 @@ export default function Deals() {
         )
     }
 
-    // make nicer or pop up
     if (error) {
         return(
-            <Text>Error:{error}</Text>
+            <Container>
+                <Header title="Deals" icon={<FontAwesome name="tags"/>} showGoBack={false} style={styles.header} />
+            </Container>
         )
     }
 

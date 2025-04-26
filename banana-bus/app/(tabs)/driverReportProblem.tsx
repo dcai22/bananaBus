@@ -2,9 +2,9 @@ import Container from "@/components/Container";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, View, StyleSheet, TextInput } from "react-native";
+import { Text, View, StyleSheet, TextInput, Alert } from "react-native";
 import axios from "axios";
-import { NoButton } from "@/components/Buttons";
+import { NoButton, YesButton } from "@/components/Buttons";
 import { getItem } from "../helper";
 import { Header } from "@/components/Header";
 
@@ -29,7 +29,7 @@ export default function driverReportProblem() {
     
     const handleSend = async () => {
         if (reportText === "") {
-            setError("report cannot be empty");
+            setError("Please enter a report text.");
             return;
         }
 
@@ -57,9 +57,8 @@ export default function driverReportProblem() {
 
     // make nicer or pop up
     if (error) {
-        return(
-            <Text>Error: {JSON.stringify(error)}</Text>
-        )
+        Alert.alert(`Error ${error}`)
+        setError("");
     }
     
     return (
@@ -73,7 +72,7 @@ export default function driverReportProblem() {
                     onChangeText={setReportText}
                     multiline
                 />
-                <NoButton text="Send Report" onPress={handleSend} style={styles.button}/>
+                <YesButton text="Send Report" onPress={handleSend} style={styles.button}/>
             </View>
         </Container>
     )

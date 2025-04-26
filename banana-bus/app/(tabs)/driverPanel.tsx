@@ -5,7 +5,7 @@ import axios from "axios";
 import { format } from "date-fns";
 import { useFocusEffect, router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, ScrollView } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, ScrollView, Alert } from "react-native";
 import { getItem } from "../helper";
 
 export default function driverPanel() {
@@ -46,6 +46,7 @@ export default function driverPanel() {
     
     useEffect(() => {
         if (!refresh) return;
+        setError("");
         async function init() {
             const token = await getItem("token");
             await axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/driver/getUpcomingTrips`, {
@@ -55,7 +56,7 @@ export default function driverPanel() {
             }).then((res) => {
                 setUpcomingTrips(res.data.upcomingTrips);
             }).catch((err) => {
-                setError(err.response.data.error);
+                Alert.alert(`Error ${err.response.data.error}`)
             }).finally(() => {
                 setUpcomingLoading(false);
                 setRefresh(false);
@@ -64,12 +65,6 @@ export default function driverPanel() {
 
         init();
     }, [refresh]);
-
-    if (error) {
-        return (
-            <Text>Error: {error}</Text>
-        )
-    }
     
     return (
         <Container>
