@@ -60,6 +60,11 @@ export async function authRegister(email: string, password: string, firstName: s
 
     const jwtToken = jwt.sign({ userId: userId.insertedId.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
+    const numUsers = await collections.users.countDocuments();
+    if (numUsers === 1) {
+        await collections.users.updateOne({ _id: userId.insertedId }, { $set: { isManager: true, isDriver: true } } as any);
+    }
+
     return {
         userId: userId.insertedId,
         token: jwtToken
@@ -314,6 +319,11 @@ export async function authGoogleLogin(email: string, firstName: string, lastName
 
     const userId = await collections.users?.insertOne(newUser);
     const token = jwt.sign({ userId: userId.insertedId.toString(), sessionId }, process.env.JWT_SECRET, { expiresIn: '2h' });
+
+    const numUsers = await collections.users.countDocuments();
+    if (numUsers === 1) {
+        await collections.users.updateOne({ _id: userId.insertedId }, { $set: { isManager: true, isDriver: true } } as any);
+    }
     return {
         userId: userId.insertedId,
         token: token,

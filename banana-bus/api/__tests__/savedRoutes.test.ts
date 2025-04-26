@@ -76,7 +76,6 @@ beforeEach(async () => {
     await collections.users?.deleteMany();
 });
 
-
 describe("GET /getSavedRoutes", () => {
     test("no saved routes", async () => {
         const res0 = await request(app)

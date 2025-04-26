@@ -168,7 +168,7 @@ app.get("/pastBookings", async (req: Request, res: Response, next) => {
         const token = req.headers.authorization as string;
         const numBookings = req.query.numBookings ? parseInt(req.query.numBookings as string) : undefined;
         const bookings = await searchBookings(token, 'past', numBookings);
-        res.json(bookings);
+        res.json({ bookings });
     } catch (err) {
         next(err);
     }

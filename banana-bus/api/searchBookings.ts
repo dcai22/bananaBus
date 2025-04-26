@@ -59,7 +59,6 @@ export async function searchBookings(token: string, timeFrame: string, numBookin
     
     const sliced = numBookings === undefined ? bookings: bookings.slice(0, numBookings);
     const userBookings = await Promise.all(sliced.map(async (b) => {
-
         const trip = await getTripById(b.tripId);
         const route = await getRouteById(trip.routeId);
 
@@ -75,8 +74,7 @@ export async function searchBookings(token: string, timeFrame: string, numBookin
             destName: dest.name,
             departureTime: departureTime,
         };
-    } 
-    ));
+    }));
     return userBookings;
 }
 

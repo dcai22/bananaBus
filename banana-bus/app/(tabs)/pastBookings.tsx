@@ -43,7 +43,7 @@ export default function pastBookings() {
                     "Authorization": `Bearer ${token}`,
                 },
             }).then((res) => {
-                setPastTrips(res.data);
+                setPastTrips(res.data.bookings);
             }).catch((err) => {
                 Alert.alert("Error", err.response.data.error);
             }).finally(() => {
@@ -67,7 +67,7 @@ export default function pastBookings() {
         <Container>
             <Header title="Past Bookings" icon={<FontAwesome name="calendar"/>}/>
             <ScrollView style={styles.bookingsContainer}>
-                {pastTrips.length > 0 ? (
+                {pastTrips && pastTrips.length > 0 ? (
                     pastTrips.map((item, index) => (
                         <View style={styles.tripItem} key={index}>
                             <View style={styles.accent} />

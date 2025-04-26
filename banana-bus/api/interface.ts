@@ -227,14 +227,15 @@ export class Booking {
     numLuggage: number = 1;
     bookingTime: Date;
 
-    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number) {
+    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number, numLuggage?: number, bookingTime?: Date) {
         this._id = _id;
         this.userId = userId;
         this.tripId = tripId;
         this.originId = originId;
         this.destId = destId;
         if (typeof numTickets !== "undefined") this.numTickets = numTickets;
-        this.bookingTime = new Date();
+        if (typeof numLuggage !== "undefined") this.numLuggage = numLuggage;
+        this.bookingTime = bookingTime ?? new Date();
     }
 }
 
