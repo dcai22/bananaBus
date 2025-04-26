@@ -149,8 +149,8 @@ export default function MapSearch({
 
     const isSearchActive = fromSearchActive || toSearchActive;
 
-    const fromInputRef = useRef(null);
-    const toInputRef = useRef(null);
+    const fromInputRef = useRef<TextInput>(null);
+    const toInputRef = useRef<TextInput>(null);
 
     const getStopDistance = (stop: IStop) => {
         if (
@@ -289,8 +289,8 @@ export default function MapSearch({
 
     // Search result component
     const renderStopItem = (
-        { item, index },
-        onSelect,
+        { item, index }: { item: IStop; index: number },
+        onSelect: (stop: IStop) => void,
         distance: string | null
     ) => (
         <TouchableOpacity
@@ -417,7 +417,7 @@ export default function MapSearch({
                                 ? filteredFromStops.slice(0, 4)
                                 : filteredToStops.slice(0, 4)
                         }
-                        keyExtractor={(item) => item._id.toString()}
+                        keyExtractor={(item) => item._id!.toString()}
                         renderItem={(props) =>
                             renderStopItem(
                                 { ...props, index: props.index },
