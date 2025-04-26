@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import { saveItem, getItem } from '../helper';
-import { YesButton, NoButton } from '@/components/Buttons';
-import { CustomModal } from '@/components/Modal';
+import { YesButton, NoButton } from '@/app/components/Buttons';
+import { CustomModal } from '@/app/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
-import StyledTextInput from '@/components/StyledTextInput';
+import StyledTextInput from '@/app/components/StyledTextInput';
 
 /**
  * Login Screen

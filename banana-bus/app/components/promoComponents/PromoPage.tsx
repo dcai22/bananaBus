@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, FlatList, Dimensions } from "react-native";
 
-import { Promotion } from "@/api/interface";
+import { Promotion } from "@/app/interface";
 import PromoCard from "./PromoCard";
 
 const { width } = Dimensions.get("window")

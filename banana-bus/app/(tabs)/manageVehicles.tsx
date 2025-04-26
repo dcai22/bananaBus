@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, TextInput } from "react-native";
-import { Header } from "@/components/Header";
-import Container from "@/components/Container";
+import { Header } from "@/app/components/Header";
+import Container from "@/app/components/Container";
 
-import AddVehicleButton from "@/components/vehicleComponents/addVehicleButton";
-import VehicleBox from "@/components/vehicleComponents/vehicleBox";
+import AddVehicleButton from "@/app/components/vehicleComponents/addVehicleButton";
+import VehicleBox from "@/app/components/vehicleComponents/vehicleBox";
 import { getItem } from "expo-secure-store";
 import axios from "axios";
-import { Vehicle } from "@/api/interface";
-import { LoadingPage } from "@/components/LoadingPage";
-import VehicleModal from "@/components/vehicleComponents/vehicleModal";
+import { Vehicle } from "../interface";
+import { LoadingPage } from "@/app/components/LoadingPage";
+import VehicleModal from "@/app/components/vehicleComponents/vehicleModal";
 
 /**
  * Manage Vehicles Screen
@@ -95,11 +95,11 @@ export default function manageVehicles() {
                         keyExtractor={(item) => item._id.toString()}
                         renderItem={({ item }) => 
                             <VehicleBox 
-                            vehicle={item}
-                            onPress={() => {
-                                setVehicle(item)
-                                setVisible(true)
-                            }} 
+                                vehicle={item}
+                                onPress={() => {
+                                    setVehicle(item)
+                                    setVisible(true)
+                                }} 
                             />
                         }
                         ListEmptyComponent={

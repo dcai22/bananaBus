@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import { ScrollView, Alert, StyleSheet, Text, View } from "react-native";
-import Container from "@/components/Container";
+import Container from "@/app/components/Container";
 import React from "react";
-import { Header } from "@/components/Header";
+import { Header } from "@/app/components/Header";
 import { FontAwesome } from "@expo/vector-icons";
 import { format } from "date-fns";
 import axios from "axios";
 import { getItem } from "../helper";
-import { LoadingPage } from "@/components/LoadingPage";
+import { LoadingPage } from "@/app/components/LoadingPage";
 
 /**
  * Past Bookings Screen

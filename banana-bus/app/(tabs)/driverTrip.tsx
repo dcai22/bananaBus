@@ -1,4 +1,4 @@
-import Container from "@/components/Container";
+import Container from "@/app/components/Container";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format } from "date-fns";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
@@ -6,8 +6,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Text, View, StyleSheet, ScrollView, Alert } from "react-native";
 import { getItem } from "../helper";
 import axios from "axios";
-import { LoadingPage } from "@/components/LoadingPage";
-import { YesButton } from "@/components/Buttons";
+import { LoadingPage } from "@/app/components/LoadingPage";
+import { YesButton } from "@/app/components/Buttons";
 
 /**
  * Driver Trip Screen

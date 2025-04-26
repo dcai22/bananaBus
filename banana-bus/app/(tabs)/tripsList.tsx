@@ -10,13 +10,13 @@ import {
     Alert,
 } from "react-native";
 import { format } from "date-fns";
-import TripListBox from "@/components/TripListBox";
+import TripListBox from "@/app/components/TripListBox";
 import axios from "axios";
-import { TripBox } from "@/api/interface";
-import { LoadingPage } from "@/components/LoadingPage";
+import { TripBox } from "@/app/interface";
+import { LoadingPage } from "@/app/components/LoadingPage";
 import { getItem } from "../helper";
 import DatePicker from "react-native-date-picker";
-import Container from "@/components/Container";
+import Container from "@/app/components/Container";
 
 interface Route {
     route: {

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity} from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { Vehicle } from "@/api/interface";
+import { Vehicle } from "@/app/interface";
 
 interface VehicleBoxProps {
   vehicle: Vehicle;

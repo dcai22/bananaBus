@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions, Alert } from "react-native";
+import { View, StyleSheet, FlatList, Dimensions, Alert } from "react-native";
 import AnimatedDotsCarousel, { DecreasingDot, DotConfig } from "react-native-animated-dots-carousel";
-import PromoPage from "@/components/promoComponents/PromoPage";
-import PromoModal from "@/components/promoComponents/PromoModal";
-import { Promotion } from "@/api/interface";
+import PromoPage from "@/app/components/promoComponents/PromoPage";
+import PromoModal from "@/app/components/promoComponents/PromoModal";
+import { Promotion } from "../interface";
 import axios from "axios";
-import { LoadingPage } from "@/components/LoadingPage";
-import { Header } from "@/components/Header";
-import Container from "@/components/Container";
+import { LoadingPage } from "@/app/components/LoadingPage";
+import { Header } from "@/app/components/Header";
+import Container from "@/app/components/Container";
 import { FontAwesome } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window")

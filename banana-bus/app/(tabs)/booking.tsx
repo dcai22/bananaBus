@@ -1,16 +1,16 @@
 import React, { useCallback } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, ActivityIndicator} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, ActivityIndicator} from "react-native";
 import { format } from "date-fns"
-import TripListBox from "@/components/TripListBox";
+import TripListBox from "@/app/components/TripListBox";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { TripBox } from "@/api/interface";
-import { LoadingPage } from "@/components/LoadingPage";
+import { TripBox } from "../interface";
+import { LoadingPage } from "@/app/components/LoadingPage";
 import { getItem } from "../helper";
-import Container from "@/components/Container";
-import { CheckoutHeader } from "@/components/Header";
+import Container from "@/app/components/Container";
+import { CheckoutHeader } from "@/app/components/Header";
 import { initStripe, useStripe } from "@stripe/stripe-react-native";
 
 /**

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Header } from "@/components/Header";
-import Container from "@/components/Container";
+import { Header } from "@/app/components/Header";
+import Container from "@/app/components/Container";
 import { router } from "expo-router";
 
 /**

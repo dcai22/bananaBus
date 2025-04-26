@@ -2,12 +2,12 @@ import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, FlatList, K
 import React, { useState } from 'react';
 import Modal from 'react-native-modal';
 import { useFocusEffect } from '@react-navigation/native';
-import { LoadingButton, YesButton } from '@/components/Buttons';
+import { LoadingButton, YesButton } from '@/app/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
 import { getItem } from '../helper';
 import * as Device from "expo-device";
-import { Header } from '@/components/Header';
-import Container from '@/components/Container';
+import { Header } from '@/app/components/Header';
+import Container from '@/app/components/Container';
 
 /**
  * Support Screen

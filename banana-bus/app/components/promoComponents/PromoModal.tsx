@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import Modal from 'react-native-modal'
-import { Promotion } from "@/api/interface";
+import { Promotion } from "@/app/interface";
 import { NoButton } from "../Buttons";
 
 interface PromotionModal {

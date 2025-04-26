@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { format } from "date-fns"
 import { FontAwesome } from "@expo/vector-icons";
-import { Promotion } from "@/api/interface";
+import { Promotion } from "@/app/interface";
 
 interface PromotionCard {
     promo: Promotion,

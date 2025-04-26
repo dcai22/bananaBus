@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, Alert, TouchableOpacity, ImageBackground } from
 import React, { useState } from 'react';
 import { useRouter } from "expo-router";
 import { getItem } from '../helper';
-import StyledTextInput from '@/components/StyledTextInput';
+import StyledTextInput from '@/app/components/StyledTextInput';
 
 /**
  * Forgot Password Screen

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
-import { Header } from "@/components/Header";
-import Container from "@/components/Container";
-import { CustomModal } from "@/components/Modal";
-import { NoButton, StandardButton, WarnButton, YesButton } from "@/components/Buttons";
-import StyledTextInput from "@/components/StyledTextInput";
+import { Header } from "@/app/components/Header";
+import Container from "@/app/components/Container";
+import { CustomModal } from "@/app/components/Modal";
+import { NoButton, StandardButton, WarnButton, YesButton } from "@/app/components/Buttons";
+import StyledTextInput from "@/app/components/StyledTextInput";
 import { FontAwesome } from "@expo/vector-icons";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 

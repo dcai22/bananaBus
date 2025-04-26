@@ -12,8 +12,8 @@ import { format } from "date-fns";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
 import { getItem } from "../helper";
-import { Header } from "@/components/Header";
-import Container from "@/components/Container";
+import { Header } from "@/app/components/Header";
+import Container from "@/app/components/Container";
 import { ScrollView } from "react-native";
 
 /**

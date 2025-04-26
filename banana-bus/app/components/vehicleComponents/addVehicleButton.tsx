@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, StyleSheet, Switch, Alert, ActivityIndicat
 import StyledTextInput from "../StyledTextInput";
 import { getItem } from "expo-secure-store";
 import axios from "axios";
-import { Vehicle } from "@/api/interface";
+import { Vehicle } from "@/app/interface";
 import { LoadingButton, NoButton, YesButton } from "../Buttons";
 import { CustomModal } from "../Modal";
 

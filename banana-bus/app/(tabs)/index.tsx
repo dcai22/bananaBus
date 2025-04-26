@@ -2,7 +2,7 @@ import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import Mapbox, { Camera } from "@rnmapbox/maps";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MapSearch from "@/components/MapSearch";
+import MapSearch from "@/app/components/MapSearch";
 import * as ExpoLocation from "expo-location";
 import { router } from "expo-router";
 

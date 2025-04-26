@@ -1,12 +1,12 @@
-import Container from "@/components/Container";
+import Container from "@/app/components/Container";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, TextInput, Alert } from "react-native";
 import axios from "axios";
-import { YesButton } from "@/components/Buttons";
+import { YesButton } from "@/app/components/Buttons";
 import { getItem } from "../helper";
-import { Header } from "@/components/Header";
+import { Header } from "@/app/components/Header";
 
 /**
  * Driver Report Problem Screen

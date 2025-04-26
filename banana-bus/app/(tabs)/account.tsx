@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } fr
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
-import Container from '@/components/Container';
+import Container from '@/app/components/Container';
 import { initStripe, CustomerSheetBeta } from '@stripe/stripe-react-native';
 import { FontAwesome } from '@expo/vector-icons';
 

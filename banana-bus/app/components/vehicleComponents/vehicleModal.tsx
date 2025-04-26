@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, Switch, Alert } from "react-native";
 import Modal from "react-native-modal"
 import StyledTextInput from "../StyledTextInput";
 import axios from "axios";
 import { getItem } from "expo-secure-store";
-import { Vehicle } from "@/api/interface";
+import { Vehicle } from "@/app/interface";
 import { LoadingButton, NoButton, WarnButton, YesButton } from "../Buttons";
 import { CustomModal } from "../Modal";
 

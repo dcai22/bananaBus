@@ -2,9 +2,9 @@ import { Text, View, StyleSheet, Alert, TouchableOpacity, ImageBackground } from
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
-import { YesButton } from '@/components/Buttons';
+import { YesButton } from '@/app/components/Buttons';
 import { saveItem } from '../helper';
-import StyledTextInput from '@/components/StyledTextInput';
+import StyledTextInput from '@/app/components/StyledTextInput';
 
 /**
  * Register Screen
