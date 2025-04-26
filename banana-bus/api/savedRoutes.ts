@@ -82,16 +82,17 @@ export async function getSavedRoutes(token: string) {
     
     return { savedRoutes: await Promise.all(
         user.savedRoutes.map(async (savedRoute: RouteSection) => {
-        const route = await getRouteById(savedRoute.routeId);
-        const origin = await getStopById(savedRoute.originId);
-        const dest = await getStopById(savedRoute.destId);
+            const route = await getRouteById(savedRoute.routeId);
+            const origin = await getStopById(savedRoute.originId);
+            const dest = await getStopById(savedRoute.destId);
 
-        return {
-            route: route,
-            originIndex: route.stops.findIndex(s => s.equals(savedRoute.originId)),
-            originName: origin.name,
-            destIndex: route.stops.findIndex(s => s.equals(savedRoute.destId)),
-            destName: dest.name,
-        };
-    }))};
+            return {
+                route: route,
+                originIndex: route.stops.findIndex(s => s.equals(savedRoute.originId)),
+                originName: origin.name,
+                destIndex: route.stops.findIndex(s => s.equals(savedRoute.destId)),
+                destName: dest.name,
+            };
+        })
+    )};
 }

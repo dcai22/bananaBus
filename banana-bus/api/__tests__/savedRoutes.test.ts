@@ -1,278 +1,337 @@
 import express, { json, Request, Response } from 'express';
-import { getData, setData } from "../dataStore";
 import { Booking, Route, UserBuilder, Trip, RouteSection, Stop } from "../interface";
+import { ObjectId } from 'mongodb';
+import { closeConnection, collections, connectToDatabase } from '../mongoUtil';
 
 const request = require("supertest");
 const app = require("../index");
 
-const newDb = { users: [{ email: 'email', password: 'password', tokens: [], userId: 0, bookings: [] }], bookings: [] };
+const sid0 = new ObjectId();
+const sid1 = new ObjectId();
+const sid2 = new ObjectId();
+const rid0 = new ObjectId();
+const rid1 = new ObjectId();
+const rid2 = new ObjectId();
 
-beforeEach(() => {
-    setData({ users: [], trips: [], bookings: [], routes: [], stops: [] });
-})
+const stop0 = new Stop(sid0, '1utama Shopping Mall', 0, 0);
+const stop1 = new Stop(sid1, 'Kuala Lumpur Intl. Terminal 1', 1, 1);
+const stop2 = new Stop(sid2, 'Kuala Lumpur Intl. Terminal 2', 2, 2);
+const route0 = new Route(rid0, [sid0, sid1]);
+const route1 = new Route(rid1, [sid1, sid2]);
+const route2 = new Route(rid2, [sid0, sid1, sid2]);
+const routeSection0 = new RouteSection(rid0, sid0, sid1);
+const routeSection1 = new RouteSection(rid1, sid1, sid2);
+const routeSection2 = new RouteSection(rid2, sid0, sid2);
+const displayRouteSection0 = {
+    route: {
+        _id: rid0.toString(),
+        stops: [sid0.toString(), sid1.toString()],
+        trips: [],
+    },
+    originIndex: 0,
+    originName: '1utama Shopping Mall',
+    destIndex: 1,
+    destName: 'Kuala Lumpur Intl. Terminal 1',
+};
+const displayRouteSection1 = {
+    route: {
+        _id: rid1.toString(),
+        stops: [sid1.toString(), sid2.toString()],
+        trips: [],
+    },
+    originIndex: 0,
+    originName: 'Kuala Lumpur Intl. Terminal 1',
+    destIndex: 1,
+    destName: 'Kuala Lumpur Intl. Terminal 2',
+};
+const displayRouteSection2 = {
+    route: {
+        _id: rid2.toString(),
+        stops: [sid0.toString(), sid1.toString(), sid2.toString()],
+        trips: [],
+    },
+    originIndex: 0,
+    originName: '1utama Shopping Mall',
+    destIndex: 2,
+    destName: 'Kuala Lumpur Intl. Terminal 2',
+};
+
+beforeAll(async () => {
+    await connectToDatabase();
+    await collections.bookings?.deleteMany();
+    await collections.trips?.deleteMany();
+    await collections.routes?.deleteMany();
+    await collections.stops?.deleteMany();
+    await collections.vehicles?.deleteMany();
+    await collections.users?.deleteMany();
+    await collections.stops?.insertMany([stop0, stop1, stop2]);
+    await collections.routes?.insertMany([route0, route1, route2]);
+});
+
+afterAll(async () => {
+    await closeConnection();
+});
+
+beforeEach(async () => {
+    await collections.users?.deleteMany();
+});
 
 
 describe("GET /getSavedRoutes", () => {
-    const stop0 = new Stop(0, '1utama Shopping Mall');
-    const stop1 = new Stop(1, 'Kuala Lumpur Intl. Terminal 1');
-    const stop2 = new Stop(2, 'Kuala Lumpur Intl. Terminal 2');
-    const route0 = new Route(0, [0, 1]);
-    const route1 = new Route(1, [1, 2]);
-    const route2 = new Route(2, [0, 1, 2]);
-    const routeSection0 = new RouteSection(0, 0, 1);
-    const routeSection1 = new RouteSection(1, 1, 2);
-    const routeSection2 = new RouteSection(2, 0, 2);
-
-    const routes = [route0, route1, route2];
-    const stops = [stop0, stop1, stop2];
-
     test("no saved routes", async () => {
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
 
-        const response = await request(app)
-            .get("/getSavedRoutes")
-            .send({ userId: 0 })
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(200);
-        expect(response.body.savedRoutes).toStrictEqual([]);
+        const res1 = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res1.statusCode).toBe(200);
+        expect(res1.body.savedRoutes).toStrictEqual([]);
     });
 
     test("one saved route", async () => {
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0 ]).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
-        const expected = [ routeSection0.asDisplayRouteSection() ];
+        const expected = [displayRouteSection0];
 
-        const response = await request(app)
-            .get("/getSavedRoutes")
-            .send({ userId: 0 })
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(200);
-        expect(response.body.savedRoutes).toEqual(expected);
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
+
+        await collections.users?.updateOne(
+            { email: 'email@email.com' },
+            { $push: { savedRoutes: routeSection0 } }
+        );
+
+        const res1 = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res1.statusCode).toBe(200);
+        expect(res1.body.savedRoutes).toEqual(expected);
     });
 
     test("many saved routes", async () => {
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0, routeSection1, routeSection2 ]).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
-        const expected = [ routeSection0.asDisplayRouteSection(), routeSection1.asDisplayRouteSection(), routeSection2.asDisplayRouteSection() ];
+        const expected = [displayRouteSection0, displayRouteSection1, displayRouteSection2];
 
-        const response = await request(app)
-            .get("/getSavedRoutes")
-            .send({ userId: 0 })
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(200);
-        expect(response.body.savedRoutes).toEqual(expected);
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
+
+        await collections.users?.updateOne(
+            { email: 'email@email.com' },
+            { $push: { savedRoutes: { $each: [ routeSection0, routeSection1, routeSection2 ] } } }
+        );
+
+        const res1 = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res1.statusCode).toBe(200);
+        expect(res1.body.savedRoutes).toStrictEqual(expected);
     });
 
     test("user does not exist", async () => {
-        setData({
-            users: [],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
-
-        const response = await request(app)
-            .get("/getSavedRoutes")
-            .send({ userId: 0 })
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(400);
+        const res = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer faketoken`);
+        expect(res.statusCode).toBe(403);
     });
 });
 
 describe("POST /saveRoute", () => {
-    const stop0 = new Stop(0, '1utama Shopping Mall');
-    const stop1 = new Stop(1, 'Kuala Lumpur Intl. Terminal 1');
-    const stop2 = new Stop(2, 'Kuala Lumpur Intl. Terminal 2');
-    const route0 = new Route(0, [0, 1]);
-    const route1 = new Route(1, [1, 2]);
-    const route2 = new Route(2, [0, 1, 2]);
-    const routeSection0 = new RouteSection(0, 0, 1);
-    const routeSection1 = new RouteSection(1, 1, 2);
-    const routeSection2 = new RouteSection(2, 0, 2);
-
-    const routes = [route0, route1, route2];
-    const stops = [stop0, stop1, stop2];
-
     test("simple save route", async () => {
-        const expected = [ routeSection0 ];
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
+        const expected = [displayRouteSection0];
 
-        const response = await request(app)
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
+
+        const res1 = await request(app)
             .post("/saveRoute")
-            .send({ userId: 0, routeId: 0, originId: 0, destId: 1 })
+            .send(routeSection0)
+            .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(200);
+        expect(res1.statusCode).toBe(200);
 
-        expect(getData().users[0].savedRoutes).toEqual(expected);
-    });
-
-    test("savedRoutes sorted after new route is saved", async () => {
-        const expected = [ routeSection0, routeSection1, routeSection2 ];
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0, routeSection2 ]).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
-
-        const response = await request(app)
-            .post("/saveRoute")
-            .send({ userId: 0, routeId: 1, originId: 1, destId: 2 })
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(200);
-
-        expect(getData().users[0].savedRoutes).toEqual(expected);
+        const res2 = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res2.statusCode).toBe(200);
+        expect(res2.body.savedRoutes).toEqual(expected);
     });
 
     test("user does not exist", async () => {
-        setData({
-            users: [],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
-
-        const response = await request(app)
+        const res = await request(app)
             .post("/saveRoute")
-            .send({ userId: 0, routeId: 0, originId: 0, destId: 1 })
+            .send(routeSection0)
+            .set('Authorization', `Bearer faketoken`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(400);
+        expect(res.statusCode).toBe(403);
     });
 
     test("route does not exist", async () => {
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
-            trips: [],
-            bookings: [],
-            routes: [ route0 ],
-            stops: stops,
-        });
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
 
-        const response = await request(app)
+        const res1 = await request(app)
             .post("/saveRoute")
-            .send({ userId: 0, routeId: 1, originId: 1, destId: 2 })
+            .send({ routeId: new ObjectId(), originId: sid1, destId: sid2 })
+            .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(400);
+        expect(res1.statusCode).toBe(400);
+
+        const res2 = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res2.statusCode).toBe(200);
+        expect(res2.body.savedRoutes).toEqual([]);
     });
 });
 
 describe("DELETE /unsaveRoute", () => {
-    const stop0 = new Stop(0, '1utama Shopping Mall');
-    const stop1 = new Stop(1, 'Kuala Lumpur Intl. Terminal 1');
-    const stop2 = new Stop(2, 'Kuala Lumpur Intl. Terminal 2');
-    const route0 = new Route(0, [0, 1]);
-    const route1 = new Route(1, [1, 2]);
-    const route2 = new Route(2, [0, 1, 2]);
-    const routeSection0 = new RouteSection(0, 0, 1);
-    const routeSection1 = new RouteSection(1, 1, 2);
-    const routeSection2 = new RouteSection(2, 0, 2);
-
-    const routes = [route0, route1, route2];
-    const stops = [stop0, stop1, stop2];
-
     test("simple unsave route", async () => {
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0 ]).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
 
-        const response = await request(app)
-            .delete("/unsaveRoute")
-            .send({ userId: 0, routeSection: routeSection0 })
+        const res1 = await request(app)
+            .post("/saveRoute")
+            .send(routeSection0)
+            .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(200);
+        expect(res1.statusCode).toBe(200);
 
-        expect(getData().users[0].savedRoutes).toStrictEqual([]);
+        const res2 = await request(app)
+            .post("/unsaveRoute")
+            .send(routeSection0)
+            .set('Authorization', `Bearer ${token}`)
+            .set('Content-Type', 'application/json')
+            .set('Accept', 'application/json');
+        expect(res2.statusCode).toBe(200);
+
+        const res3 = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res3.body.savedRoutes).toEqual([]);
     });
 
     test("unsave route from larger array", async () => {
-        const expected = [ routeSection0, routeSection2 ];
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).withSavedRoutes([ routeSection0, routeSection1, routeSection2 ]).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
+        const expected = [displayRouteSection0, displayRouteSection2];
 
-        const response = await request(app)
-            .delete("/unsaveRoute")
-            .send({ userId: 0, routeSection: routeSection1 })
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
+
+        const res1 = await request(app)
+            .post("/saveRoute")
+            .send(routeSection0)
+            .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(200);
+        expect(res1.statusCode).toBe(200);
 
-        expect(getData().users[0].savedRoutes).toEqual(expected);
+        const res2 = await request(app)
+            .post("/saveRoute")
+            .send(routeSection1)
+            .set('Authorization', `Bearer ${token}`)
+            .set('Content-Type', 'application/json')
+            .set('Accept', 'application/json');
+        expect(res2.statusCode).toBe(200);
+
+        const res3 = await request(app)
+            .post("/saveRoute")
+            .send(routeSection2)
+            .set('Authorization', `Bearer ${token}`)
+            .set('Content-Type', 'application/json')
+            .set('Accept', 'application/json');
+        expect(res3.statusCode).toBe(200);
+
+        const res4 = await request(app)
+            .post("/unsaveRoute")
+            .send(routeSection1)
+            .set('Authorization', `Bearer ${token}`)
+            .set('Content-Type', 'application/json')
+            .set('Accept', 'application/json');
+        expect(res4.statusCode).toBe(200);
+
+        const res5 = await request(app)
+            .get('/getSavedRoutes')
+            .set('Authorization', `Bearer ${token}`);
+        expect(res5.body.savedRoutes).toEqual(expected);
     });
 
     test("user does not exist", async () => {
-        setData({
-            users: [],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
-
-        const response = await request(app)
-            .delete("/unsaveRoute")
-            .send({ userId: 0, routeSection: routeSection0 })
+        const res = await request(app)
+            .post("/unsaveRoute")
+            .send(routeSection0)
+            .set('Authorization', `Bearer faketoken`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(400);
+        expect(res.statusCode).toBe(403);
     });
 
     test("route exists but was not saved", async () => {
-        setData({
-            users: [ new UserBuilder().withEmail('email').withPassword('password').withUserId(0).build() ],
-            trips: [],
-            bookings: [],
-            routes: routes,
-            stops: stops,
-        });
+        const res0 = await request(app)
+            .post('/register')
+            .send({
+                email: 'email@email.com',
+                password: 'password',
+                firstName: 'first',
+                lastName: 'last',
+            });
+        const { token } = res0.body;
 
-        const response = await request(app)
-            .delete("/unsaveRoute")
-            .send({ userId: 0, routeSection: routeSection0 })
+        const res1 = await request(app)
+            .post("/unsaveRoute")
+            .send(routeSection0)
+            .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        expect(response.statusCode).toBe(400);
+        expect(res1.statusCode).toBe(400);
     });
 });

@@ -175,8 +175,8 @@ export class RouteSection {
 
     async isValid() {
         const route = await getRouteById(this.routeId);
-        const originIndex = route.stops.indexOf(this.originId);
-        const destIndex = route.stops.indexOf(this.destId);
+        const originIndex = route.stops.findIndex(sid => sid.equals(this.originId));
+        const destIndex = route.stops.findIndex(sid => sid.equals(this.destId));
         if (0 <= originIndex && originIndex < destIndex) {
             return true;
         } else {
@@ -191,9 +191,9 @@ export class RouteSection {
 
         return {
             route: route,
-            originIndex: route.stops.indexOf(this.originId),
+            originIndex: route.stops.findIndex(sid => sid.equals(this.originId)),
             originName: origin.name,
-            destIndex: route.stops.indexOf(this.destId),
+            destIndex: route.stops.findIndex(sid => sid.equals(this.destId)),
             destName: dest.name,
         };
     }
