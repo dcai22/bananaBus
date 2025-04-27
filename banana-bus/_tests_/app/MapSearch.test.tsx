@@ -426,7 +426,6 @@ describe("MapSearch -- Alerts Testing", () => {
             />
         );
 
-        // Wait for the component to try to fetch stops
         await waitFor(() => {
             expect(spyAlert).toHaveBeenCalledWith(
                 "Something went wrong!",
@@ -437,7 +436,6 @@ describe("MapSearch -- Alerts Testing", () => {
     });
 
     it("should display an alert when fetching destinations fails", async () => {
-        // Mock the API calls: first one succeeds, second one fails
         mockedAxios.get.mockImplementation((url) => {
             if (url.includes("allStops")) {
                 return Promise.resolve({ data: mockStops });
@@ -447,7 +445,6 @@ describe("MapSearch -- Alerts Testing", () => {
             return Promise.reject(new Error("error"));
         });
 
-        // Render with a selected 'from' location to trigger destination fetching
         const { rerender } = render(
             <MapSearch
                 fromLoc={emptyStop}
@@ -458,7 +455,6 @@ describe("MapSearch -- Alerts Testing", () => {
             />
         );
 
-        // Wait for initial stops to load
         await waitFor(() => {
             expect(mockedAxios.get).toHaveBeenCalledWith(
                 expect.stringContaining("allStops"),
@@ -466,7 +462,6 @@ describe("MapSearch -- Alerts Testing", () => {
             );
         });
 
-        // Re-render with a selected fromLoc to trigger destination fetching
         rerender(
             <MapSearch
                 fromLoc={{ ...mockStops[0] }}
@@ -477,7 +472,6 @@ describe("MapSearch -- Alerts Testing", () => {
             />
         );
 
-        // Wait for the component to try to fetch destinations
         await waitFor(() => {
             expect(mockedAxios.get).toHaveBeenCalledWith(
                 expect.stringContaining("reachableFrom"),
@@ -491,7 +485,7 @@ describe("MapSearch -- Alerts Testing", () => {
         });
     });
 
-    it("should gracefully handle when a destination fetch returns empty data", async () => {
+    it("gracefully handle when a destination fetch returns empty data", async () => {
         mockedAxios.get.mockImplementation((url) => {
             if (url.includes("allStops")) {
                 return Promise.resolve({ data: mockStops });
@@ -511,7 +505,6 @@ describe("MapSearch -- Alerts Testing", () => {
             />
         );
 
-        // Wait for initial stops to load
         await waitFor(() => {
             expect(mockedAxios.get).toHaveBeenCalledWith(
                 expect.stringContaining("allStops"),
@@ -519,7 +512,6 @@ describe("MapSearch -- Alerts Testing", () => {
             );
         });
 
-        // Re-render with a selected fromLoc to trigger destination fetching
         rerender(
             <MapSearch
                 fromLoc={{ ...mockStops[0] }}
@@ -530,7 +522,6 @@ describe("MapSearch -- Alerts Testing", () => {
             />
         );
 
-        // Wait for the component to fetch destinations
         await waitFor(() => {
             expect(mockedAxios.get).toHaveBeenCalledWith(
                 expect.stringContaining("reachableFrom"),
@@ -538,7 +529,6 @@ describe("MapSearch -- Alerts Testing", () => {
             );
         });
 
-        // No alert should be shown for empty data (this is a valid response)
         expect(spyAlert).not.toHaveBeenCalledWith(
             "Something went wrong!",
             "Error fetching destinations",
