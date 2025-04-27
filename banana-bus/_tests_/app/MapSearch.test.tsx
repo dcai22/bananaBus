@@ -1,5 +1,11 @@
 import React from "react";
-import { render, fireEvent, waitFor, act } from "@testing-library/react-native";
+import {
+    render,
+    fireEvent,
+    waitFor,
+    act,
+    cleanup,
+} from "@testing-library/react-native";
 import MapSearch from "@/app/components/MapSearch";
 import { IStop } from "@/app/(tabs)/index";
 import axios from "axios";
@@ -56,6 +62,7 @@ const mockStops: IStop[] = [
     { _id: "1", name: "KLIA Terminal 1", lat: 2.7567602, lng: 101.7007533 },
     { _id: "2", name: "KLIA Terminal 2", lat: 2.7456123, lng: 101.7091234 },
     { _id: "3", name: "KL Sentral", lat: 3.1341984, lng: 101.6859732 },
+    { _id: "4", name: "1utama Shopping Mall", lat: 3.1481, lng: 101.6165 },
 ];
 
 const emptyStop: IStop = { _id: null, name: null, lat: null, lng: null };
@@ -65,7 +72,7 @@ const mockCurrentLocation = [
     { lat: 2.7567602, lng: 101.7007533 },
 ];
 
-const mockReachableStops = ["1", "3"];
+const mockReachableStops = ["3", "4"];
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -81,11 +88,7 @@ describe("MapSearch Component", () => {
             if (url.includes("allStops")) {
                 return Promise.resolve({ data: mockStops });
             } else if (url.includes("reachableFrom")) {
-                return Promise.resolve({
-                    data: {
-                        stops: mockReachableStops,
-                    },
-                });
+                return Promise.resolve({ data: { stops: mockReachableStops } });
             }
             return Promise.reject(new Error("Unknown URL"));
         });
@@ -110,6 +113,21 @@ describe("MapSearch Component", () => {
 
         expect(getByText("From")).toBeTruthy();
         expect(getByText("To")).toBeTruthy();
+    });
+
+    it("renders correctly with locations props", () => {
+        const { getByPlaceholderText } = render(
+            <MapSearch
+                fromLoc={mockStops[2]}
+                toLoc={mockStops[3]}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
+
+        expect(getByPlaceholderText("KL Sentral")).toBeTruthy();
+        expect(getByPlaceholderText("1utama Shopping Mall")).toBeTruthy();
     });
 
     it("activates from search and shows results", async () => {
@@ -139,22 +157,77 @@ describe("MapSearch Component", () => {
         });
     });
 
-    // it("renders correctly with location props", () => {
-    //     const { getAllByPlaceholderText, getByText } = render(
-    //         <MapSearch
-    //             fromLoc={mockStops[0]}
-    //             toLoc={mockStops[2]}
-    //             setFromLoc={mockSetFromLoc}
-    //             setToLoc={mockSetToLoc}
-    //             currentLocation={{ lat: null, lng: null }}
-    //         />
-    //     );
+    it("selects a location from search results", async () => {
+        const { getByTestId, findByText } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
 
-    //     const searchInputs = getAllByPlaceholderText("...");
-    //     expect(searchInputs).toHaveLength(2);
+        const fromInput = getByTestId("from-input");
 
-    //     // Check that "From" and "To" labels exist
-    //     expect(getByText("From")).toBeTruthy();
-    //     expect(getByText("To")).toBeTruthy();
-    // });
+        await act(async () => {
+            fireEvent.changeText(fromInput, "KLIA");
+        });
+
+        await act(async () => {
+            fireEvent(fromInput, "focus");
+        });
+
+        await waitFor(async () => {
+            const location = await findByText("KLIA Terminal 1");
+            await act(async () => {
+                fireEvent.press(location);
+            });
+            expect(mockSetFromLoc).toHaveBeenCalledWith(mockStops[0]);
+        });
+    });
+
+    it("activates to search after selecting from location", async () => {
+        const { getByTestId, findByText, queryByText } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
+
+        const fromInput = getByTestId("from-input");
+
+        await act(async () => {
+            fireEvent.changeText(fromInput, "KLIA");
+            fireEvent(fromInput, "focus");
+        });
+
+        await waitFor(async () => {
+            const location = await findByText("KLIA Terminal 1");
+            await act(async () => {
+                fireEvent.press(location);
+            });
+        });
+
+        expect(mockSetFromLoc).toHaveBeenCalledWith(mockStops[0]);
+
+        // verify that "to" search is now activated
+        await waitFor(() => {
+            expect(findByText("Closest Based on Location")).toBeTruthy();
+        });
+
+        // verify results are correct
+        await waitFor(() => {
+            expect(findByText("KL Sentral")).toBeTruthy();
+            expect(findByText("1utama Shopping Mall")).toBeTruthy();
+            expect(queryByText("KLIA Terminal 2")).toBeNull();
+        });
+
+        // verify "to" input
+        const toInput = getByTestId("to-input");
+        expect(toInput).toBeTruthy();
+    });
 });
