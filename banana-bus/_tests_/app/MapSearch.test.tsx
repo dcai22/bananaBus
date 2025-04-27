@@ -107,7 +107,7 @@ describe("MapSearch Component", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -128,7 +128,7 @@ describe("MapSearch Component", () => {
                 toLoc={mockStops[3]}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -143,7 +143,7 @@ describe("MapSearch Component", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -170,7 +170,7 @@ describe("MapSearch Component", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -200,7 +200,7 @@ describe("MapSearch Component", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -236,6 +236,58 @@ describe("MapSearch Component", () => {
         const toInput = getByTestId("to-input");
         expect(toInput).toBeTruthy();
     });
+
+    // Distance Tests
+    it("no distances when current location is null", async () => {
+        const { getByTestId, queryByText } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={mockCurrentLocation[0]}
+            />
+        );
+
+        const fromInput = getByTestId("from-input");
+
+        await act(async () => {
+            fireEvent.changeText(fromInput, "KL");
+            fireEvent(fromInput, "focus");
+        });
+
+        await waitFor(() => {
+            // Should not find any distance text
+            expect(queryByText(/\d+ km/)).toBeNull();
+            expect(queryByText(/\d+ m/)).toBeNull();
+        });
+    });
+
+    it("show  distances when current location is not null", async () => {
+        const { getByTestId, queryByText } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={mockCurrentLocation[1]}
+            />
+        );
+
+        const fromInput = getByTestId("from-input");
+
+        await act(async () => {
+            fireEvent.changeText(fromInput, "KL");
+            fireEvent(fromInput, "focus");
+        });
+
+        await waitFor(() => {
+            // Should not find any distance text
+            expect(queryByText("42 km")).toBeTruthy();
+            expect(queryByText("1.55 km")).toBeTruthy();
+            expect(queryByText("0 m")).toBeTruthy();
+        });
+    });
 });
 
 describe("MapSearch -- Alerts Testing", () => {
@@ -266,7 +318,7 @@ describe("MapSearch -- Alerts Testing", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -298,7 +350,7 @@ describe("MapSearch -- Alerts Testing", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -317,7 +369,7 @@ describe("MapSearch -- Alerts Testing", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -351,7 +403,7 @@ describe("MapSearch -- Alerts Testing", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
@@ -370,7 +422,7 @@ describe("MapSearch -- Alerts Testing", () => {
                 toLoc={emptyStop}
                 setFromLoc={mockSetFromLoc}
                 setToLoc={mockSetToLoc}
-                currentLocation={{ lat: null, lng: null }}
+                currentLocation={mockCurrentLocation[0]}
             />
         );
 
