@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import Container from '../Container';
+import Container from '@/app/components/Container';
 import { Text } from 'react-native';
 
 describe('Container Component', () => {
@@ -22,7 +22,9 @@ describe('Container Component', () => {
 		);
 
 		const container = getByTestId('container');
-		expect(container).toHaveStyle({ flex: 1, backgroundColor: '#e5f0fa' });
+		expect(container.props.style).toContainEqual(
+            { flex: 1, backgroundColor: '#e5f0fa' }
+        );
 	});
 
 	it('applies custom styles when provided', () => {

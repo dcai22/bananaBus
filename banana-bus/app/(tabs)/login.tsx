@@ -7,7 +7,6 @@ import { YesButton, NoButton } from '@/app/components/Buttons';
 import { CustomModal } from '@/app/components/Modal';
 import { GoogleSignin, GoogleSigninButton, isSuccessResponse, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import StyledTextInput from '@/app/components/StyledTextInput';
-
 /**
  * Login Screen
  * 
@@ -216,9 +215,7 @@ export default function LoginScreen() {
 
     return (
         <ImageBackground
-            source={{
-                uri: "https://www.figma.com/file/ZvVQQmOHdnzSiS0Yg7iwQx/image/78443b2693ec711702b146d4cf971a9a4010c231",
-            }}
+            source={require("@/assets/images/login_register-bg.jpg")}
             style={styles.backgroundImage}
         >
             <View style={styles.overlay} />

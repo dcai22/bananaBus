@@ -1,6 +1,6 @@
 import React, { act } from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { CustomModal } from "../Modal";
+import { CustomModal } from "@/app/components/Modal";
 import { Text } from "react-native";
 
 describe("CustomModal Component", () => {

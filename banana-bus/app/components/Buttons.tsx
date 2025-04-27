@@ -54,7 +54,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({ style, type = "no"
 
     return (
         <TouchableOpacity testID="button" style={[styles.button, buttonStyle, style]} disabled={true}>
-            <ActivityIndicator testID="loading-indicator" color={type === "warn" ? "white" : "#2A8AE4"} />
+            <ActivityIndicator testID="loading-indicator" color={type === "warn" ? "white" : type === "yes" ? "#2A8AE4" : "#fff"} />
         </TouchableOpacity>
     );
 };

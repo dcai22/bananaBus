@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { LoadingButton, NoButton, StandardButton, WarnButton, YesButton } from '../Buttons';
+import { LoadingButton, NoButton, StandardButton, WarnButton, YesButton } from '@/app/components/Buttons';
 
 describe('StandardButton component', () => {
 	test('calls onPress when pressed', () => {
@@ -66,33 +66,45 @@ describe('WarnButton component', () => {
 describe('LoadingButton component', () => {
 	test('renders with default type "no"', () => {
 		const { getByTestId } = render(<LoadingButton />);
+		const button = getByTestId('button');
 		const activityIndicator = getByTestId('loading-indicator');
 
-		expect(activityIndicator.props.color).toBe('#2A8AE4');
-		expect(getByTestId('button')).toHaveStyle({ backgroundColor: '#2A8AE4' });
+		expect(activityIndicator.props.color).toBe('#fff');
+		expect(button.props.style).toEqual(
+			expect.objectContaining({ backgroundColor: '#2A8AE4' })
+		);
 	});
 
 	test('renders with correct styles for "yes" type', () => {
 		const { getByTestId } = render(<LoadingButton type="yes" />);
+		const button = getByTestId('button');
 		const activityIndicator = getByTestId('loading-indicator');
 
 		expect(activityIndicator.props.color).toBe('#2A8AE4');
-		expect(getByTestId('button')).toHaveStyle({ backgroundColor: '#ccff00' });
+		expect(button.props.style).toEqual(
+			expect.objectContaining({ backgroundColor: '#ccff00' })
+		);
 	});
 
 	test('renders with correct styles for "no" type', () => {
 		const { getByTestId } = render(<LoadingButton type="no" />);
+		const button = getByTestId('button');
 		const activityIndicator = getByTestId('loading-indicator');
 
-		expect(activityIndicator.props.color).toBe('#2A8AE4');
-		expect(getByTestId('button')).toHaveStyle({ backgroundColor: '#2A8AE4' });
+		expect(activityIndicator.props.color).toBe('#fff');
+		expect(button.props.style).toEqual(
+			expect.objectContaining({ backgroundColor: '#2A8AE4' })
+		);
 	});
 
 	test('renders with correct styles for "warn" type', () => {
 		const { getByTestId } = render(<LoadingButton type="warn" />);
+		const button = getByTestId('button');
 		const activityIndicator = getByTestId('loading-indicator');
 	
 		expect(activityIndicator.props.color).toBe('white');
-		expect(getByTestId('button')).toHaveStyle({ backgroundColor: 'red' });
+		expect(button.props.style).toEqual(
+			expect.objectContaining({ backgroundColor: 'red' })
+		);
 	});
 });

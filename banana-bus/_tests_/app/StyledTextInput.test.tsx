@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import StyledTextInput from '../StyledTextInput';
+import StyledTextInput from '@/app/components/StyledTextInput';
 
 jest.mock('@expo/vector-icons', () => {
 	const { View } = require('react-native');

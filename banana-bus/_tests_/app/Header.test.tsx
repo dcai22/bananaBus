@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { Header, CheckoutHeader } from '../Header';
+import { Header, CheckoutHeader } from '@/app/components/Header';
 import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -71,9 +71,10 @@ describe('Header component', () => {
 		const { getByTestId } = render(
 			<Header style={{ backgroundColor: 'red' }} />
 		);
-		expect(getByTestId('header-container')).toHaveStyle({
-			backgroundColor: 'red',
-		});
+		const headerContainer = getByTestId('header-container');
+		expect(headerContainer.props.style).toContainEqual(
+			{ backgroundColor: 'red' }
+		);
 	});
 });
 
@@ -124,8 +125,9 @@ describe('CheckoutHeader component', () => {
 		const { getByTestId } = render(
 			<CheckoutHeader style={{ backgroundColor: 'blue' }} />
 		);
-		expect(getByTestId('header-container')).toHaveStyle({
-			backgroundColor: 'blue',
-		});
+		const headerContainer = getByTestId('header-container');
+		expect(headerContainer.props.style).toContainEqual(
+			{ backgroundColor: 'blue' }
+		);
 	});
 });

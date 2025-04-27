@@ -172,7 +172,7 @@ export default function Account() {
         <Container>
             {/* Background Image */}
             <Image
-                source={{ uri: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F022%2F737%2F904%2Foriginal%2Fmodern-city-scape-silhouette-simple-minimalist-blue-city-skyline-background-urban-cityscape-silhouettes-illustration-vector.jpg&f=1&nofb=1&ipt=b867ca6f79e10846ab79381e8bc6910f4c9cd82e1a2553f4f9d03738d544d89c&ipo=images' }}
+                source={require('@/assets/images/account-bg.jpg')}
                 style={styles.backgroundImage}
             />
             <View style={styles.overlay}>
