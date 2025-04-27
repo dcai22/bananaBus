@@ -10,11 +10,6 @@ import { deleteAccount,
             getUserDetails,
             updateUserDetails,
             updateUserPassword,
-            addCard,
-            editCard,
-            deleteCard,
-            makeDefaultCard,
-            getUserCards, 
             sendEnquiry} from './account';
 import { getDeals } from './getDeals';
 import { Booking, Route, RouteSection, Trip } from './interface';
@@ -576,70 +571,6 @@ app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
         next(err);
     }
 });
-
-app.post('/addCard', async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        const type = req.body.type as string;
-        const cardNumber = req.body.cardNumber as string;
-        const cvv = req.body.cvv as string;
-        const expMonth = parseInt(req.body.expMonth as string);
-        const expYear = parseInt(req.body.expYear as string);
-        res.json(await addCard(token, type, cardNumber, cvv, expMonth, expYear));
-    } catch(error) {
-        next(error);
-    }
-    return;
-})
-
-app.put('/editCard', async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        const cardId = req.body.cardId as ObjectId;
-        const type = req.body.type as string;
-        const cardNumber = req.body.cardNumber as string;
-        const cvv = req.body.cvv as string;
-        const expMonth = parseInt(req.body.expMonth as string);
-        const expYear = parseInt(req.body.expYear as string);
-        res.json(await editCard(token, cardId, type, cardNumber, cvv, expMonth, expYear));
-    } catch(error) {
-        next(error);
-    }
-    return;
-})
-
-
-app.put('/makeDefaultCard', async (req: Request, res: Response, next) => {
-    const token = req.headers.authorization as string;
-    const cardId = new ObjectId(req.body.cardId as string);
-    try{
-        res.json(await makeDefaultCard(token, cardId));
-    } catch ( err ) {
-        next(err);
-    }
-    return;
-})
-
-app.delete('/deleteCard', async(req: Request, res: Response, next) => {
-    try{
-        const token = req.headers.authorization as string;
-        const cardId = new ObjectId(req.body.cardId as string);
-        res.json(await deleteCard(token, cardId));
-    } catch ( err ) {
-        next(err);
-    }
-    return;
-})
-
-app.get('/getUserCards', async(req: Request, res: Response, next) => {
-    try{
-        const token = req.headers.authorization as string;
-        res.json(await getUserCards(token));
-    } catch ( err ) {
-        next(err);
-    }
-    return;
-})
 
 app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
     await connectToDatabase();
