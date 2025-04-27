@@ -166,7 +166,7 @@ app.post('/generateTrips', async (req: Request, res: Response, next) => {
         const routeId = new ObjectId(req.body.routeId as string);
         const date = req.body.date as string;
 
-        res.json(await generateTrips(token, routeId, date)); // You can return trips or just a success message
+        res.json(await generateTrips(token, routeId, date));
     } catch (err) {
         next(err);
     }

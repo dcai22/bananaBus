@@ -99,7 +99,7 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
  * @param dateString date for the generated trip
  * @returns generated trips
  */
-export async function generateTrips(token: string, routeId: ObjectId, date: string) {
+export async function generateTrips(token: string, routeId: ObjectId, date: string): Promise<{trips: Trip[]}> {
     // connection to database
     await connectToDatabase();
     if (!collections.trips || !collections.routes) {
@@ -156,7 +156,7 @@ export async function generateTrips(token: string, routeId: ObjectId, date: stri
         // if no vehicle or driver assigned
         if (!vehicle || !driver) {
             // TODO alert manager somehow
-            console.log(`no vehicle available for ${hr}`);
+            // console.log(`no vehicle available for ${hr}`);
             continue;
         }
         
@@ -186,7 +186,7 @@ export async function generateTrips(token: string, routeId: ObjectId, date: stri
         { $push: { trips: {$each: tripIds}}}
     )
 
-    return trips;
+    return { trips };
 }
 
 /**
