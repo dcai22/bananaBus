@@ -337,6 +337,7 @@ export default function MapSearch({
                 ]}
             >
                 <TouchableOpacity
+                    testID="from-section"
                     style={[
                         styles.fromSection,
                         isSearchActive ? styles.fullWidth : styles.halfWidth,
@@ -347,6 +348,7 @@ export default function MapSearch({
                     <Text style={styles.label}>From</Text>
                     <TextInput
                         ref={fromInputRef}
+                        testID="from-input"
                         style={styles.input}
                         value={fromSearchQuery}
                         onChangeText={setFromSearchQuery}
@@ -357,6 +359,7 @@ export default function MapSearch({
                     />
                     {fromSearchActive && fromSearchQuery.length > 0 && (
                         <TouchableOpacity
+                            testID="from-clear-button"
                             onPress={() => setFromSearchQuery("")}
                             style={styles.clearButton}
                         >
@@ -374,6 +377,7 @@ export default function MapSearch({
                 />
 
                 <TouchableOpacity
+                    testID="to-section"
                     style={[
                         styles.toSection,
                         isSearchActive ? styles.fullWidth : styles.halfWidth,
@@ -383,6 +387,7 @@ export default function MapSearch({
                 >
                     <Text style={styles.label}>To</Text>
                     <TextInput
+                        testID="to-input"
                         ref={toInputRef}
                         style={styles.input}
                         value={toSearchQuery}
@@ -394,6 +399,7 @@ export default function MapSearch({
                     />
                     {toSearchActive && toSearchQuery.length > 0 && (
                         <TouchableOpacity
+                            testID="to-clear-button"
                             onPress={() => setToSearchQuery("")}
                             style={styles.clearButton}
                         >
