@@ -22,6 +22,8 @@ export function LoadingPage() {
   )
 }
 
+export default LoadingPage;
+
 const styles = StyleSheet.create({
     indicatorContainer: {
         flex: 1,

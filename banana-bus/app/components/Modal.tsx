@@ -50,6 +50,8 @@ export const CustomModal: React.FC<CustomModalProps> = ({ visible, onCancel, chi
     );
 };
 
+export default CustomModal;
+
 const styles = StyleSheet.create({
     modalContent: {
         backgroundColor: "white",

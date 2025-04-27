@@ -11,3 +11,8 @@ export async function saveItem(key: string, value: string) {
 export async function getItem(key: string) {
     return await SecureStore.getItemAsync(key);
 }
+
+export default {
+    saveItem,
+    getItem,
+}

@@ -85,6 +85,10 @@ export const CheckoutHeader: React.FC<HeaderProps> = ({ title = 'Secure Checkout
     )
 }
 
+export default {
+    Header,
+    CheckoutHeader
+}
 const styles = StyleSheet.create({
     headerBox: {
         backgroundColor: '#fff',

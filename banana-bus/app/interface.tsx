@@ -48,3 +48,5 @@ export interface Vehicle {
     numberPlate: string,
     reports: Report[],
 }
+
+export default {};

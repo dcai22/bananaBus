@@ -59,6 +59,14 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({ style, type = "no"
     );
 };
 
+export default {
+    StandardButton,
+    YesButton,
+    NoButton,
+    WarnButton,
+    LoadingButton,
+};
+
 const styles = StyleSheet.create({
     button: {
         backgroundColor: "white",
