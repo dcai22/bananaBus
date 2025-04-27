@@ -76,10 +76,10 @@ beforeEach(async () => {
     await collections.users?.deleteMany();
 });
 
-describe("GET /getSavedRoutes", () => {
+describe("GET /savedRoutes/get", () => {
     test("no saved routes", async () => {
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -89,7 +89,7 @@ describe("GET /getSavedRoutes", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer ${token}`);
         expect(res1.statusCode).toBe(200);
         expect(res1.body.savedRoutes).toStrictEqual([]);
@@ -99,7 +99,7 @@ describe("GET /getSavedRoutes", () => {
         const expected = [displayRouteSection0];
 
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -114,7 +114,7 @@ describe("GET /getSavedRoutes", () => {
         );
 
         const res1 = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer ${token}`);
         expect(res1.statusCode).toBe(200);
         expect(res1.body.savedRoutes).toEqual(expected);
@@ -124,7 +124,7 @@ describe("GET /getSavedRoutes", () => {
         const expected = [displayRouteSection0, displayRouteSection1, displayRouteSection2];
 
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -139,7 +139,7 @@ describe("GET /getSavedRoutes", () => {
         );
 
         const res1 = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer ${token}`);
         expect(res1.statusCode).toBe(200);
         expect(res1.body.savedRoutes).toStrictEqual(expected);
@@ -147,18 +147,18 @@ describe("GET /getSavedRoutes", () => {
 
     test("user does not exist", async () => {
         const res = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer faketoken`);
         expect(res.statusCode).toBe(403);
     });
 });
 
-describe("POST /saveRoute", () => {
+describe("POST /savedRoutes/save", () => {
     test("simple save route", async () => {
         const expected = [displayRouteSection0];
 
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -168,7 +168,7 @@ describe("POST /saveRoute", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .post("/saveRoute")
+            .post("/savedRoutes/save")
             .send(routeSection0)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -176,7 +176,7 @@ describe("POST /saveRoute", () => {
         expect(res1.statusCode).toBe(200);
 
         const res2 = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer ${token}`);
         expect(res2.statusCode).toBe(200);
         expect(res2.body.savedRoutes).toEqual(expected);
@@ -184,7 +184,7 @@ describe("POST /saveRoute", () => {
 
     test("user does not exist", async () => {
         const res = await request(app)
-            .post("/saveRoute")
+            .post("/savedRoutes/save")
             .send(routeSection0)
             .set('Authorization', `Bearer faketoken`)
             .set('Content-Type', 'application/json')
@@ -194,7 +194,7 @@ describe("POST /saveRoute", () => {
 
     test("route does not exist", async () => {
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -204,7 +204,7 @@ describe("POST /saveRoute", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .post("/saveRoute")
+            .post("/savedRoutes/save")
             .send({ routeId: new ObjectId(), originId: sid1, destId: sid2 })
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -212,17 +212,17 @@ describe("POST /saveRoute", () => {
         expect(res1.statusCode).toBe(400);
 
         const res2 = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer ${token}`);
         expect(res2.statusCode).toBe(200);
         expect(res2.body.savedRoutes).toEqual([]);
     });
 });
 
-describe("DELETE /unsaveRoute", () => {
+describe("DELETE /savedRoutes/unsave", () => {
     test("simple unsave route", async () => {
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -232,7 +232,7 @@ describe("DELETE /unsaveRoute", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .post("/saveRoute")
+            .post("/savedRoutes/save")
             .send(routeSection0)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -240,7 +240,7 @@ describe("DELETE /unsaveRoute", () => {
         expect(res1.statusCode).toBe(200);
 
         const res2 = await request(app)
-            .post("/unsaveRoute")
+            .post("/savedRoutes/unsave")
             .send(routeSection0)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -248,7 +248,7 @@ describe("DELETE /unsaveRoute", () => {
         expect(res2.statusCode).toBe(200);
 
         const res3 = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer ${token}`);
         expect(res3.body.savedRoutes).toEqual([]);
     });
@@ -257,7 +257,7 @@ describe("DELETE /unsaveRoute", () => {
         const expected = [displayRouteSection0, displayRouteSection2];
 
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -267,7 +267,7 @@ describe("DELETE /unsaveRoute", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .post("/saveRoute")
+            .post("/savedRoutes/save")
             .send(routeSection0)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -275,7 +275,7 @@ describe("DELETE /unsaveRoute", () => {
         expect(res1.statusCode).toBe(200);
 
         const res2 = await request(app)
-            .post("/saveRoute")
+            .post("/savedRoutes/save")
             .send(routeSection1)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -283,7 +283,7 @@ describe("DELETE /unsaveRoute", () => {
         expect(res2.statusCode).toBe(200);
 
         const res3 = await request(app)
-            .post("/saveRoute")
+            .post("/savedRoutes/save")
             .send(routeSection2)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -291,7 +291,7 @@ describe("DELETE /unsaveRoute", () => {
         expect(res3.statusCode).toBe(200);
 
         const res4 = await request(app)
-            .post("/unsaveRoute")
+            .post("/savedRoutes/unsave")
             .send(routeSection1)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
@@ -299,14 +299,14 @@ describe("DELETE /unsaveRoute", () => {
         expect(res4.statusCode).toBe(200);
 
         const res5 = await request(app)
-            .get('/getSavedRoutes')
+            .get('/savedRoutes/get')
             .set('Authorization', `Bearer ${token}`);
         expect(res5.body.savedRoutes).toEqual(expected);
     });
 
     test("user does not exist", async () => {
         const res = await request(app)
-            .post("/unsaveRoute")
+            .post("/savedRoutes/unsave")
             .send(routeSection0)
             .set('Authorization', `Bearer faketoken`)
             .set('Content-Type', 'application/json')
@@ -316,7 +316,7 @@ describe("DELETE /unsaveRoute", () => {
 
     test("route exists but was not saved", async () => {
         const res0 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -326,7 +326,7 @@ describe("DELETE /unsaveRoute", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .post("/unsaveRoute")
+            .post("/savedRoutes/unsave")
             .send(routeSection0)
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')

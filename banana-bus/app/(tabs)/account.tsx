@@ -42,7 +42,7 @@ export default function Account() {
                 token = localStorage.getItem('token');
             }
             try {
-                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/getAccountDetails`, {
+                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/account/getDetails`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${token}` },
                 });

@@ -20,7 +20,7 @@ export default function ForgotPasswordScreen() {
         const paramToken = await getItem("resetToken");
 
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/resetPassword` + `?token=${paramToken}`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/resetPassword/reset` + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

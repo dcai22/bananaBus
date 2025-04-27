@@ -25,7 +25,7 @@ export default function RegisterScreen() {
         // Register user
 
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/register`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

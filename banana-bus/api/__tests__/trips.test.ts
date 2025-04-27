@@ -65,12 +65,12 @@ beforeEach(async () => {
 
     // make manager and user
     managerToken = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send(manager)
         .then((res: any) => res.body.token);
 
     userToken = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send(user)
         .then((res: any) => res.body.token);
 
@@ -92,7 +92,7 @@ describe('POST trip generation', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -108,7 +108,7 @@ describe('POST trip generation', () => {
 
     test('no trips, no vehicles', async () => {
         const res = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -127,12 +127,12 @@ describe('POST trip generation', () => {
 
 
         await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -152,7 +152,7 @@ describe('POST trip generation', () => {
         const eightDaysAhead = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000)
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: eightDaysAhead})
 
@@ -170,7 +170,7 @@ describe('POST trip generation', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: new ObjectId().toString(), date: date})
 
@@ -188,7 +188,7 @@ describe('POST trip generation', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer invalid`)
             .send({routeId: rid, date: date})
 
@@ -200,7 +200,7 @@ describe('POST trip generation', () => {
 describe('GET tripsList', () => {
     test('success,  empty array, no trips generated yet', async () => {
         const res1 = await request(app)
-            .get('/tripsList')
+            .get('/trips/list')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 routeId: rid.toString(),
@@ -225,7 +225,7 @@ describe('GET tripsList', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -233,7 +233,7 @@ describe('GET tripsList', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/tripsList')
+            .get('/trips/list')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 routeId: rid.toString(),
@@ -273,7 +273,7 @@ describe('GET tripsList', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -283,7 +283,7 @@ describe('GET tripsList', () => {
         const tmr = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000)
 
         const res2 = await request(app)
-            .get('/tripsList')
+            .get('/trips/list')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 routeId: rid.toString(),
@@ -308,7 +308,7 @@ describe('GET tripsList', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -316,7 +316,7 @@ describe('GET tripsList', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/tripsList')
+            .get('/trips/list')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 routeId: new ObjectId().toString(),
@@ -339,7 +339,7 @@ describe('GET tripsList', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -347,7 +347,7 @@ describe('GET tripsList', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/tripsList')
+            .get('/trips/list')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 routeId: rid.toString(),
@@ -370,7 +370,7 @@ describe('GET tripsList', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -378,7 +378,7 @@ describe('GET tripsList', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/tripsList')
+            .get('/trips/list')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 routeId: rid.toString(),
@@ -401,7 +401,7 @@ describe('GET tripsList', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -409,7 +409,7 @@ describe('GET tripsList', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/tripsList')
+            .get('/trips/list')
             .set('Authorization', `Bearer invalid`)
             .query({
                 routeId: rid.toString(),
@@ -434,7 +434,7 @@ describe('GET getTrip', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -442,7 +442,7 @@ describe('GET getTrip', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/getTrip')
+            .get('/trips/get')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 departId: sid0.toString(),
@@ -478,7 +478,7 @@ describe('GET getTrip', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -486,7 +486,7 @@ describe('GET getTrip', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/getTrip')
+            .get('/trips/get')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 departId: new ObjectId().toString(),
@@ -508,7 +508,7 @@ describe('GET getTrip', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -516,7 +516,7 @@ describe('GET getTrip', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/getTrip')
+            .get('/trips/get')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 departId: sid0.toString(),
@@ -538,7 +538,7 @@ describe('GET getTrip', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -546,7 +546,7 @@ describe('GET getTrip', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/getTrip')
+            .get('/trips/get')
             .set('Authorization', `Bearer ${managerToken}`)
             .query({
                 departId: sid0.toString(),
@@ -568,7 +568,7 @@ describe('GET getTrip', () => {
         expect(ObjectId.isValid(res.body._id)).toBe(true);
 
         const res1 = await request(app)
-            .post('/generateTrips')
+            .post('/trips/generate')
             .set('Authorization', `Bearer ${managerToken}`)
             .send({routeId: rid, date: date})
 
@@ -576,7 +576,7 @@ describe('GET getTrip', () => {
         expect(res1.body.trips.length).toBeGreaterThan(0)
 
         const res2 = await request(app)
-            .get('/getTrip')
+            .get('/trips/get')
             .set('Authorization', `Bearer invalid`)
             .query({
                 departId: sid0.toString(),

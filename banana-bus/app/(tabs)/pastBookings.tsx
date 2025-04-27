@@ -38,7 +38,7 @@ export default function pastBookings() {
         if (!refresh) return;
         const fetchData = async () => {
             const token = await getItem("token");
-            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/pastBookings`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/bookings/past`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },

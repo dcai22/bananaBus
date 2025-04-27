@@ -65,7 +65,7 @@ export default function Trips() {
         const fetchData = async () => {
             const token = await getItem("token");
             axios
-                .get(`${process.env.EXPO_PUBLIC_API_BASE}/upcomingBookings`, {
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/bookings/upcoming`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -81,7 +81,7 @@ export default function Trips() {
                 });
 
             axios
-                .get(`${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`, {
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/savedRoutes/get`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

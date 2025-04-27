@@ -36,7 +36,7 @@ export default function LoginScreen() {
         }
 
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/resetPasswordEmail`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/resetPassword/email`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -60,7 +60,7 @@ export default function LoginScreen() {
     const checkEmailCode = async () => {
         const paramToken = await getItem('resetToken');
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/resetPasswordVerifyCode` + `?token=${paramToken}`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/resetPassword/verify` + `?token=${paramToken}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -93,7 +93,7 @@ export default function LoginScreen() {
             }
             if (token !== null) {
                 try {
-                    const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/autologin`, {
+                    const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/autologin`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -113,7 +113,7 @@ export default function LoginScreen() {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/login`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -153,7 +153,7 @@ export default function LoginScreen() {
                 const { user } = response.data;
                 const { email, givenName, familyName } = user;
                 console.log(user);
-                const loginResponse = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/googleLogin`, {
+                const loginResponse = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/login/google`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
