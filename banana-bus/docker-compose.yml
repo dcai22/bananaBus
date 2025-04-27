@@ -8,9 +8,8 @@ services:
     depends_on:
       - mongo
     env_file:
-      - .env
-    environment:
-      - MONGODB_URI 
+      - ./api/.env
+
 
   mongo:
     image: mongo:6
