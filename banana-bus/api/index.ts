@@ -3,7 +3,7 @@ import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
 import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode, authGoogleLogin, removeExpiredSessions } from './auth';
-import { getTrip, tripsList } from './tripsList';
+import { generateTrips, getTrip, tripsList } from './tripsList';
 import { createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './searchBookings';
 import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, 
@@ -158,6 +158,18 @@ app.get("/pastBookings", async (req: Request, res: Response, next) => {
         next(err);
     }
     return;
+});
+
+app.post('/generateTrips', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const routeId = new ObjectId(req.body.routeId as string);
+        const date = req.body.date as string;
+
+        res.json(await generateTrips(token, routeId, date)); // You can return trips or just a success message
+    } catch (err) {
+        next(err);
+    }
 });
 
 app.get("/tripsList", async (req: Request, res: Response, next) => {

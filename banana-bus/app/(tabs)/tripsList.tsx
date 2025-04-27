@@ -89,14 +89,28 @@ export default function tripsList() {
         setRefresh(true);
     }, [date]);
 
+    // fetching trips
     useEffect(() => {
         if (!refresh) return;
         setError("");
         const fetchData = async () => {
-            const token = await getItem("token");
-            setLoading(true);
-            axios
-                .get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
+            try {
+                setError("");
+                setLoading(true);
+
+                const token = await getItem("token");
+                // generate trips if no trips
+                await axios.post(`${process.env.EXPO_PUBLIC_API_BASE}/generateTrips`, {
+                    routeId,
+                    date,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                // fetch trips
+                const res = await axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -106,19 +120,19 @@ export default function tripsList() {
                         arriveId,
                         date,
                     },
-                })
-                .then((res) => {
-                    setDepartName(res.data.departName);
-                    setArriveName(res.data.arriveName);
-                    setTrips(res.data.trips);
-                })
-                .catch((err) => {
-                    setError(err.response.data.error);
-                })
-                .finally(() => {
-                    setLoading(false);
-                    setRefresh(false);
                 });
+
+                setDepartName(res.data.departName);
+                setArriveName(res.data.arriveName);
+                setTrips(res.data.trips);
+
+            } catch (err: any) {
+                console.error(err.response.data.error)
+                setError(err.response?.data?.error);
+            } finally {
+                setLoading(false);
+                setRefresh(false);
+            }
         };
 
         fetchData();
