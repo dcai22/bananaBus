@@ -7,7 +7,7 @@ import { generateTrips, getTrip, tripsList } from './trips';
 import { createBooking, createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './bookings';
 import { getRoutes, getSavedRoutes, reachableStops, saveRoute, unsaveRoute } from './savedRoutes';
 import { deleteAccount, getUserDetails, updateUserDetails, updateUserPassword, sendEnquiry} from './account';
-import { getDeals } from './getDeals';
+import { getDeals } from './deals';
 import { ObjectId } from 'mongodb';
 import { addManager, removeManager, addVehicle, deleteVehicle, editVehicle, createRoute, deleteRoute, allStops, allVehicles } from './manager';
 import { collections, connectToDatabase, closeConnection } from './mongoUtil';
@@ -255,8 +255,9 @@ app.put("/account/updatePassword", async (req: Request, res: Response, next) => 
 });
 
 app.get("/deals/get", async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
     try {
-        const deals = await getDeals();
+        const deals = await getDeals(token);
         res.json(deals);
     } catch (err) {
         next(err);
