@@ -22,7 +22,7 @@ export default function Deals() {
 
     useEffect(() => {
         setLoading(true)
-        axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getDeals`, {})
+        axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/deals/get`, {})
         .then((res) => {
             setPromos(res.data)
         })

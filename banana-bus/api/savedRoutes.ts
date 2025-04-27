@@ -96,3 +96,62 @@ export async function getSavedRoutes(token: string) {
         })
     )};
 }
+
+export async function reachableStops(token: string, fromId: ObjectId) {
+    await connectToDatabase();
+    const strippedToken = token.replace('Bearer ', '');
+
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const routes = await collections.routes
+        ?.find<Route>({
+            stops: { $elemMatch: { $eq: fromId } },
+        })
+        .toArray();
+
+    if (typeof routes === "undefined") {
+        throw HTTPError(400, "unable to search routes");
+    }
+
+    const stops = new Set<ObjectId>();
+    for (const route of routes) {
+        const fromIndex = route.stops.indexOf(fromId);
+        route.stops.forEach((e, i, a) => {
+            if (i > fromIndex) {
+                stops.add(e);
+            }
+        });
+    }
+
+    return { stops: Array.from(stops) };
+}
+
+export async function getRoutes(token: string, departId: ObjectId, arriveId: ObjectId) {
+    await connectToDatabase();
+    const strippedToken = token.replace('Bearer ', '');
+
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const allRoutes = await collections.routes?.find<Route>({
+        $and: [
+            { stops: { $elemMatch: { $eq: departId } } },
+            { stops: { $elemMatch: { $eq: arriveId } } }
+        ]
+    }).toArray();
+
+    if (typeof allRoutes === 'undefined') {
+        throw HTTPError(400, 'unable to search routes');
+    }
+
+    const routes = allRoutes.filter((route) => {
+        return route.stops.findIndex(s => s.equals(arriveId)) > route.stops.findIndex(s => s.equals(departId));
+    })
+
+    return { routes };
+}

@@ -55,23 +55,6 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
         "stopTimes.0": {"$gte": fromZonedTime(dateStart, timezone), "$lte": fromZonedTime(dateEnd, timezone)}
     }).toArray();
     
-    // check if trips exist else generate some trips
-    if (trips.length === 0) {
-        const today = toZonedTime(new Date(), timezone);
-        const dayDiff = differenceInCalendarDays(dateStart, today);
-        
-        // prevent generating trips more than a week ahead
-        if (dayDiff > 7) {
-            return {
-                departName,
-                arriveName,
-                trips: [],
-            }
-        }
-        
-        trips = await generateTrips(routeId, date);
-    }
-    
     // convert dataStore info to tripBox(info needed by frontend)
     const tripBoxes: TripBox[] = await Promise.all(
         trips.map(async (t) => {
@@ -116,20 +99,45 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
  * @param dateString date for the generated trip
  * @returns generated trips
  */
-export async function generateTrips(routeId: ObjectId, dateString: string) {
+export async function generateTrips(token: string, routeId: ObjectId, date: string): Promise<{trips: Trip[]}> {
     // connection to database
     await connectToDatabase();
     if (!collections.trips || !collections.routes) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
+
+    // authentication of user
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) throw HTTPError(403, 'invalid token'); 
+    
+    // define start and end of date based on timezone
+    const dateStart = toZonedTime(date, timezone);
+    dateStart.setHours(0,0,0,0);
+    const dateEnd = toZonedTime(date, timezone);
+    dateEnd.setHours(23,59,59,999);
+    
+    let trips: Trip[] = []
+    // filters trips to the date
+    trips = await collections.trips?.find<Trip>({
+        routeId: routeId,
+        "stopTimes.0": {"$gte": fromZonedTime(dateStart, timezone), "$lte": fromZonedTime(dateEnd, timezone)}
+    }).toArray();
+
+    const today = toZonedTime(new Date(), timezone);
+    const dayDiff = differenceInCalendarDays(dateStart, today);
+
+    // check if trips exist else generate some trips
+    if (trips.length !== 0 || dayDiff > 7) {
+        return { trips: [] }
+    } 
     
     const route = await getRouteById(routeId);
     
-    let trips: Trip[] = []
     // generate a trip every hr from 8am - 5pm
     for (let hr = 8; hr <= 17; hr++) {
         // define the departure time
-        const departDate = toZonedTime(dateString, timezone);
+        const departDate = toZonedTime(date, timezone);
         departDate.setHours(hr, 0, 0 , 0);
 
         // TODO replace with actual stopTimes
@@ -148,7 +156,7 @@ export async function generateTrips(routeId: ObjectId, dateString: string) {
         // if no vehicle or driver assigned
         if (!vehicle || !driver) {
             // TODO alert manager somehow
-            console.log(`no vehicle available for ${hr}`);
+            // console.log(`no vehicle available for ${hr}`);
             continue;
         }
         
@@ -178,7 +186,7 @@ export async function generateTrips(routeId: ObjectId, dateString: string) {
         { $push: { trips: {$each: tripIds}}}
     )
 
-    return trips;
+    return { trips };
 }
 
 /**

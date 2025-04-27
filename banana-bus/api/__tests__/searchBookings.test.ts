@@ -43,7 +43,7 @@ beforeAll(async () => {
     await collections.routes?.insertOne(route);
 
     const res = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send({
             email: 'email@email.com',
             password: 'password',
@@ -60,7 +60,7 @@ afterAll(async () => {
     await closeConnection();
 });
 
-describe("GET /pastBookings", () => {
+describe("GET /bookings/past", () => {
     const upcomingBId = new ObjectId();
 
     let booking00: Booking;
@@ -141,7 +141,7 @@ describe("GET /pastBookings", () => {
 
     test("No past bookings", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -149,7 +149,7 @@ describe("GET /pastBookings", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .get("/pastBookings")
+            .get("/bookings/past")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
@@ -159,7 +159,7 @@ describe("GET /pastBookings", () => {
 
     test("2 past bookings", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -175,7 +175,7 @@ describe("GET /pastBookings", () => {
         await collections.bookings?.insertMany([booking00, booking01]);
 
         const res1 = await request(app)
-            .get("/pastBookings")
+            .get("/bookings/past")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
@@ -185,7 +185,7 @@ describe("GET /pastBookings", () => {
 
     test("2 total past bookings, 1 past user booking", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -201,7 +201,7 @@ describe("GET /pastBookings", () => {
         await collections.bookings?.insertMany([booking00, booking10, upcomingBooking]);
 
         const res1 = await request(app)
-            .get("/pastBookings")
+            .get("/bookings/past")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
@@ -211,7 +211,7 @@ describe("GET /pastBookings", () => {
 
     test("5 total past bookings, 3 past user bookings", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -227,7 +227,7 @@ describe("GET /pastBookings", () => {
         await collections.bookings?.insertMany([booking00, booking10, booking02, booking03, booking11, upcomingBooking]);
 
         const res1 = await request(app)
-            .get("/pastBookings")
+            .get("/bookings/past")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
@@ -236,7 +236,7 @@ describe("GET /pastBookings", () => {
     });
 });
 
-describe("GET /upcomingBookings", () => {
+describe("GET /bookings/upcoming", () => {
     const pastBId = new ObjectId();
 
     let booking00: Booking;
@@ -317,7 +317,7 @@ describe("GET /upcomingBookings", () => {
 
     test("No upcoming bookings", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -325,7 +325,7 @@ describe("GET /upcomingBookings", () => {
         const { token } = res0.body;
 
         const res1 = await request(app)
-            .get("/upcomingBookings")
+            .get("/bookings/upcoming")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
@@ -335,7 +335,7 @@ describe("GET /upcomingBookings", () => {
 
     test("2 upcoming bookings", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -351,7 +351,7 @@ describe("GET /upcomingBookings", () => {
         await collections.bookings?.insertMany([booking00, booking01]);
 
         const res1 = await request(app)
-            .get("/upcomingBookings")
+            .get("/bookings/upcoming")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
@@ -361,7 +361,7 @@ describe("GET /upcomingBookings", () => {
 
     test("2 total upcoming bookings, 1 upcoming user booking", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -377,7 +377,7 @@ describe("GET /upcomingBookings", () => {
         await collections.bookings?.insertMany([booking00, booking10, pastBooking]);
 
         const res1 = await request(app)
-            .get("/upcomingBookings")
+            .get("/bookings/upcoming")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
@@ -387,7 +387,7 @@ describe("GET /upcomingBookings", () => {
 
     test("5 total upcoming bookings, 3 upcoming user bookings", async () => {
         const res0 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -403,7 +403,7 @@ describe("GET /upcomingBookings", () => {
         await collections.bookings?.insertMany([booking00, booking10, booking02, booking03, booking11, pastBooking]);
 
         const res1 = await request(app)
-            .get("/upcomingBookings")
+            .get("/bookings/upcoming")
             .set('Authorization', `Bearer ${token}`)
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');

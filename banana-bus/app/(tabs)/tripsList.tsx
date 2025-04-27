@@ -64,7 +64,7 @@ export default function tripsList() {
             try {
                 const token = await getItem("token");
                 const response = await axios.get(
-                    `${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`,
+                    `${process.env.EXPO_PUBLIC_API_BASE}/savedRoutes/get`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -89,14 +89,28 @@ export default function tripsList() {
         setRefresh(true);
     }, [date]);
 
+    // fetching trips
     useEffect(() => {
         if (!refresh) return;
         setError("");
         const fetchData = async () => {
-            const token = await getItem("token");
-            setLoading(true);
-            axios
-                .get(`${process.env.EXPO_PUBLIC_API_BASE}/tripsList`, {
+            try {
+                setError("");
+                setLoading(true);
+
+                const token = await getItem("token");
+                // generate trips if no trips
+                await axios.post(`${process.env.EXPO_PUBLIC_API_BASE}/trips/generate`, {
+                    routeId,
+                    date,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                // fetch trips
+                const res = await axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/trips/list`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -106,19 +120,19 @@ export default function tripsList() {
                         arriveId,
                         date,
                     },
-                })
-                .then((res) => {
-                    setDepartName(res.data.departName);
-                    setArriveName(res.data.arriveName);
-                    setTrips(res.data.trips);
-                })
-                .catch((err) => {
-                    setError(err.response.data.error);
-                })
-                .finally(() => {
-                    setLoading(false);
-                    setRefresh(false);
                 });
+
+                setDepartName(res.data.departName);
+                setArriveName(res.data.arriveName);
+                setTrips(res.data.trips);
+
+            } catch (err: any) {
+                console.error(err.response.data.error)
+                setError(err.response?.data?.error);
+            } finally {
+                setLoading(false);
+                setRefresh(false);
+            }
         };
 
         fetchData();
@@ -127,7 +141,7 @@ export default function tripsList() {
     const toggleSaveRoute = async () => {
         try {
             const token = await getItem("token");
-            const endpoint = isSaved ? "/unsaveRoute" : "/saveRoute";
+            const endpoint = isSaved ? "/savedRoutes/unsave" : "/savedRoutes/save";
             setIsSaved(!isSaved);
             await axios.post(
                 `${process.env.EXPO_PUBLIC_API_BASE}/${endpoint}`,

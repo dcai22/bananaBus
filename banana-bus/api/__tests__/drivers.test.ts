@@ -83,28 +83,28 @@ beforeAll(async () => {
     await collections.users?.deleteMany();
 
     const driverRes = await request(app)
-    .post('/register')
+    .post('/auth/register')
     .send(driver);
     driverToken = driverRes.body.token;
     driverId = new ObjectId(driverRes.body.userId as string);
 
     userToken = await request(app)
-    .post('/register')
+    .post('/auth/register')
     .send(user)
     .then((res: any) => res.body.token);
 
     const passenger0Res = await request(app)
-    .post('/register')
+    .post('/auth/register')
     .send(passenger0);
     passenger0Id = new ObjectId(passenger0Res.body.userId as string);
 
     const passenger1Res = await request(app)
-    .post('/register')
+    .post('/auth/register')
     .send(passenger1);
     passenger1Id = new ObjectId(passenger1Res.body.userId as string);
 
     const passenger2Res = await request(app)
-    .post('/register')
+    .post('/auth/register')
     .send(passenger2);
     passenger2Id = new ObjectId(passenger2Res.body.userId as string);
 

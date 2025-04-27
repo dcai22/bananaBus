@@ -3,6 +3,7 @@ import { collections, connectToDatabase } from "./mongoUtil";
 import { findUserByToken, getRouteById, getStopById, getTripById } from "./helper";
 import { Booking } from "./interface";
 import dotenv from "dotenv";
+import { ObjectId } from "mongodb";
 dotenv.config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -76,6 +77,38 @@ export async function searchBookings(token: string, timeFrame: string) {
         };
     }));
     return userBookings;
+}
+
+export async function createBooking(token: string, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets: number, numLuggage: number) {
+    await connectToDatabase();
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, 'invalid token');
+    }
+
+    const dbRes = await collections.bookings?.insertOne({
+        _id: new ObjectId(),
+        userId: user._id,
+        tripId,
+        originId,
+        destId,
+        numTickets,
+        numLuggage,
+        bookingTime: new Date(),
+    });
+    await collections.trips?.updateOne(
+        { _id: tripId },
+        { $push: { bookings: dbRes?.insertedId } } as any
+    )
+    await collections.users?.updateOne(
+        { _id: user._id },
+        { $push: { bookings: dbRes?.insertedId } } as any
+    )
+
+    return { insertedId: dbRes?.insertedId }
+
 }
 
 export async function createPaymentDetails(token: string, price: number) {

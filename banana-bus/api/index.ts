@@ -3,25 +3,16 @@ import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
 import { authLogin, authRegister, authAutoLogin, authLogout, authPasswordResetEmail, authPasswordReset, authPasswordVerifyCode, authGoogleLogin, removeExpiredSessions } from './auth';
-import { getTrip, tripsList } from './tripsList';
-import { createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './searchBookings';
-import { getSavedRoutes, saveRoute, unsaveRoute } from './savedRoutes';
-import { deleteAccount, 
-            getUserDetails,
-            updateUserDetails,
-            updateUserPassword,
-            addCard,
-            editCard,
-            deleteCard,
-            makeDefaultCard,
-            getUserCards, 
-            sendEnquiry} from './account';
+import { generateTrips, getTrip, tripsList } from './trips';
+import { createBooking, createCustomerKey, createPaymentDetails, createSetupIntent, searchBookings } from './bookings';
+import { getRoutes, getSavedRoutes, reachableStops, saveRoute, unsaveRoute } from './savedRoutes';
+import { deleteAccount, getUserDetails, updateUserDetails, updateUserPassword, sendEnquiry} from './account';
 import { getDeals } from './getDeals';
-import { Booking, Route, RouteSection, Trip } from './interface';
 import { ObjectId } from 'mongodb';
-import { addManager, removeManager, addVehicle, deleteVehicle, editVehicle } from './manager';
+import { addManager, removeManager, addVehicle, deleteVehicle, editVehicle, createRoute, deleteRoute, allStops, allVehicles } from './manager';
 import { collections, connectToDatabase, closeConnection } from './mongoUtil';
-import { driverGetTrip, findUserByToken, getRouteById, getStopById } from './helper';
+import { findUserByToken, getRouteById, getStopById } from './helper';
+import { driverGetUpcomingTrips, driverGetTrip, driverReportVehicle } from "./driver";
 
 const app = express();
 
@@ -35,7 +26,7 @@ app.get("/", (req: Request, res: Response) => {
     res.send("Hello world");
 });
 
-app.post("/login", async (req: Request, res: Response, next) => {
+app.post("/auth/login", async (req: Request, res: Response, next) => {
     try {
         const email = req.body.email as string;
         const password = req.body.password as string;
@@ -46,7 +37,7 @@ app.post("/login", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.post("/register", async (req: Request, res: Response, next) => {
+app.post("/auth/register", async (req: Request, res: Response, next) => {
     try {
         const email = req.body.email as string;
         const password = req.body.password as string;
@@ -59,7 +50,7 @@ app.post("/register", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.post("/googleLogin", async (req: Request, res: Response, next) => {
+app.post("/auth/login/google", async (req: Request, res: Response, next) => {
     try {
         const email = req.body.email as string;
         const firstName = req.body.firstName as string;
@@ -71,7 +62,7 @@ app.post("/googleLogin", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.post("/resetPasswordEmail", async (req: Request, res: Response, next) => {
+app.post("/auth/resetPassword/email", async (req: Request, res: Response, next) => {
     try {
         const email = req.body.email as string;
         res.json(await authPasswordResetEmail(email));
@@ -81,21 +72,18 @@ app.post("/resetPasswordEmail", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.post(
-    "/resetPasswordVerifyCode",
-    async (req: Request, res: Response, next) => {
-        try {
-            const token = req.query.token as string;
-            const code = req.body.code as string;
-            res.json(await authPasswordVerifyCode(token, code));
-        } catch (error) {
-            next(error);
-        }
-        return;
+app.post("/auth/resetPassword/verify", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.query.token as string;
+        const code = req.body.code as string;
+        res.json(await authPasswordVerifyCode(token, code));
+    } catch (error) {
+        next(error);
     }
-);
+    return;
+});
 
-app.post("/resetPassword", async (req: Request, res: Response, next) => {
+app.post("/auth/resetPassword/reset", async (req: Request, res: Response, next) => {
     try {
         const token = req.query.token as string;
         const newPassword = req.body.newPassword as string;
@@ -106,7 +94,7 @@ app.post("/resetPassword", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.post("/autologin", async (req: Request, res: Response, next) => {
+app.post("/auth/autologin", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         res.json(await authAutoLogin(token));
@@ -116,7 +104,7 @@ app.post("/autologin", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.post("/logout", async (req: Request, res: Response, next) => {
+app.post("/auth/logout", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const userId = req.body.userId as ObjectId;
@@ -127,7 +115,7 @@ app.post("/logout", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.delete("/deleteAccount", async (req: Request, res: Response, next) => {
+app.delete("/account/delete", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const userId = req.body.userId as ObjectId;
@@ -138,7 +126,7 @@ app.delete("/deleteAccount", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
+app.get("/bookings/upcoming", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const bookings = await searchBookings(token, 'upcoming');
@@ -149,7 +137,7 @@ app.get("/upcomingBookings", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.get("/pastBookings", async (req: Request, res: Response, next) => {
+app.get("/bookings/past", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const bookings = await searchBookings(token, 'past');
@@ -160,7 +148,19 @@ app.get("/pastBookings", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.get("/tripsList", async (req: Request, res: Response, next) => {
+app.post('/trips/generate', async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const routeId = new ObjectId(req.body.routeId as string);
+        const date = req.body.date as string;
+
+        res.json(await generateTrips(token, routeId, date));
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.get("/trips/list", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const routeId = new ObjectId(req.query.routeId as string);
@@ -174,7 +174,7 @@ app.get("/tripsList", async (req: Request, res: Response, next) => {
     }
 });
 
-app.get("/getTrip", async (req: Request, res: Response, next) => {
+app.get("/trips/get", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const departId = new ObjectId(req.query.departId as string);
@@ -187,7 +187,7 @@ app.get("/getTrip", async (req: Request, res: Response, next) => {
     }
 });
 
-app.get("/getSavedRoutes", async (req: Request, res: Response, next) => {
+app.get("/savedRoutes/get", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     try {
         res.json(await getSavedRoutes(token));
@@ -196,7 +196,7 @@ app.get("/getSavedRoutes", async (req: Request, res: Response, next) => {
     }
 });
 
-app.post("/saveRoute", async (req: Request, res: Response, next) => {
+app.post("/savedRoutes/save", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     const routeId = new ObjectId(req.body.routeId as string);
     const originId = new ObjectId(req.body.originId as string);
@@ -208,7 +208,7 @@ app.post("/saveRoute", async (req: Request, res: Response, next) => {
     }
 });
 
-app.post("/unsaveRoute", async (req: Request, res: Response, next) => {
+app.post("/savedRoutes/unsave", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     const routeId = new ObjectId(req.body.routeId as string);
     const originId = new ObjectId(req.body.originId as string);
@@ -220,7 +220,7 @@ app.post("/unsaveRoute", async (req: Request, res: Response, next) => {
     }
 });
 
-app.get("/getAccountDetails", async (req: Request, res: Response, next) => {
+app.get("/account/getDetails", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         res.json(await getUserDetails(token));
@@ -229,7 +229,7 @@ app.get("/getAccountDetails", async (req: Request, res: Response, next) => {
     }
 });
 
-app.put("/updateAccountDetails", async (req: Request, res: Response, next) => {
+app.put("/account/updateDetails", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const firstName = req.body.firstName as string;
@@ -242,7 +242,7 @@ app.put("/updateAccountDetails", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.put("/updateAccountPassword", async (req: Request, res: Response, next) => {
+app.put("/account/updatePassword", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
         const oldPassword = req.body.oldPassword as string;
@@ -254,7 +254,7 @@ app.put("/updateAccountPassword", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.get("/getDeals", async (req: Request, res: Response, next) => {
+app.get("/deals/get", async (req: Request, res: Response, next) => {
     try {
         const deals = await getDeals();
         res.json(deals);
@@ -263,7 +263,7 @@ app.get("/getDeals", async (req: Request, res: Response, next) => {
     }
 });
 
-app.post("/createBooking", async (req: Request, res: Response, next) => {
+app.post("/bookings/create", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     const tripId = new ObjectId(req.body.tripId as string);
     const originId = new ObjectId(req.body.originId as string);
@@ -271,36 +271,8 @@ app.post("/createBooking", async (req: Request, res: Response, next) => {
     const numTickets = req.body.numTickets as number;
     const numLuggage = req.body.numLuggage as number;
 
-    await connectToDatabase();
-
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-
     try {
-        const dbRes = await collections.bookings?.insertOne({
-            _id: new ObjectId(),
-            userId: user._id,
-            tripId,
-            originId,
-            destId,
-            numTickets,
-            numLuggage,
-            bookingTime: new Date(),
-        });
-        await collections.trips?.updateOne(
-            { _id: tripId },
-            { $push: { bookings: dbRes?.insertedId } } as any
-        )
-        await collections.users?.updateOne(
-            { _id: user._id },
-            { $push: { bookings: dbRes?.insertedId } } as any
-        )
-
-        res.json({ insertedId: dbRes?.insertedId });
+        res.json(await createBooking(token, tripId, originId, destId, numTickets, numLuggage));
     } catch (err) {
         next(err);
     }
@@ -310,70 +282,28 @@ app.post("/manager/createRoute", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     const stops = req.body.stops as ObjectId[];
 
-    await connectToDatabase();
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-    if (!user.isManager) {
-        res.status(403).json({ error: "user is not a manager" });
-        return;
-    }
-
     try {
-        const dbRes = await collections.routes?.insertOne({
-            _id: new ObjectId(),
-            stops,
-            trips: [],
-        });
-        res.json({ insertedId: dbRes?.insertedId });
+        res.json(await createRoute(token, stops));
     } catch (err) {
         next(err);
     }
 });
 
-app.delete(
-    "/manager/deleteRoute",
-    async (req: Request, res: Response, next) => {
-        const token = req.headers.authorization as string;
-        const routeId = req.body.routeId as ObjectId;
+app.delete("/manager/deleteRoute", async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    const routeId = new ObjectId(req.body.routeId as string);
 
-        await connectToDatabase();
-        const strippedToken = token.replace("Bearer ", "");
-        const user = await findUserByToken(strippedToken);
-        if (!user) {
-            res.status(403).json({ error: "invalid token" });
-            return;
-        }
-        if (!user.isManager) {
-            res.status(403).json({ error: "user is not a manager" });
-            return;
-        }
-
-        try {
-            await collections.routes?.deleteOne({ routeId: routeId });
-            res.json({});
-        } catch (err) {
-            next(err);
-        }
+    try {
+        res.json(await deleteRoute(token, routeId));
+    } catch (err) {
+        next(err);
     }
-);
+});
 
 app.get("/manager/allStops", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    await connectToDatabase();
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-
-    if (!user) {
-        res.status(403).json({ error: 'invalid token' });
-        return;
-    }
     try {
-        const dbRes = await collections.stops?.find().toArray();
-        res.json(dbRes);
+        res.json(await allStops(token));
     } catch (err) {
         next(err);
     }
@@ -399,7 +329,7 @@ app.put("/manager/remove", async (req: Request, res: Response, next) => {
     }
 });
 
-app.post('/sendEnquiry', async (req: Request, res: Response, next) => {
+app.post('/account/sendEnquiry', async (req: Request, res: Response, next) => {
     try {
         const heading = req.body.heading as string;
         const body = req.body.body as string;
@@ -415,22 +345,7 @@ app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
 
     try {
-        await connectToDatabase();
-
-        const strippedToken = token.replace("Bearer ", "");
-        const user = await findUserByToken(strippedToken);
-        if (!user) {
-            res.status(403).json({ error: "invalid token" });
-            return;
-        }
-        if (!user.isManager) {
-            res.status(403).json({ error: "user is not a manager" });
-            return;
-        }
-
-        
-        const allVehicles = await collections.vehicles?.find().toArray();
-        res.json({ vehicles: allVehicles });
+        res.json(await allVehicles(token));
     } catch (err) {
         next(err);
     }
@@ -446,21 +361,8 @@ app.post('/manager/addVehicle', async (req: Request, res: Response, next) => {
     const numberPlate = req.body.numberPlate as string;
     const model = req.body.model;
 
-    await connectToDatabase();
-
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-    if (!user.isManager) {
-        res.status(403).json({ error: "user is not a manager" });
-        return;
-    }
-
     try {   
-        res.json(await addVehicle(maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
+        res.json(await addVehicle(token, maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
     } catch (err) {
         next(err);
     }
@@ -502,21 +404,8 @@ app.delete('/manager/deleteVehicle', async (req: Request, res: Response, next) =
     const token = req.headers.authorization as string; 
     const vehicleId = new ObjectId(req.body.vehicleId as string);
 
-    await connectToDatabase();
-    
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-    if (!user.isManager) {
-        res.status(403).json({ error: "user is not a manager" });
-        return;
-    }
-
     try{
-        res.json(await deleteVehicle(vehicleId));
+        res.json(await deleteVehicle(token, vehicleId));
     } catch (err) {
         next(err);
     }
@@ -528,139 +417,24 @@ app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
     await connectToDatabase();
 
     const token = req.headers.authorization as string;
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-
     const fromId = new ObjectId(req.query.fromId as string);
 
     try {
-        const routes = await collections.routes
-            ?.find<Route>({
-                stops: { $elemMatch: { $eq: fromId } },
-            })
-            .toArray();
-
-        if (typeof routes === "undefined") {
-            res.status(400).json({ error: "unable to search routes" });
-            return;
-        }
-
-        const stops = new Set<ObjectId>();
-        for (const route of routes) {
-            const fromIndex = route.stops.indexOf(fromId);
-            route.stops.forEach((e, i, a) => {
-                if (i > fromIndex) {
-                    stops.add(e);
-                }
-            });
-        }
-
-        res.json({ stops: Array.from(stops) });
+        res.json(await reachableStops(token, fromId));
     } catch (err) {
         next(err);
     }
 });
 
-app.post('/addCard', async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        const type = req.body.type as string;
-        const cardNumber = req.body.cardNumber as string;
-        const cvv = req.body.cvv as string;
-        const expMonth = parseInt(req.body.expMonth as string);
-        const expYear = parseInt(req.body.expYear as string);
-        res.json(await addCard(token, type, cardNumber, cvv, expMonth, expYear));
-    } catch(error) {
-        next(error);
-    }
-    return;
-})
-
-app.put('/editCard', async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        const cardId = req.body.cardId as ObjectId;
-        const type = req.body.type as string;
-        const cardNumber = req.body.cardNumber as string;
-        const cvv = req.body.cvv as string;
-        const expMonth = parseInt(req.body.expMonth as string);
-        const expYear = parseInt(req.body.expYear as string);
-        res.json(await editCard(token, cardId, type, cardNumber, cvv, expMonth, expYear));
-    } catch(error) {
-        next(error);
-    }
-    return;
-})
-
-
-app.put('/makeDefaultCard', async (req: Request, res: Response, next) => {
-    const token = req.headers.authorization as string;
-    const cardId = new ObjectId(req.body.cardId as string);
-    try{
-        res.json(await makeDefaultCard(token, cardId));
-    } catch ( err ) {
-        next(err);
-    }
-    return;
-})
-
-app.delete('/deleteCard', async(req: Request, res: Response, next) => {
-    try{
-        const token = req.headers.authorization as string;
-        const cardId = new ObjectId(req.body.cardId as string);
-        res.json(await deleteCard(token, cardId));
-    } catch ( err ) {
-        next(err);
-    }
-    return;
-})
-
-app.get('/getUserCards', async(req: Request, res: Response, next) => {
-    try{
-        const token = req.headers.authorization as string;
-        res.json(await getUserCards(token));
-    } catch ( err ) {
-        next(err);
-    }
-    return;
-})
-
 app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
     await connectToDatabase();
 
     const token = req.headers.authorization as string;
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-
     const departId = new ObjectId(req.query.departId as string);
     const arriveId = new ObjectId(req.query.arriveId as string);
 
     try {
-        const allRoutes = await collections.routes?.find<Route>({
-            $and: [
-                { stops: { $elemMatch: { $eq: departId } } },
-                { stops: { $elemMatch: { $eq: arriveId } } }
-            ]
-        }).toArray();
-
-        if (typeof allRoutes === 'undefined') {
-            res.status(400).json({ error: 'unable to search routes' })
-            return;
-        }
-
-        const routes = allRoutes.filter((route) => {
-            return route.stops.findIndex(s => s.equals(arriveId)) > route.stops.findIndex(s => s.equals(departId));
-        })
-
-        res.json( { routes });
+        res.json(await getRoutes(token, departId, arriveId));
     } catch (err) {
         next(err);
     }
@@ -669,44 +443,8 @@ app.get('/routes/fromSection', async (req: Request, res: Response, next) => {
 app.get('/driver/getUpcomingTrips', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
 
-    await connectToDatabase();
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-    if (!user.isDriver) {
-        res.status(403).json({ error: "user is not a driver" });
-        return;
-    }
-
     try {
-        const now = new Date();
-        const allTrips = await collections.trips?.find<Trip>({
-            driverId: user._id,
-        }).toArray();
-        const upcomingTrips = allTrips?.filter(t => t.stopTimes[0] > now);
-        if (!upcomingTrips) {
-            res.json({ upcomingTrips: [] });
-            return;
-        }
-
-        const formattedUpcomingTrips = await Promise.all(
-            upcomingTrips.map(async (t) => {
-                const route = await getRouteById(t.routeId);
-                const origin = await getStopById(route.stops[0]);
-                const dest = await getStopById(route.stops[route.stops.length - 1]);
-                return {
-                    _id: t._id.toString(),
-                    stopTimes: t.stopTimes,
-                    originName: origin.name,
-                    destName: dest.name,
-                };
-            })
-        );
-
-        res.json({ upcomingTrips: formattedUpcomingTrips });
+        res.json(await driverGetUpcomingTrips(token));
     } catch (err) {
         next(err);
     }
@@ -725,29 +463,11 @@ app.get('/driver/getTrip', async (req: Request, res: Response, next) => {
 
 app.put('/driver/reportVehicle', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-    if (!user.isDriver) {
-        res.status(403).json({ error: "user is not a driver" });
-        return;
-    }
-    
     const vehicleId = new ObjectId(req.body.vehicleId as string);
     const reportText = req.body.reportText as string;
-
-    await connectToDatabase();
-
+    
     try {
-        const date = new Date();
-        await collections.vehicles?.updateOne(
-            { _id: vehicleId },
-            { $push: { reports: { date, text: reportText } } }
-        );
-        res.json({ date });
+        res.json(await driverReportVehicle(token, vehicleId, reportText));
     } catch (err) {
         next(err);
     }
@@ -759,18 +479,6 @@ app.get('/removeExpiredSessions', async (req: Request, res: Response, next) => {
     } catch (error) {
         next(error);
     }
-    return;
-});
-
-app.delete('/clearUsers', async (req: Request, res: Response, next) => {
-    await connectToDatabase();
-    await collections.users?.deleteMany({});
-    res.json({});
-    return;
-});
-
-app.post('/closeConnection', async (req: Request, res: Response, next) => {
-    res.json(await closeConnection());
     return;
 });
 

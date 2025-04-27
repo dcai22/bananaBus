@@ -21,7 +21,7 @@ afterAll(async () => {
 describe('Register', () => {
     test('successful register', async () => {
         const response = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -35,7 +35,7 @@ describe('Register', () => {
 
     test('email already in use', async () => {
         await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -43,7 +43,7 @@ describe('Register', () => {
                 lastName: 'last',
             });
         const response = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -57,7 +57,7 @@ describe('Register', () => {
 describe('Login', () => {
     test('successful login', async () => {
         await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -65,7 +65,7 @@ describe('Login', () => {
                 lastName: 'last',
             });
         const response = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -77,7 +77,7 @@ describe('Login', () => {
 
     test('incorrect password', async () => {
         await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -85,7 +85,7 @@ describe('Login', () => {
                 lastName: 'last',
             });
         const response = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'wrong',
@@ -95,7 +95,7 @@ describe('Login', () => {
 
     test('email not found', async () => {
         const response = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@gmail.com',
                 password: 'password',
@@ -105,7 +105,7 @@ describe('Login', () => {
 
     test('autologin', async () => {
         const response1 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -114,7 +114,7 @@ describe('Login', () => {
             });
         const { userId, token } = response1.body;
         const response2 = await request(app)
-            .post('/autologin')
+            .post('/auth/autologin')
             .set('Authorization', `Bearer ${token}`);
         expect(response2.status).toBe(200);
         expect(response2.body.userId).toBe(userId);
@@ -126,7 +126,7 @@ describe('Login', () => {
 describe('Logout', () => {
     test('successful logout', async () => {
         const response1 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -135,7 +135,7 @@ describe('Logout', () => {
             });
         const { userId, token } = response1.body;
         const response2 = await request(app)
-            .post('/logout')
+            .post('/auth/logout')
             .set('Authorization', `Bearer ${token}`)
             .send({
                 userId,
@@ -147,7 +147,7 @@ describe('Logout', () => {
 describe('Delete', () => {
     test('successful delete', async () => {
         const response1 = await request(app)
-            .post('/register')
+            .post('/auth/register')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -156,7 +156,7 @@ describe('Delete', () => {
             });
         const { userId, token } = response1.body;
         const response2 = await request(app)
-            .delete('/deleteAccount')
+            .delete('/account/delete')
             .set('Authorization', `Bearer ${token}`)
             .send({
                 userId
@@ -164,7 +164,7 @@ describe('Delete', () => {
         expect(response2.status).toBe(200);
 
         const response3 = await request(app)
-            .post('/login')
+            .post('/auth/login')
             .send({
                 email: 'email@email.com',
                 password: 'password',
@@ -174,7 +174,7 @@ describe('Delete', () => {
 
     test('user not found', async () => {
         const response = await request(app)
-            .delete('/deleteAccount')
+            .delete('/account/delete')
             .set('Authorization', `Bearer tokenthatdoesnotexist`)
             .send({
                 userId: 0,

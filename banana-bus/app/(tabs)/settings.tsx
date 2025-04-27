@@ -58,7 +58,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/getAccountDetails`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/account/getDetails`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -133,8 +133,8 @@ export default function Settings() {
 
         if (modalType === "details") {
             try {
-                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/updateAccountDetails`, {
-                    method: "POST",
+                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/account/updateDetails`, {
+                    method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                         'Authorization': `Bearer ${token}`,
@@ -161,8 +161,8 @@ export default function Settings() {
                 return;
             }
             try {
-                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/updateAccountPassword`, {
-                    method: "POST",
+                const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/account/updatePassword`, {
+                    method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                         'Authorization': `Bearer ${token}`,
@@ -198,7 +198,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/logout`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/auth/logout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -243,7 +243,7 @@ export default function Settings() {
         }
 
         try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/deleteAccount`, {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/account/delete`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

@@ -45,12 +45,12 @@ beforeEach(async () => {
 
     // make manager and user
     managerToken = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send(manager)
         .then((res: any) => res.body.token);
 
     userToken = await request(app)
-        .post('/register')
+        .post('/auth/register')
         .send(user)
         .then((res: any) => res.body.token);
 });
