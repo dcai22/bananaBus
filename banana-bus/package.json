@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "test:app": "jest --testPathPattern=_tests_/app --coverage"
+    "app-tests": "jest _tests_/app --coverage"
   },
   "jest": {
     "preset": "jest-expo"
