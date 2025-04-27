@@ -9,6 +9,10 @@ import {
 import MapSearch from "@/app/components/MapSearch";
 import { IStop } from "@/app/(tabs)/index";
 import axios from "axios";
+import { Alert } from "react-native";
+
+jest.mock("axios");
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 jest.mock("expo-font", () => ({
     loadAsync: jest.fn(),
@@ -57,6 +61,11 @@ jest.mock("expo-router", () => ({
     useFocusEffect: jest.fn((cb) => cb()),
 }));
 
+// Mock Alert
+jest.mock("react-native/Libraries/Alert/Alert", () => ({
+    alert: jest.fn(),
+}));
+
 // Test Mock Values
 const mockStops: IStop[] = [
     { _id: "1", name: "KLIA Terminal 1", lat: 2.7567602, lng: 101.7007533 },
@@ -73,9 +82,6 @@ const mockCurrentLocation = [
 ];
 
 const mockReachableStops = ["3", "4"];
-
-jest.mock("axios");
-const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe("MapSearch Component", () => {
     const mockSetFromLoc = jest.fn();
@@ -229,5 +235,158 @@ describe("MapSearch Component", () => {
         // verify "to" input
         const toInput = getByTestId("to-input");
         expect(toInput).toBeTruthy();
+    });
+});
+
+describe("MapSearch -- Alerts Testing", () => {
+    const mockSetFromLoc = jest.fn();
+    const mockSetToLoc = jest.fn();
+    const spyAlert = jest.spyOn(Alert, "alert");
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+        cleanup();
+    });
+
+    it("should display an alert when fetching stops fails", async () => {
+        // Mock the API call to fail
+        mockedAxios.get.mockImplementation((url) => {
+            if (url.includes("allStops")) {
+                return Promise.reject(new Error("error"));
+            }
+            return Promise.reject(new Error("error"));
+        });
+
+        render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
+
+        // Wait for the component to try to fetch stops
+        await waitFor(() => {
+            expect(spyAlert).toHaveBeenCalledWith(
+                "Something went wrong!",
+                "Error fetching stops",
+                [{ text: "OK" }]
+            );
+        });
+    });
+
+    it("should display an alert when fetching destinations fails", async () => {
+        // Mock the API calls: first one succeeds, second one fails
+        mockedAxios.get.mockImplementation((url) => {
+            if (url.includes("allStops")) {
+                return Promise.resolve({ data: mockStops });
+            } else if (url.includes("reachableFrom")) {
+                return Promise.reject(new Error("error"));
+            }
+            return Promise.reject(new Error("error"));
+        });
+
+        // Render with a selected 'from' location to trigger destination fetching
+        const { rerender } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
+
+        // Wait for initial stops to load
+        await waitFor(() => {
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                expect.stringContaining("allStops"),
+                expect.any(Object)
+            );
+        });
+
+        // Re-render with a selected fromLoc to trigger destination fetching
+        rerender(
+            <MapSearch
+                fromLoc={{ ...mockStops[0] }}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
+
+        // Wait for the component to try to fetch destinations
+        await waitFor(() => {
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                expect.stringContaining("reachableFrom"),
+                expect.any(Object)
+            );
+            expect(spyAlert).toHaveBeenCalledWith(
+                "Something went wrong!",
+                "Error fetching destinations",
+                [{ text: "OK" }]
+            );
+        });
+    });
+
+    it("should gracefully handle when a destination fetch returns empty data", async () => {
+        mockedAxios.get.mockImplementation((url) => {
+            if (url.includes("allStops")) {
+                return Promise.resolve({ data: mockStops });
+            } else if (url.includes("reachableFrom")) {
+                return Promise.resolve({ data: { stops: [] } });
+            }
+            return Promise.reject(new Error("Unknown URL"));
+        });
+
+        const { rerender } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
+
+        // Wait for initial stops to load
+        await waitFor(() => {
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                expect.stringContaining("allStops"),
+                expect.any(Object)
+            );
+        });
+
+        // Re-render with a selected fromLoc to trigger destination fetching
+        rerender(
+            <MapSearch
+                fromLoc={{ ...mockStops[0] }}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={{ lat: null, lng: null }}
+            />
+        );
+
+        // Wait for the component to fetch destinations
+        await waitFor(() => {
+            expect(mockedAxios.get).toHaveBeenCalledWith(
+                expect.stringContaining("reachableFrom"),
+                expect.any(Object)
+            );
+        });
+
+        // No alert should be shown for empty data (this is a valid response)
+        expect(spyAlert).not.toHaveBeenCalledWith(
+            "Something went wrong!",
+            "Error fetching destinations",
+            [{ text: "OK" }]
+        );
     });
 });
