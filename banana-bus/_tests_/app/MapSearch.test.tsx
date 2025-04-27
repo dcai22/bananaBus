@@ -288,6 +288,110 @@ describe("MapSearch Component", () => {
             expect(queryByText("0 m")).toBeTruthy();
         });
     });
+
+    // Clear button tests
+    it("should not show clear button when not focused", () => {
+        const { queryByTestId } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={mockCurrentLocation[0]}
+            />
+        );
+
+        expect(queryByTestId("from-clear-button")).toBeNull();
+        expect(queryByTestId("to-clear-button")).toBeNull();
+    });
+
+    it("should not show clear button when focused but input empty", async () => {
+        const { getByTestId, queryByTestId } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={mockCurrentLocation[0]}
+            />
+        );
+
+        const fromInput = getByTestId("from-input");
+
+        await act(async () => {
+            fireEvent(fromInput, "focus");
+        });
+
+        expect(queryByTestId("from-clear-button")).toBeNull();
+    });
+
+    it("should show clear button when focused and input not empty", async () => {
+        const { getByTestId, queryByTestId } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={mockCurrentLocation[0]}
+            />
+        );
+
+        const fromInput = getByTestId("from-input");
+
+        await act(async () => {
+            fireEvent(fromInput, "focus");
+        });
+
+        await act(async () => {
+            fireEvent.changeText(fromInput, "KLIA");
+        });
+
+        await waitFor(() => {
+            expect(queryByTestId("from-clear-button")).not.toBeNull();
+        });
+    });
+
+    it("correctly clears input when clear button is pressed", async () => {
+        const { getByTestId, queryByTestId } = render(
+            <MapSearch
+                fromLoc={emptyStop}
+                toLoc={emptyStop}
+                setFromLoc={mockSetFromLoc}
+                setToLoc={mockSetToLoc}
+                currentLocation={mockCurrentLocation[0]}
+            />
+        );
+
+        const fromInput = getByTestId("from-input");
+        const toInput = getByTestId("to-input");
+
+        await act(async () => {
+            fireEvent(fromInput, "focus");
+            fireEvent.changeText(fromInput, "KLIA");
+        });
+
+        await waitFor(() => {
+            expect(queryByTestId("from-clear-button")).not.toBeNull();
+            expect(queryByTestId("to-clear-button")).toBeNull();
+        });
+
+        await act(async () => {
+            fireEvent(toInput, "focus");
+            fireEvent.changeText(toInput, "Sentral");
+        });
+
+        await waitFor(() => {
+            expect(queryByTestId("from-clear-button")).toBeNull();
+            expect(queryByTestId("to-clear-button")).not.toBeNull();
+        });
+
+        await waitFor(() => {
+            const toClearButton = getByTestId("to-clear-button");
+            fireEvent.press(toClearButton);
+        });
+
+        expect(toInput.props.value).toBe("");
+    });
 });
 
 describe("MapSearch -- Alerts Testing", () => {
