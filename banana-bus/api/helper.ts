@@ -92,14 +92,15 @@ export async function driverGetTrip(token: string, tripId: ObjectId) {
 
     const allBookings = await collections.bookings?.find<Booking>({
         tripId: tripId,
-    }).toArray();
-    if (!allBookings) {
-        throw HTTPError(400, 'bookings not found');
-    }
+    }).toArray() ?? [];
 
     const trip = await getTripById(tripId);
     const route = await getRouteById(trip.routeId);
     const vehicle = await getVehicleById(trip.vehicleId);
+
+    if (!trip.driverId.equals(user._id)) {
+        throw HTTPError(403, "user is not driver of this trip");
+    }
 
     const stops = await Promise.all(
         route.stops.map(async (s, i) => {

@@ -731,20 +731,23 @@ app.put('/driver/reportVehicle', async (req: Request, res: Response, next) => {
         res.status(403).json({ error: "invalid token" });
         return;
     }
+    if (!user.isDriver) {
+        res.status(403).json({ error: "user is not a driver" });
+        return;
+    }
     
     const vehicleId = new ObjectId(req.body.vehicleId as string);
     const reportText = req.body.reportText as string;
 
-    console.log(req);
-
     await connectToDatabase();
-    
+
     try {
+        const date = new Date();
         await collections.vehicles?.updateOne(
             { _id: vehicleId },
-            { $push: { reports: { date: new Date(), text: reportText } } }
+            { $push: { reports: { date, text: reportText } } }
         );
-        res.json();
+        res.json({ date });
     } catch (err) {
         next(err);
     }
