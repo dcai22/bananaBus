@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "test": "jest --watchAll --runInBand",
     "lint": "expo lint",
-    "app-tests": "jest _tests_/app --coverage"
+    "app-tests": "jest _tests_/app --coverage",
+    "api-tests": "jest api/__tests__ --watchAll --runInBand"
   },
   "jest": {
     "preset": "jest-expo"
