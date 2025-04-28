@@ -150,7 +150,25 @@ export default function TabLayout() {
                     }}
                 />
                 <Tabs.Screen
+                    name="adminAlert"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
+                    name="manageRoutes"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
                     name="manageVehicles"
+                    options={{
+                        href: null,
+                    }}
+                />
+                <Tabs.Screen
+                    name="manageUsers"
                     options={{
                         href: null,
                     }}
