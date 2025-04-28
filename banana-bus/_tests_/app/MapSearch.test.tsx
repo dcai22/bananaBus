@@ -479,7 +479,7 @@ describe("MapSearch -- Alerts Testing", () => {
             );
             expect(spyAlert).toHaveBeenCalledWith(
                 "Something went wrong!",
-                "Error fetching destinations",
+                "The selected route could not be found. Please try something else.",
                 [{ text: "OK" }]
             );
         });
@@ -531,7 +531,7 @@ describe("MapSearch -- Alerts Testing", () => {
 
         expect(spyAlert).not.toHaveBeenCalledWith(
             "Something went wrong!",
-            "Error fetching destinations",
+            "The selected route could not be found. Please try something else.",
             [{ text: "OK" }]
         );
     });

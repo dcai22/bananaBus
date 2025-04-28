@@ -41,7 +41,7 @@ const DEFAULT_COORDINATES = {
 
 /**
  * Home Screen
- * 
+ *
  * Displays a map where users can search for routes, view directions, and confirm bookings.
  * It uses Mapbox for map rendering and Expo Location for location tracking.
  */
@@ -289,7 +289,7 @@ export default function Index() {
                 console.error("Error fetching route id:", error);
                 Alert.alert(
                     "Something went wrong!",
-                    "Error fetching destinations",
+                    "The selected route could not be found. Please try something else.",
                     [{ text: "OK" }]
                 );
             }
@@ -367,9 +367,7 @@ export default function Index() {
                                 id="fromLocation"
                                 coordinate={[fromLoc.lng, fromLoc.lat]}
                             >
-                                <View
-                                    style={styles.marker}
-                                />
+                                <View style={styles.marker} />
                             </Mapbox.PointAnnotation>
 
                             {/* Booking label - only show when routeId is returned from backend call*/}
