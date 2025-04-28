@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { StyleProp, StyleSheet, TextStyle, TouchableOpacity, View } from 'react-native';
 import { TextInput, TextInputProps } from 'react-native-paper';
@@ -8,9 +8,20 @@ interface StyledInputProps extends TextInputProps {
   style?: StyleProp<TextStyle>;
 }
 
-
-// TODO: probs replace all text Input with the one from react native paper
-// label better than placeholder for accessibility
+/**
+ * StyledTextInput Component
+ * 
+ * A reusable text input component with optional password visibility toggle and read-only mode.
+ * 
+ * Props:
+ * - `password` (boolean, optional): If true, the input will be treated as a password field with a
+ *        visibility toggle, also turns autocaps off. Defaults to false.
+ * - `style` (StyleProp<TextStyle>, optional): Custom styles to apply to the text input container.
+ * - `readOnly` (boolean, optional): If true, the input will be read-only. Defaults to false.
+ * 
+ * Example Usage:
+ * <StyledTextInput password={true} placeholder="Enter your password" />
+ */
 export default function StyledTextInput({
   style,
   readOnly,
@@ -44,9 +55,10 @@ export default function StyledTextInput({
         secureTextEntry={!isTextVisible}
         autoCapitalize={password ? "none" : props.autoCapitalize}
         {...props}
+        testID='text-input'
       />
       { password && (
-        <TouchableOpacity onPress={toggleTextVisibility} style={styles.eyeIcon}>
+        <TouchableOpacity onPress={toggleTextVisibility} style={styles.eyeIcon} testID='eye-icon'>
             <Ionicons
                 name={isTextVisible ? "eye-off" : "eye"}
                 size={20}

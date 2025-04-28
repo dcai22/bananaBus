@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import { ScrollView, Alert, StyleSheet, Text, View } from "react-native";
-import Container from "@/components/Container";
+import Container from "@/app/components/Container";
 import React from "react";
-import { Header } from "@/components/Header";
+import { Header } from "@/app/components/Header";
 import { FontAwesome } from "@expo/vector-icons";
 import { format } from "date-fns";
 import axios from "axios";
 import { getItem } from "../helper";
-import { LoadingPage } from "@/components/LoadingPage";
+import { LoadingPage } from "@/app/components/LoadingPage";
 
+/**
+ * Past Bookings Screen
+ * 
+ * Displays a list of past bookings made by the user.
+ * Shows trip details including departure time and route.
+ */
 export default function pastBookings() {
     interface Trip {
         bookingId: number;
@@ -24,6 +30,9 @@ export default function pastBookings() {
     const [pastTrips, setPastTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(true);
     
+    /**
+     * Refreshes the page on every visit.
+     */
     useFocusEffect(
         useCallback(() => { 
             setRefresh(true)
@@ -33,7 +42,9 @@ export default function pastBookings() {
         }, [])
     )
     
-
+    /**
+     * Fetches past bookings from the backend.
+     */
     useEffect(() => {
         if (!refresh) return;
         const fetchData = async () => {
@@ -54,6 +65,7 @@ export default function pastBookings() {
         fetchData();
     }, [refresh]);
 
+    // Show loading page while fetching data
     if (loading) {
         return (
             <Container>
@@ -65,19 +77,23 @@ export default function pastBookings() {
 
     return(
         <Container>
+            {/* Header */}
             <Header title="Past Bookings" icon={<FontAwesome name="calendar"/>}/>
+            {/* List of Past Bookings */}
             <ScrollView style={styles.bookingsContainer}>
                 {pastTrips && pastTrips.length > 0 ? (
                     pastTrips.map((item, index) => (
                         <View style={styles.tripItem} key={index}>
                             <View style={styles.accent} />
                             <View style={styles.tripContent}>
+                                {/* Departure Time */}
                                 <Text>
                                     {format(
                                         new Date(item.departureTime),
                                         "hh:mm a, do MMMM yyyy"
                                     )}
                                 </Text>
+                                {/* Route Information, origin and destination*/}
                                 <Text style={styles.route}>
                                     {item.originName}{" "}
                                     <FontAwesome
@@ -90,6 +106,7 @@ export default function pastBookings() {
                         </View>
                     ))
                 ) : (
+                    // Message when no past bookings are available
                     <Text style={styles.emptyMessage}>Book some trips!</Text>
                 )}
             </ScrollView>

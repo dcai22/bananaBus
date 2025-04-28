@@ -2,13 +2,25 @@ import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { format } from "date-fns"
 import { FontAwesome } from "@expo/vector-icons";
-import { Promotion } from "@/api/interface";
+import { Promotion } from "@/app/interface";
 
 interface PromotionCard {
     promo: Promotion,
     onPress: () => void,
 }
 
+/**
+ * PromoCard Component
+ * 
+ * A card component that displays promotional information, including an image, title, and validity dates.
+ * 
+ * Props:
+ * - `promo` (Promotion): The promotional data to display in the card.
+ * - `onPress` (function): Callback function to handle card press events.
+ * 
+ * Example Usage:
+ * <PromoCard promo={promoData} onPress={() => console.log("Card pressed")} /> 
+ */
 export default function PromoCard({promo, onPress}: PromotionCard) {
     const [ isImgLoading, setIsImgLoading ] = useState(true)
     

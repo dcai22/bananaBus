@@ -2,9 +2,8 @@ import { Text, View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import Mapbox, { Camera } from "@rnmapbox/maps";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MapSearch from "@/components/MapSearch";
+import MapSearch from "@/app/components/MapSearch";
 import * as ExpoLocation from "expo-location";
-import { useNavigation } from "expo-router";
 import { router } from "expo-router";
 
 // Icons
@@ -40,6 +39,12 @@ const DEFAULT_COORDINATES = {
     lng: 101.7007533, // Default to Bus Terminal, KLIA 1
 };
 
+/**
+ * Home Screen
+ * 
+ * Displays a map where users can search for routes, view directions, and confirm bookings.
+ * It uses Mapbox for map rendering and Expo Location for location tracking.
+ */
 export default function Index() {
     const [location, setLocation] = useState<{
         lat: number | null;
@@ -68,8 +73,9 @@ export default function Index() {
         null
     );
 
-    const navigation = useNavigation();
-
+    /**
+     * Requests location permissions from the user.
+     */
     const requestLocationPermission = async () => {
         try {
             const { status } =
@@ -90,6 +96,9 @@ export default function Index() {
         }
     };
 
+    /**
+     * Starts tracking the user's location.
+     */
     const startLocationTracking = async () => {
         try {
             const hasPermission = await requestLocationPermission();
@@ -102,7 +111,6 @@ export default function Index() {
                     timeInterval: 1000,
                 },
                 (newLocation) => {
-                    // TODO console.log("Location updated:", newLocation.coords);
                     setLocation({
                         lat: newLocation.coords.latitude,
                         lng: newLocation.coords.longitude,
@@ -185,7 +193,9 @@ export default function Index() {
         }
     };
 
-    // Function to fetch route between two points
+    /**
+     * Fetches the route between two points using Mapbox Directions API.
+     */
     const fetchRoute = async () => {
         if (!fromLoc.lng || !fromLoc.lat || !toLoc.lng || !toLoc.lat) {
             Alert.alert(
@@ -223,7 +233,9 @@ export default function Index() {
         }
     };
 
-    // Fit camera to route
+    /**
+     * Adjusts the camera to fit the route on the map.
+     */
     const fitToRoute = (coordinates: number[][]) => {
         if (coordinates.length < 2 || !cameraRef.current) return;
 
@@ -272,7 +284,6 @@ export default function Index() {
                         },
                     }
                 );
-                // TODO console.log(response.data.routes[0]);
                 setRouteId(response.data.routes[0]._id); // TODO: Fix this later to use more than one route
             } catch (error) {
                 console.error("Error fetching route id:", error);
@@ -291,14 +302,12 @@ export default function Index() {
     }, [fromLoc, toLoc]);
 
     useEffect(() => {
-        // TODO console.log("Starting location tracking");
         startLocationTracking();
 
         return () => {
             if (locationWatcherRef.current) {
                 locationWatcherRef.current.remove();
                 locationWatcherRef.current = null;
-                // TODO console.log("Location tracking stopped");
             }
         };
     }, []);
@@ -359,13 +368,12 @@ export default function Index() {
                                 coordinate={[fromLoc.lng, fromLoc.lat]}
                             >
                                 <View
-                                    style={[styles.marker, styles.fromMarker]}
+                                    style={styles.marker}
                                 />
                             </Mapbox.PointAnnotation>
 
-                            {/* Booking label - only show when both to and from are set*/}
-
-                            {fromLoc._id && toLoc._id && (
+                            {/* Booking label - only show when routeId is returned from backend call*/}
+                            {routeId && (
                                 <Mapbox.MarkerView
                                     id="bookingLabel"
                                     coordinate={[fromLoc.lng, fromLoc.lat]}
@@ -383,7 +391,6 @@ export default function Index() {
                                             right: 20,
                                         }}
                                         onPressIn={() => {
-                                            // TODO console.log("Button pressed!");
                                             router.push({
                                                 pathname: "/tripsList",
                                                 params: {
@@ -509,24 +516,6 @@ const styles = StyleSheet.create({
     map: {
         flex: 1,
     },
-    overlay: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        padding: 20,
-        backgroundColor: "white",
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: -2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
     locationButton: {
         position: "absolute",
         right: 20,
@@ -543,12 +532,6 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 4,
     },
-    markerContainer: {
-        width: 20,
-        height: 20,
-        alignItems: "center",
-        justifyContent: "center",
-    },
     marker: {
         width: 20,
         height: 20,
@@ -556,9 +539,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#2196F3",
         borderWidth: 2,
         borderColor: "white",
-    },
-    fromMarker: {
-        // backgroundColor: "2196F3",
     },
     toMarker: {
         borderRadius: 0,

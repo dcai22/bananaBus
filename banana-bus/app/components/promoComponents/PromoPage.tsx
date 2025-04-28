@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, FlatList, Dimensions } from "react-native";
 
-import { Promotion } from "@/api/interface";
+import { Promotion } from "@/app/interface";
 import PromoCard from "./PromoCard";
 
 const { width } = Dimensions.get("window")
@@ -11,6 +11,18 @@ interface PromotionPage {
     onPress: (promo: Promotion) => void,
 }
 
+/**
+ * PromoPage Component
+ * 
+ * A component that displays a list of promotional cards in a grid layout.
+ * 
+ * Props:
+ * - `pageData` (Promotion[]): The promotional data to display in the grid.
+ * - `onPress` (function): Callback function to handle card press events.
+ * 
+ * Example Usage:
+ * <PromoPage pageData={promoData} onPress={(promo) => console.log(promo)} />
+ */
 export default function PromoPage({pageData, onPress}: PromotionPage) {
   return(
     <View style={{width}}>

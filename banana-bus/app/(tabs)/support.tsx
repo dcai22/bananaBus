@@ -2,20 +2,29 @@ import { Text, View, StyleSheet, TextInput, Alert, TouchableOpacity, FlatList, K
 import React, { useState } from 'react';
 import Modal from 'react-native-modal';
 import { useFocusEffect } from '@react-navigation/native';
-import { LoadingButton, NoButton, YesButton } from '@/components/Buttons';
+import { LoadingButton, YesButton } from '@/app/components/Buttons';
 import { FontAwesome } from '@expo/vector-icons';
 import { getItem } from '../helper';
 import * as Device from "expo-device";
-import { Header } from '@/components/Header';
-import Container from '@/components/Container';
+import { Header } from '@/app/components/Header';
+import Container from '@/app/components/Container';
 
-export default function Payment() {
+/**
+ * Support Screen
+ * 
+ * Allows users to send support enquiries to the backend.
+ * Users can select an enquiry type, provide a custom heading (if needed), and type their enquiry text.
+ */
+export default function Support() {
     const [enquiryType, setEnquiryType] = useState('');
     const [customHeading, setCustomHeading] = useState('');
     const [enquiryText, setEnquiryText] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    /**
+     * Valid options for enquiry types.
+     */
     const enquiryOptions = [
         { label: 'Billing Issue', value: 'billing' },
         { label: 'Technical Support', value: 'technical' },
@@ -23,11 +32,11 @@ export default function Payment() {
         { label: 'Other', value: 'other' },
     ];
 
+    /**
+     * Sends the query to the manager email with correct formatting.
+     */
     const handleSend = async () => {
-        // TODO make an API call to send the email
-        // generate a ticket number as well
-        // const ticketNumber = `TICKET-${Math.floor(Math.random() * 1000000)}`;
-
+        // Sets the heading based on the selected enquiry type
         let heading;
         switch (enquiryType) {
             case 'billing':
@@ -46,15 +55,16 @@ export default function Payment() {
                 break;
         }
         const body = enquiryText;
+        // Checks if the heading and body are not empty
         if (!heading) {
             Alert.alert('Error', 'Please select an enquiry type or enter a custom heading.');
             return;
         }
-
         if (!body) {
             Alert.alert('Error', 'Please enter your enquiry text.');
             return;
         }
+
         let token;
         if (Device.deviceType === Device.DeviceType.PHONE) {
             token = await getItem('token');
@@ -109,6 +119,9 @@ export default function Payment() {
         setModalVisible(false);
     }
 
+    /**
+     * Resets the form when the screen is focused.
+     */
     useFocusEffect(
         React.useCallback(() => {
             setEnquiryType('');
@@ -119,8 +132,11 @@ export default function Payment() {
 
     return (
         <Container>
+            {/* Header */}
             <Header title="Support" icon={<FontAwesome name="life-ring"/>} />
+            {/* Enquiry Form */}
             <View style={styles.section}>
+                {/* Modal for Enquiry Type */}
                 <TouchableOpacity
                     style={styles.dropdown}
                     onPress={openModal}
@@ -129,6 +145,7 @@ export default function Payment() {
                         {enquiryType ? enquiryOptions.find(option => option.value === enquiryType)?.label : 'Select enquiry type'}
                     </Text>
                 </TouchableOpacity>
+                {/* Custom Heading Input for "Other" Enquiries */}
                 {enquiryType === 'other' && (
                     <TextInput
                         style={styles.input}
@@ -137,6 +154,7 @@ export default function Payment() {
                         onChangeText={setCustomHeading}
                     />
                 )}
+                {/* Enquiry Text Input */}
                 <TextInput
                     style={[styles.input, styles.textArea]}
                     placeholder="Type your enquiry here..."
@@ -144,12 +162,14 @@ export default function Payment() {
                     onChangeText={setEnquiryText}
                     multiline
                 />
+                {/* Send Button. loading icon when sending */}
                 {loading ? (
                     <LoadingButton style={styles.buttons} type='yes' />
                 ) : (
                     <YesButton text="Send" onPress={handleSend} style={styles.buttons} />
                 )}
             </View>
+            {/* Modal for Selecting Enquiry Type */}
             <Modal
                 isVisible={modalVisible}
                 onBackdropPress={closeModal}
@@ -183,10 +203,6 @@ const styles = StyleSheet.create({
     section: {
         flex: 1,
         padding: 20,
-    },
-    header: {
-        fontSize: 36,
-        fontWeight: "bold",
     },
     input: {
         backgroundColor: '#fff',

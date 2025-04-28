@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Image, ActivityIndicator, StyleSheet } from "react-native";
 import Modal from 'react-native-modal'
-import { Promotion } from "@/api/interface";
+import { Promotion } from "@/app/interface";
 import { NoButton } from "../Buttons";
 
 interface PromotionModal {
@@ -10,6 +10,19 @@ interface PromotionModal {
   setVisible: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
+/**
+ * PromoModal Component
+ * 
+ * A modal component that displays promotional details, including an image, title, location, and description.
+ * 
+ * Props:
+ * - `promo` (Promotion | null): The promotional data to display in the modal.
+ * - `visible` (boolean): Controls the visibility of the modal.
+ * - `setVisible` (function): Callback function to set the visibility of the modal.
+ * 
+ * Example Usage:
+ * <PromoModal promo={promoData} visible={isModalVisible} setVisible={setModalVisible} />
+ */
 export default function PromoModal({promo, visible, setVisible}: PromotionModal) {
   const [ isImgLoading, setIsImgLoading ] = useState(true)
 

@@ -12,10 +12,17 @@ import { format } from "date-fns";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
 import { getItem } from "../helper";
-import { Header } from "@/components/Header";
-import Container from "@/components/Container";
+import { Header } from "@/app/components/Header";
+import Container from "@/app/components/Container";
 import { ScrollView } from "react-native";
 
+/**
+ * Trips Screen
+ * 
+ * Displays the user's upcoming trips and watchlist routes.
+ * Allows user to click on a watchlisted route, which brings them to a list
+ * of available trips to book for that specific route.
+ */
 export default function Trips() {
     interface Booking {
         bookingId: string;
@@ -47,6 +54,9 @@ export default function Trips() {
     const [watchlistRoutes, setWatchlistRoutes] = useState<Route[]>([]);
     const [watchlistLoading, setWatchlistLoading] = useState(true);
 
+    /**
+     * Refreshes the screen when it is focused.
+     */
     useFocusEffect(
         useCallback(() => {
             setRefresh(true);
@@ -58,12 +68,16 @@ export default function Trips() {
         }, [])
     );
 
+    /**
+     * Fetches upcoming bookings and watchlist routes from the backend.
+     */
     useEffect(() => {
         if (!refresh) return;
         setError("");
 
         const fetchData = async () => {
             const token = await getItem("token");
+            // Fetch upcoming bookings
             axios
                 .get(`${process.env.EXPO_PUBLIC_API_BASE}/bookings/upcoming`, {
                     headers: {
@@ -80,6 +94,7 @@ export default function Trips() {
                     setUpcomingLoading(false);
                 });
 
+            // Fetch watchlist routes
             axios
                 .get(`${process.env.EXPO_PUBLIC_API_BASE}/savedRoutes/get`, {
                     headers: {
@@ -110,6 +125,9 @@ export default function Trips() {
         )
     }
 
+    /**
+     * Handles navigation to the trips list screen for a specific route.
+     */
     const handlePress = (route: Route) => {
         router.push({
             pathname: "/tripsList",
@@ -123,12 +141,14 @@ export default function Trips() {
 
     return (
         <Container>
+            {/* Header */}
             <Header
                 title="My Trips"
                 icon={<FontAwesome name="calendar" />}
                 showGoBack={false}
             />
             <ScrollView>
+                {/* Upcoming Trips Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeaderContainer}>
                         <Text style={styles.sectionHeader}>
@@ -149,6 +169,7 @@ export default function Trips() {
                         upcomingBookings.map((item, index) => (
                             <View style={styles.tripItem} key={index}>
                                 <View style={styles.accent} />
+                                {/* Route details */}
                                 <View style={styles.tripContent}>
                                     <Text>
                                         {format(
@@ -172,6 +193,7 @@ export default function Trips() {
                             Book some trips!
                         </Text>
                     )}
+                    {/* Watchlist Section */}
                     <View style={styles.sectionHeaderContainer}>
                         <Text style={styles.sectionHeader}>My Watchlist</Text>
                         {watchlistLoading && (
@@ -187,6 +209,7 @@ export default function Trips() {
                     </View>
                     {watchlistRoutes.length > 0 ? (
                         watchlistRoutes.map((item, index) => (
+                            // Pressable route item that brings user to trips list for that route
                             <TouchableOpacity
                                 key={index}
                                 onPress={() => handlePress(item)}
@@ -194,6 +217,7 @@ export default function Trips() {
                                 <View style={styles.tripItem}>
                                     <View style={styles.accent} />
                                     <View style={styles.tripContent}>
+                                        
                                         <Text style={styles.route}>
                                             {item.originName}{" "}
                                             <FontAwesome
