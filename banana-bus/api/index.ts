@@ -10,7 +10,7 @@ import { deleteAccount, getUserDetails, updateUserDetails, updateUserPassword, s
 import { getDeals } from './deals';
 import { ObjectId } from 'mongodb';
 import { addVehicle, deleteVehicle, editVehicle, createRoute, deleteRoute, allStops, allVehicles } from './manager';
-import { connectToDatabase } from './mongoUtil';
+import { collections, connectToDatabase } from './mongoUtil';
 import { driverGetUpcomingTrips, driverGetTrip, driverReportVehicle } from "./driver";
 
 const app = express();
@@ -475,6 +475,31 @@ app.get("/deals/get", async (req: Request, res: Response, next) => {
         res.json(deals);
     } catch (err) {
         next(err);
+    }
+});
+
+app.post("/routes/setup", async (req: Request, res: Response, next) => {
+    await connectToDatabase();
+    if (await collections.routes?.countDocuments() === 0 || await collections.stops?.countDocuments() === 0) {
+        await collections.routes?.deleteMany({});
+        await collections.stops?.deleteMany({});
+
+        const stops = [
+            { _id: new ObjectId(), name: "KLIA Terminal 1", lat: 2.7567602, lng: 101.7007533 },
+            { _id: new ObjectId(), name: "KLIA Terminal 2", lat: 2.7456123, lng: 101.7091234 },
+            { _id: new ObjectId(), name: "KL Sentral", lat: 3.1341984, lng: 101.6859732 },
+            { _id: new ObjectId(), name: "1utama Shopping Mall", lat: 3.1481, lng: 101.6165 },
+        ];
+
+        await collections.stops?.insertMany(stops);
+
+        const routes = [
+            { _id: new ObjectId(), stops: [stops[3]._id, stops[0]._id, stops[1]._id], trips: [] },
+            { _id: new ObjectId(), stops: [stops[3]._id, stops[2]._id], trips: [] },
+        ];
+
+        await collections.routes?.insertMany(routes);
+        res.json({ message: "Setup complete" });
     }
 });
 

@@ -9,7 +9,7 @@
     },
     "jsx": "react",
     "esModuleInterop": true,
-    "types": ["jest"],
+    "types": ["jest", "node"],
   },
   "include": [
     "**/*.ts",
