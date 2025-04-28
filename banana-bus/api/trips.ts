@@ -11,12 +11,12 @@ const timezone = "Australia/Sydney"
 
 /**
  * Get a list of available trips for a given day
- * @param token User token for verification
- * @param routeId id for chosen route
+ * @param token     User token for verification
+ * @param routeId   id for chosen route
  * @param departId  id for chosen departure location
- * @param arriveId id for chosen arrival location
- * @param date the date of departure
- * @returns an object containing departure and arrival name with a list of trips for the given day
+ * @param arriveId  id for chosen arrival location
+ * @param date      the date of departure
+ * @returns         an object containing departure and arrival name with a list of trips for the given day
  */
 export async function tripsList(token: string, routeId: ObjectId, departId: ObjectId, arriveId: ObjectId, date: string): Promise<TripList> {
     // connection to database
@@ -95,9 +95,9 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
 
 /**
  * Used to generate trips for a given day if no fixed trips are on day
- * @param routeId id for the trips to be generated
- * @param dateString date for the generated trip
- * @returns generated trips
+ * @param routeId       id for the trips to be generated
+ * @param dateString    date for the generated trip
+ * @returns             generated trips
  */
 export async function generateTrips(token: string, routeId: ObjectId, date: string): Promise<{trips: Trip[]}> {
     // connection to database
@@ -191,9 +191,9 @@ export async function generateTrips(token: string, routeId: ObjectId, date: stri
 
 /**
  * Finds any available vehicle given a start and end time
- * @param start start of interval
- * @param end end of interval
- * @returns vehicle or null
+ * @param start     start of interval
+ * @param end       end of interval
+ * @returns         vehicle or null
  */
 async function findAvailableVehicle(start: Date, end: Date): Promise<Vehicle | null> {
     await connectToDatabase();
@@ -228,9 +228,9 @@ async function findAvailableVehicle(start: Date, end: Date): Promise<Vehicle | n
 
 /**
  * Finds any available driver given a start and end time
- * @param start start of interval
- * @param end end of interval
- * @returns driver or null
+ * @param start     start of interval
+ * @param end       end of interval
+ * @returns         driver or null
  */
 async function findAvailableDriver(start: Date, end: Date): Promise<User | null> {
     await connectToDatabase();
@@ -266,10 +266,10 @@ async function findAvailableDriver(start: Date, end: Date): Promise<User | null>
 
 /**
  * Calculates price for trip based on capacity and time of departure
- * @param maxCapacity max passenger capacity
- * @param curCapacity current passenger capacity
- * @param timeOfDeparture time of departure of trip
- * @returns price
+ * @param maxCapacity       max passenger capacity
+ * @param curCapacity       current passenger capacity
+ * @param timeOfDeparture   time of departure of trip
+ * @returns                 price
  */
 export function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date): number {
     const now = new Date();
@@ -307,11 +307,11 @@ export function getPrice(maxCapacity: number, curCapacity: number, timeOfDepartu
 
 /**
  * Gets information about a single trip
- * @param token user token for authentication
- * @param departId id for chosen departure location
- * @param arriveId id for chosen arrival location
- * @param tripId id for trip
- * @returns an object containing departure and arrival and trip info
+ * @param token         user token for authentication
+ * @param departId      id for chosen departure location
+ * @param arriveId      id for chosen arrival location
+ * @param tripId        id for trip
+ * @returns             an object containing departure and arrival and trip info
  */
 export async function getTrip(token: string, departId: ObjectId, arriveId: ObjectId, tripId: ObjectId): Promise<TripInfo> {
     await connectToDatabase();
@@ -363,8 +363,8 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
 
 /**
  * Calculates the current number of current passengers
- * @param trip the trip to be calculated
- * @returns number of current passengers
+ * @param trip      the trip to be calculated
+ * @returns         number of current passengers
  */
 export async function calcCurrentCapacity(trip: Trip): Promise<number> {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
@@ -375,8 +375,8 @@ export async function calcCurrentCapacity(trip: Trip): Promise<number> {
 
 /**
  * Calculates the current number of current luggages
- * @param trip the trip to be calculated
- * @returns number of luggages
+ * @param trip      the trip to be calculated
+ * @returns         number of luggages
  */
 export async function calcCurrentLuggageCapacity(trip: Trip): Promise<number> {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();

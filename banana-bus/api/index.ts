@@ -1,4 +1,4 @@
-import express, { json, request, Request, Response } from "express";
+import express, { json, Request, Response } from "express";
 import cors from "cors";
 import errorHandler from "middleware-http-errors";
 
@@ -9,9 +9,8 @@ import { getRoutes, getSavedRoutes, reachableStops, saveRoute, unsaveRoute } fro
 import { deleteAccount, getUserDetails, updateUserDetails, updateUserPassword, sendEnquiry} from './account';
 import { getDeals } from './deals';
 import { ObjectId } from 'mongodb';
-import { addManager, removeManager, addVehicle, deleteVehicle, editVehicle, createRoute, deleteRoute, allStops, allVehicles } from './manager';
-import { collections, connectToDatabase, closeConnection } from './mongoUtil';
-import { findUserByToken, getRouteById, getStopById } from './helper';
+import { addVehicle, deleteVehicle, editVehicle, createRoute, deleteRoute, allStops, allVehicles } from './manager';
+import { connectToDatabase } from './mongoUtil';
 import { driverGetUpcomingTrips, driverGetTrip, driverReportVehicle } from "./driver";
 
 const app = express();
@@ -310,26 +309,6 @@ app.get("/manager/allStops", async (req: Request, res: Response, next) => {
     }
 });
 
-app.put("/manager/add", async (req: Request, res: Response, next) => {
-    const token = req.headers.authorization as string;
-
-    try {
-        res.json(await addManager(token));
-    } catch (err) {
-        next(err);
-    }
-});
-
-app.put("/manager/remove", async (req: Request, res: Response, next) => {
-    const token = req.headers.authorization as string;
-
-    try {
-        res.json(await removeManager(token));
-    } catch (err) {
-        next(err);
-    }
-});
-
 app.post('/account/sendEnquiry', async (req: Request, res: Response, next) => {
     try {
         const heading = req.body.heading as string;
@@ -370,7 +349,6 @@ app.post('/manager/addVehicle', async (req: Request, res: Response, next) => {
     return;
 })  
 
-
 app.put('/manager/editVehicle', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     const vehicleId = new ObjectId(req.body.vehicleId as string);
@@ -380,21 +358,8 @@ app.put('/manager/editVehicle', async (req: Request, res: Response, next) => {
     const numberPlate = req.body.numberPlate as string;
     const model = req.body.model;
 
-    await connectToDatabase();
-
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        res.status(403).json({ error: "invalid token" });
-        return;
-    }
-    if (!user.isManager) {
-        res.status(403).json({ error: "user is not a manager" });
-        return;
-    }
-
     try {   
-        res.json(await editVehicle(vehicleId, maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
+        res.json(await editVehicle(token, vehicleId, maxCapacity, maxLuggageCapacity, hasAssist, numberPlate, model));
     } catch (err) {
         next(err);
     }
@@ -412,7 +377,6 @@ app.delete('/manager/deleteVehicle', async (req: Request, res: Response, next) =
     }
 
 })
-
 
 app.get('/stops/reachableFrom', async (req: Request, res: Response, next) => {
     await connectToDatabase();
