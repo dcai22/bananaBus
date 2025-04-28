@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { AuthUserId, DataStore, Error, User, UserBuilder, UserPayload } from "./interface";
+import { Error } from "./interface";
 import { getHash, compareHash, findUserByToken, findUserByResetToken } from "./helper";
 import crypto from "crypto";
 import { collections } from "./mongoUtil";
@@ -17,7 +17,7 @@ export async function authRegister(email: string, password: string, firstName: s
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const checkUser = await collections.users?.findOne({ email: email });
+    const checkUser = await collections.users?.findOne({ email: email, isExternal: false });
     if (checkUser) {
         throw HTTPError(400, 'email address already in use');
     }
@@ -73,7 +73,7 @@ export async function authLogin(email: string, password: string) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
-    const user = await collections.users.findOne({ email: email });
+    const user = await collections.users.findOne({ email: email, isExternal: false });
     if (!user) {
         throw HTTPError(400, 'incorrect email or password');
     }
@@ -145,21 +145,24 @@ export async function authPasswordResetEmail(email: string) {
     if (!collections.users) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
-    const user = await collections.users.findOne({ email: email, isExternal: false });
+    let user = await collections.users.findOne({ email: email, isExternal: false });
     const code = Math.floor(Math.random() * 899999 + 100000).toString();
     const token = crypto.randomBytes(64).toString('hex');
     // even if the email is invalid, act as if the email is, for security reasons
-    if (!user || user.isExternal) {
-        return {
-            message: 'Email not found ' + email,
-            token
+    if (!user) {
+        user = await collections.users.findOne({ email: email, isExternal: true });
+        if (!user) {
+            return {
+                message: 'Email not found ' + email,
+                token
+            }
         }
     }
 
     const hashedCode = await getHash(code);
     const hashedToken = await getHash(token);
     const expiry = new Date(Date.now() + 15 * 60 * 1000);
-    await collections.users.updateOne({ email: email }, { $set: { resetToken: { token: hashedToken, code: hashedCode, expiry: expiry } } } as any);
+    await collections.users.updateOne({ email: email, isExternal: false }, { $set: { resetToken: { token: hashedToken, code: hashedCode, expiry: expiry } } } as any);
 
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
@@ -184,7 +187,9 @@ export async function authPasswordResetEmail(email: string) {
         });
     });
 
-    const mailOptions = {
+
+
+    let mailOptions = {
         from: 'Banana Bus 2025',
         to: email,
         subject: 'Banana Bus Password Reset',
@@ -193,6 +198,17 @@ export async function authPasswordResetEmail(email: string) {
             <h1 style="font-size: 24px; font-weight: bold;">${code}</h1>
             <p>It will expire in 15 minutes.</p>
         `,
+    }
+
+    if (user.isExternal) {
+        mailOptions = {
+            from: 'Banana Bus 2025',
+            to: email,
+            subject: 'Banana Bus Password Reset',
+            html: `
+                <p>ur signed in with google el o el</p>
+            `,
+        }
     }
 
     await new Promise((resolve, reject) => {
