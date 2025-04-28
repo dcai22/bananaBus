@@ -7,7 +7,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 /**
  * Returns certain details about the user
- * @param {string} token token of the user
+ * @param {string} token        token of the user
  * @returns object containing firstName, lastName, email, isExternal, isManager, isDriver of user
  */
 export async function getUserDetails(token: string) {
@@ -34,10 +34,10 @@ export async function getUserDetails(token: string) {
 
 /**
  * Updates the user details with the inputted values
- * @param {string} token token of the user
- * @param {string} firstName new first name of the user
- * @param {string} lastName new last name of the user
- * @param {string} email new email of the user
+ * @param {string} token        token of the user
+ * @param {string} firstName    new first name of the user
+ * @param {string} lastName     new last name of the user
+ * @param {string} email        new email of the user
  * @returns object containing firstName, lastName, email
  * @returns 
  */
@@ -70,9 +70,9 @@ export async function updateUserDetails(token: string, firstName: string, lastNa
 
 /**
  * Update the user's password with the new password. Requires the old password to be correct
- * @param {string} token token of the user
- * @param {string} oldPassword old password of the user
- * @param {string} newPassword new password of the user
+ * @param {string} token        token of the user
+ * @param {string} oldPassword  old password of the user
+ * @param {string} newPassword  new password of the user
  * @returns empty object
  */
 export async function updateUserPassword(token: string, oldPassword: string, newPassword: string) {
@@ -98,8 +98,8 @@ export async function updateUserPassword(token: string, oldPassword: string, new
 
 /**
  * Deletes the user's account
- * @param {string} token token of the user
- * @param {ObjectId} userId id of the user
+ * @param {string} token        token of the user
+ * @param {ObjectId} userId     id of the user
  * @returns empty object
  */
 export async function deleteAccount(userId: ObjectId, token: string) {
@@ -132,9 +132,9 @@ export async function deleteAccount(userId: ObjectId, token: string) {
 
 /**
  * Sends an enquiry email to the support team
- * @param {string} token token of the user
- * @param {string} heading heading of the enquiry
- * @param {string} body body of the enquiry
+ * @param {string} token        token of the user
+ * @param {string} heading      heading of the enquiry
+ * @param {string} body         body of the enquiry
  * @returns object containing message and ticket number
  */
 export async function sendEnquiry(token: string, heading: string, body: string) {

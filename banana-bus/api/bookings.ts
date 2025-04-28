@@ -125,6 +125,12 @@ export async function createBooking(token: string, tripId: ObjectId, originId: O
     return { insertedId: dbRes?.insertedId }
 }
 
+/**
+ * Creates ephemeral key and payment intent for the user, to initialise their Stripe component
+ * @param {string} token        authentication token of user
+ * @param {number} price        price of the booking
+ * @returns object containing customer ID and ephemeral key
+ */
 export async function createPaymentDetails(token: string, price: number) {
     await connectToDatabase();
 

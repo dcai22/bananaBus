@@ -12,10 +12,10 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 /**
  * Registers a new user in the database.
- * @param {string} email email of new user
- * @param {string} password password of new user
- * @param {string} firstName first name of new user
- * @param {string} lastName last name of new user
+ * @param {string} email        email of new user
+ * @param {string} password     password of new user
+ * @param {string} firstName    first name of new user
+ * @param {string} lastName     last name of new user
  * @returns object containing the associated userId and token of the new user
  */
 export async function authRegister(email: string, password: string, firstName: string, lastName: string): Promise<{ userId: ObjectId; token: string; }> {
@@ -81,8 +81,8 @@ export async function authRegister(email: string, password: string, firstName: s
 
 /**
  * Logs in a user with the given email and password.
- * @param {string} email email of the user
- * @param {string} password password of the user
+ * @param {string} email        email of the user
+ * @param {string} password     password of the user
  * @returns object containing the associated userId and token of the user
  */
 export async function authLogin(email: string, password: string): Promise<{ userId: ObjectId; token: string; }> {
@@ -115,7 +115,7 @@ export async function authLogin(email: string, password: string): Promise<{ user
 
 /**
  * Automatically logs in a user with the given token.
- * @param {string} token token of the user
+ * @param {string} token        token of the user
  * @returns object containing the associated userId and token of the user
  */
 export async function authAutoLogin(token: string) {
@@ -137,8 +137,8 @@ export async function authAutoLogin(token: string) {
 
 /**
  * Logs out a user with the given userId and token.
- * @param {ObjectId} userId userId of the user
- * @param {string} token token of the user
+ * @param {ObjectId} userId     userId of the user
+ * @param {string} token        token of the user
  * @returns a message indicating that the user has been logged out
  */
 export async function authLogout(userId: ObjectId, token: string) {
@@ -171,7 +171,7 @@ export async function authLogout(userId: ObjectId, token: string) {
 
 /**
  * Sends a password reset email to the user with the given email address.
- * @param {string} email email of the user whose password needs to be reset
+ * @param {string} email        email of the user whose password needs to be reset
  * @returns a message indicating that the email has been sent and the token for the reset
  */
 export async function authPasswordResetEmail(email: string): Promise<{ message: string; token: string; }> {
@@ -267,8 +267,8 @@ export async function authPasswordResetEmail(email: string): Promise<{ message: 
 // checks the token in the query of the url is correct, ensures that this person is actually trying to reset their password
 /**
  * Verifies the password reset code for the user with the given token.
- * @param {string} token token that should be given by authPasswordResetEmail
- * @param {string} code code that should have been sent to the user's email
+ * @param {string} token        token that should be given by authPasswordResetEmail
+ * @param {string} code         code that should have been sent to the user's email
  * @returns a new token for the user, to be verified when resetting the password
  */
 export async function authPasswordVerifyCode(token: string, code: string) {
@@ -299,8 +299,8 @@ export async function authPasswordVerifyCode(token: string, code: string) {
 
 /**
  * Resets the password for the user with the given token and new password.
- * @param {string} token token that should be given by authPasswordVerifyCode
- * @param {string} password new password for the user
+ * @param {string} token        token that should be given by authPasswordVerifyCode
+ * @param {string} password     new password for the user
  * @returns a message indicating that the password has been reset
  */
 export async function authPasswordReset(token: string, password: string) {
@@ -325,9 +325,9 @@ export async function authPasswordReset(token: string, password: string) {
 
 /**
  * Signs in a user with Google method. Registers the user if they do not exist.
- * @param {string} email email of the user
- * @param {string} firstName first name of the user
- * @param {string} lastName last name of the user
+ * @param {string} email        email of the user
+ * @param {string} firstName    first name of the user
+ * @param {string} lastName     last name of the user
  * @returns the associated userId and token of the user
  */
 export async function authGoogleLogin(email: string, firstName: string, lastName: string) {
