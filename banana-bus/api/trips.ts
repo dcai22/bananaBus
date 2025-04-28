@@ -366,7 +366,7 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
  * @param trip the trip to be calculated
  * @returns number of current passengers
  */
-async function calcCurrentCapacity(trip: Trip): Promise<number> {
+export async function calcCurrentCapacity(trip: Trip): Promise<number> {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
   if (!bookings) throw HTTPError(400, "Cant get bookings");
 
@@ -378,7 +378,7 @@ async function calcCurrentCapacity(trip: Trip): Promise<number> {
  * @param trip the trip to be calculated
  * @returns number of luggages
  */
-async function calcCurrentLuggageCapacity(trip: Trip): Promise<number> {
+export async function calcCurrentLuggageCapacity(trip: Trip): Promise<number> {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
   if (!bookings) throw HTTPError(400, "Cant get bookings");
 

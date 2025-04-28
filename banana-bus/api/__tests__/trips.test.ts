@@ -31,14 +31,6 @@ const vehicle1 = {
     model: "toyota" 
 }
 
-const vehicle2 = {
-    maxCapacity: 10,
-    maxLuggageCapacity: 10,
-    hasAssist: true,
-    numberPlate: "abcdef",
-    model: "ford" 
-}
-
 const sid0 = new ObjectId();
 const sid1 = new ObjectId();
 const sid2 = new ObjectId();

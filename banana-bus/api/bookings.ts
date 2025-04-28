@@ -1,9 +1,11 @@
 import HTTPError from "http-errors";
 import { collections, connectToDatabase } from "./mongoUtil";
-import { findUserByToken, getRouteById, getStopById, getTripById } from "./helper";
+import { findUserByToken, getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
 import { Booking } from "./interface";
 import dotenv from "dotenv";
 import { ObjectId } from "mongodb";
+import { calcCurrentCapacity, calcCurrentLuggageCapacity } from "./trips";
+
 dotenv.config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -97,12 +99,31 @@ export async function searchBookings(token: string, timeFrame: string) {
 export async function createBooking(token: string, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets: number, numLuggage: number) {
     await connectToDatabase();
 
+    // user authentication
     const strippedToken = token.replace("Bearer ", "");
     const user = await findUserByToken(strippedToken);
     if (!user) {
         throw HTTPError(403, 'invalid token');
     }
 
+    // error checks
+    const trip = await getTripById(tripId);
+    await getStopById(originId);
+    await getStopById(destId)
+    const vehicle = await getVehicleById(trip.vehicleId)
+
+    const curCapacity = await calcCurrentCapacity(trip)
+    const curLuggageCapacity = await calcCurrentLuggageCapacity(trip)
+
+    if (curCapacity + numTickets > vehicle.maxCapacity) {
+        throw HTTPError(400, 'booking exceeds passenger capacity');
+    }
+    
+    if (curLuggageCapacity + numLuggage > vehicle.maxLuggageCapacity) {
+        throw HTTPError(400, 'booking exceeds luggage capacity');
+    }
+
+    // updating database
     const dbRes = await collections.bookings?.insertOne({
         _id: new ObjectId(),
         userId: user._id,
