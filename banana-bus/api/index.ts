@@ -114,6 +114,40 @@ app.post("/auth/logout", async (req: Request, res: Response, next) => {
     return;
 });
 
+app.get("/account/getDetails", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        res.json(await getUserDetails(token));
+    } catch (error) {
+        next(error);
+    }
+});
+
+app.put("/account/updateDetails", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const firstName = req.body.firstName as string;
+        const lastName = req.body.lastName as string;
+        const email = req.body.email as string;
+        res.json(await updateUserDetails(token, firstName, lastName, email));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
+app.put("/account/updatePassword", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const oldPassword = req.body.oldPassword as string;
+        const newPassword = req.body.newPassword as string;
+        res.json(await updateUserPassword(token, oldPassword, newPassword));
+    } catch (error) {
+        next(error);
+    }
+    return;
+});
+
 app.delete("/account/delete", async (req: Request, res: Response, next) => {
     try {
         const token = req.headers.authorization as string;
@@ -125,27 +159,17 @@ app.delete("/account/delete", async (req: Request, res: Response, next) => {
     return;
 });
 
-app.get("/bookings/upcoming", async (req: Request, res: Response, next) => {
+app.post('/account/sendEnquiry', async (req: Request, res: Response, next) => {
     try {
+        const heading = req.body.heading as string;
+        const body = req.body.body as string;
         const token = req.headers.authorization as string;
-        const bookings = await searchBookings(token, 'upcoming');
-        res.json({ bookings });
-    } catch (err) {
-        next(err);
+        res.json(await sendEnquiry(token, heading, body));
+    } catch (error) {
+        next(error);
     }
     return;
-});
-
-app.get("/bookings/past", async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        const bookings = await searchBookings(token, 'past');
-        res.json({ bookings });
-    } catch (err) {
-        next(err);
-    }
-    return;
-});
+})
 
 app.post('/trips/generate', async (req: Request, res: Response, next) => {
     try {
@@ -219,50 +243,6 @@ app.post("/savedRoutes/unsave", async (req: Request, res: Response, next) => {
     }
 });
 
-app.get("/account/getDetails", async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        res.json(await getUserDetails(token));
-    } catch (error) {
-        next(error);
-    }
-});
-
-app.put("/account/updateDetails", async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        const firstName = req.body.firstName as string;
-        const lastName = req.body.lastName as string;
-        const email = req.body.email as string;
-        res.json(await updateUserDetails(token, firstName, lastName, email));
-    } catch (error) {
-        next(error);
-    }
-    return;
-});
-
-app.put("/account/updatePassword", async (req: Request, res: Response, next) => {
-    try {
-        const token = req.headers.authorization as string;
-        const oldPassword = req.body.oldPassword as string;
-        const newPassword = req.body.newPassword as string;
-        res.json(await updateUserPassword(token, oldPassword, newPassword));
-    } catch (error) {
-        next(error);
-    }
-    return;
-});
-
-app.get("/deals/get", async (req: Request, res: Response, next) => {
-    const token = req.headers.authorization as string;
-    try {
-        const deals = await getDeals(token);
-        res.json(deals);
-    } catch (err) {
-        next(err);
-    }
-});
-
 app.post("/bookings/create", async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
     const tripId = new ObjectId(req.body.tripId as string);
@@ -276,6 +256,28 @@ app.post("/bookings/create", async (req: Request, res: Response, next) => {
     } catch (err) {
         next(err);
     }
+});
+
+app.get("/bookings/upcoming", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const bookings = await searchBookings(token, 'upcoming');
+        res.json({ bookings });
+    } catch (err) {
+        next(err);
+    }
+    return;
+});
+
+app.get("/bookings/past", async (req: Request, res: Response, next) => {
+    try {
+        const token = req.headers.authorization as string;
+        const bookings = await searchBookings(token, 'past');
+        res.json({ bookings });
+    } catch (err) {
+        next(err);
+    }
+    return;
 });
 
 app.post("/manager/createRoute", async (req: Request, res: Response, next) => {
@@ -308,18 +310,6 @@ app.get("/manager/allStops", async (req: Request, res: Response, next) => {
         next(err);
     }
 });
-
-app.post('/account/sendEnquiry', async (req: Request, res: Response, next) => {
-    try {
-        const heading = req.body.heading as string;
-        const body = req.body.body as string;
-        const token = req.headers.authorization as string;
-        res.json(await sendEnquiry(token, heading, body));
-    } catch (error) {
-        next(error);
-    }
-    return;
-})
 
 app.get('/manager/allVehicles', async (req: Request, res: Response, next) => {
     const token = req.headers.authorization as string;
@@ -478,5 +468,14 @@ app.post('/createSetupIntent', async (req: Request, res: Response, next) => {
     return;
 });
 
+app.get("/deals/get", async (req: Request, res: Response, next) => {
+    const token = req.headers.authorization as string;
+    try {
+        const deals = await getDeals(token);
+        res.json(deals);
+    } catch (err) {
+        next(err);
+    }
+});
 
 app.use(errorHandler());
