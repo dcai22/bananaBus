@@ -176,8 +176,8 @@ export class RouteSection {
 
     async isValid() {
         const route = await getRouteById(this.routeId);
-        const originIndex = route.stops.indexOf(this.originId);
-        const destIndex = route.stops.indexOf(this.destId);
+        const originIndex = route.stops.findIndex(sid => sid.equals(this.originId));
+        const destIndex = route.stops.findIndex(sid => sid.equals(this.destId));
         if (0 <= originIndex && originIndex < destIndex) {
             return true;
         } else {
@@ -192,9 +192,9 @@ export class RouteSection {
 
         return {
             route: route,
-            originIndex: route.stops.indexOf(this.originId),
+            originIndex: route.stops.findIndex(sid => sid.equals(this.originId)),
             originName: origin.name,
-            destIndex: route.stops.indexOf(this.destId),
+            destIndex: route.stops.findIndex(sid => sid.equals(this.destId)),
             destName: dest.name,
         };
     }
@@ -228,14 +228,15 @@ export class Booking {
     numLuggage: number = 1;
     bookingTime: Date;
 
-    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number) {
+    constructor(_id: ObjectId, userId: ObjectId, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets?: number, numLuggage?: number, bookingTime?: Date) {
         this._id = _id;
         this.userId = userId;
         this.tripId = tripId;
         this.originId = originId;
         this.destId = destId;
         if (typeof numTickets !== "undefined") this.numTickets = numTickets;
-        this.bookingTime = new Date();
+        if (typeof numLuggage !== "undefined") this.numLuggage = numLuggage;
+        this.bookingTime = bookingTime ?? new Date();
     }
 }
 
@@ -288,4 +289,13 @@ export interface Vehicle {
 export interface Report {
     date: Date,
     text: string,
+}
+
+export interface DisplayBooking {
+    _id: string,
+    userId: string,
+    tripId: string,
+    originName: string,
+    destName: string,
+    departureTime: string,
 }

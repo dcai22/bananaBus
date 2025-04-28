@@ -1,42 +1,37 @@
 import HTTPError from "http-errors";
-import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
-import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import { collections, connectToDatabase } from "./mongoUtil";
 import { findUserByToken, getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
-import { Booking, Trip, TripBox, TripInfo, TripList, User, Vehicle } from "./interface";
 import { differenceInCalendarDays } from 'date-fns';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+
+import { Booking, Trip, TripBox, TripInfo, TripList, User, Vehicle } from "./interface";
 
 const timezone = "Australia/Sydney"
 
+/**
+ * Get a list of available trips for a given day
+ * @param token     User token for verification
+ * @param routeId   id for chosen route
+ * @param departId  id for chosen departure location
+ * @param arriveId  id for chosen arrival location
+ * @param date      the date of departure
+ * @returns         an object containing departure and arrival name with a list of trips for the given day
+ */
 export async function tripsList(token: string, routeId: ObjectId, departId: ObjectId, arriveId: ObjectId, date: string): Promise<TripList> {
+    // connection to database
     await connectToDatabase();
-    
     if (!collections.trips || !collections.routes || !collections.stops) {
         throw HTTPError(500, 'Database collection is not initialized');
     }
 
+    // authentication of user
     const strippedToken = token.replace('Bearer ', '');
     const user = await findUserByToken(strippedToken);
-
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    } 
+    if (!user) throw HTTPError(403, 'invalid token'); 
     
+    // get departure and arrival location names
     const route = await getRouteById(routeId);
-
-    // define Start and end of date
-    const dateStart = toZonedTime(date, timezone);
-    dateStart.setHours(0,0,0,0);
-    const dateEnd = toZonedTime(date, timezone);
-    dateEnd.setHours(23,59,59,999);
-
-    let trips: Trip[] = []
-    // filters trips to the date
-    trips = await collections.trips?.find<Trip>({
-        routeId: routeId,
-        "stopTimes.0": {"$gte": fromZonedTime(dateStart, timezone), "$lte": fromZonedTime(dateEnd, timezone)}
-    }).toArray();
-
     
     const departStop = await getStopById(departId);
     const departIndex = route.stops.findIndex(id => id.equals(departId));
@@ -47,22 +42,18 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
     const arriveName = arriveStop.name;
     const departName = departStop.name;
     
-    // check if trips exist else generate some trips
-    if (trips.length === 0) {
-        const today = toZonedTime(new Date(), timezone);
-        const dayDiff = differenceInCalendarDays(dateStart, today);
-
-        // prevent generating trips more than a week ahead
-        if (dayDiff > 7) {
-            return {
-                departName,
-                arriveName,
-                trips: [],
-            }
-        }
-
-        trips = await generateTrips(routeId, date);
-    }
+    // define start and end of date based on timezone
+    const dateStart = toZonedTime(date, timezone);
+    dateStart.setHours(0,0,0,0);
+    const dateEnd = toZonedTime(date, timezone);
+    dateEnd.setHours(23,59,59,999);
+    
+    let trips: Trip[] = []
+    // filters trips to the date
+    trips = await collections.trips?.find<Trip>({
+        routeId: routeId,
+        "stopTimes.0": {"$gte": fromZonedTime(dateStart, timezone), "$lte": fromZonedTime(dateEnd, timezone)}
+    }).toArray();
     
     // convert dataStore info to tripBox(info needed by frontend)
     const tripBoxes: TripBox[] = await Promise.all(
@@ -86,7 +77,6 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
                 maxLuggageCapacity: vehicle.maxLuggageCapacity,
                 luggagePrice: 20,
                 hasAssist: vehicle.hasAssist,
-                reports: [],
             };
         })
     );
@@ -103,16 +93,51 @@ export async function tripsList(token: string, routeId: ObjectId, departId: Obje
 
 
 
-// Used to generate trips for a given day if no fixed trips are on day
-export async function generateTrips(routeId: ObjectId, dateString: string) {
+/**
+ * Used to generate trips for a given day if no fixed trips are on day
+ * @param routeId       id for the trips to be generated
+ * @param dateString    date for the generated trip
+ * @returns             generated trips
+ */
+export async function generateTrips(token: string, routeId: ObjectId, date: string): Promise<{trips: Trip[]}> {
+    // connection to database
     await connectToDatabase();
+    if (!collections.trips || !collections.routes) {
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    // authentication of user
+    const strippedToken = token.replace('Bearer ', '');
+    const user = await findUserByToken(strippedToken);
+    if (!user) throw HTTPError(403, 'invalid token'); 
+    
+    // define start and end of date based on timezone
+    const dateStart = toZonedTime(date, timezone);
+    dateStart.setHours(0,0,0,0);
+    const dateEnd = toZonedTime(date, timezone);
+    dateEnd.setHours(23,59,59,999);
+    
+    let trips: Trip[] = []
+    // filters trips to the date
+    trips = await collections.trips?.find<Trip>({
+        routeId: routeId,
+        "stopTimes.0": {"$gte": fromZonedTime(dateStart, timezone), "$lte": fromZonedTime(dateEnd, timezone)}
+    }).toArray();
+
+    const today = toZonedTime(new Date(), timezone);
+    const dayDiff = differenceInCalendarDays(dateStart, today);
+
+    // check if trips exist else generate some trips
+    if (trips.length !== 0 || dayDiff > 7) {
+        return { trips: [] }
+    } 
     
     const route = await getRouteById(routeId);
     
-    let trips: Trip[] = []
     // generate a trip every hr from 8am - 5pm
     for (let hr = 8; hr <= 17; hr++) {
-        const departDate = toZonedTime(dateString, timezone);
+        // define the departure time
+        const departDate = toZonedTime(date, timezone);
         departDate.setHours(hr, 0, 0 , 0);
 
         // TODO replace with actual stopTimes
@@ -120,19 +145,22 @@ export async function generateTrips(routeId: ObjectId, dateString: string) {
             const stopTime = new Date(departDate.getTime() + i * 30 * 60 * 1000);
             return fromZonedTime(stopTime, timezone);
         })
-
+        
+        // assignment of vehicles and drivers
         const start = stopTimes[0];
         const end = stopTimes[stopTimes.length - 1];
 
         const vehicle = await findAvailableVehicle(start, end);
         const driver = await findAvailableDriver(start, end);
+        
+        // if no vehicle or driver assigned
         if (!vehicle || !driver) {
             // TODO alert manager somehow
-            console.log(`no vehicle available for ${hr}`);
+            // console.log(`no vehicle available for ${hr}`);
             continue;
         }
         
-
+        // create trip
         const trip = {
             _id: new ObjectId(),
             vehicleId: vehicle._id,
@@ -142,7 +170,7 @@ export async function generateTrips(routeId: ObjectId, dateString: string) {
             bookings: [],
         }
 
-        await collections.trips?.insertOne(trip);
+        await collections.trips.insertOne(trip);
         trips.push(trip);
     }
 
@@ -151,17 +179,22 @@ export async function generateTrips(routeId: ObjectId, dateString: string) {
     /* if (trips.length === 0) {
     } */
 
-    // add tripId to route
+    // add tripId to route collection
     const tripIds = trips.map(t => t._id);
-    await collections.routes?.updateOne(
+    await collections.routes.updateOne(
         {_id: routeId},
         { $push: { trips: {$each: tripIds}}}
     )
 
-    return trips;
+    return { trips };
 }
 
-// finds any available vehicle (to assign to a trip)
+/**
+ * Finds any available vehicle given a start and end time
+ * @param start     start of interval
+ * @param end       end of interval
+ * @returns         vehicle or null
+ */
 async function findAvailableVehicle(start: Date, end: Date): Promise<Vehicle | null> {
     await connectToDatabase();
 
@@ -193,7 +226,12 @@ async function findAvailableVehicle(start: Date, end: Date): Promise<Vehicle | n
     return availableVehicle
 }
 
-// finds any available driver (to assign to a trip)
+/**
+ * Finds any available driver given a start and end time
+ * @param start     start of interval
+ * @param end       end of interval
+ * @returns         driver or null
+ */
 async function findAvailableDriver(start: Date, end: Date): Promise<User | null> {
     await connectToDatabase();
 
@@ -226,7 +264,14 @@ async function findAvailableDriver(start: Date, end: Date): Promise<User | null>
     return availableDriver
 }
 
-export function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date) {
+/**
+ * Calculates price for trip based on capacity and time of departure
+ * @param maxCapacity       max passenger capacity
+ * @param curCapacity       current passenger capacity
+ * @param timeOfDeparture   time of departure of trip
+ * @returns                 price
+ */
+export function getPrice(maxCapacity: number, curCapacity: number, timeOfDeparture: Date): number {
     const now = new Date();
     const basePrice = 8;
 
@@ -253,10 +298,18 @@ export function getPrice(maxCapacity: number, curCapacity: number, timeOfDepartu
     return Math.min(rounded, 22);
 }
 
-// Get a trips info (for booking page)
+/**
+ * Gets information about a single trip
+ * @param token         user token for authentication
+ * @param departId      id for chosen departure location
+ * @param arriveId      id for chosen arrival location
+ * @param tripId        id for trip
+ * @returns             an object containing departure and arrival and trip info
+ */
 export async function getTrip(token: string, departId: ObjectId, arriveId: ObjectId, tripId: ObjectId): Promise<TripInfo> {
     await connectToDatabase();
     
+    // 
     const strippedToken = token.replace('Bearer ', '');
     const user = await findUserByToken(strippedToken);
 
@@ -301,17 +354,27 @@ export async function getTrip(token: string, departId: ObjectId, arriveId: Objec
     })
 }
 
-export async function calcCurrentCapacity(trip: Trip) {
+/**
+ * Calculates the current number of current passengers
+ * @param trip      the trip to be calculated
+ * @returns         number of current passengers
+ */
+export async function calcCurrentCapacity(trip: Trip): Promise<number> {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
   if (!bookings) throw HTTPError(400, "Cant get bookings");
-  // could probs calc through max of the interval
+
   return bookings.reduce((sum, b) => sum + b.numTickets, 0)
 }
 
-async function calcCurrentLuggageCapacity(trip: Trip) {
+/**
+ * Calculates the current number of current luggages
+ * @param trip      the trip to be calculated
+ * @returns         number of luggages
+ */
+export async function calcCurrentLuggageCapacity(trip: Trip): Promise<number> {
   const bookings = await collections.bookings?.find<Booking>({ _id: { $in: trip.bookings } }).toArray();
   if (!bookings) throw HTTPError(400, "Cant get bookings");
-  // could probs calc through max of the interval
+
   return bookings.reduce((sum, b) => sum + b.numLuggage, 0)
 }
 

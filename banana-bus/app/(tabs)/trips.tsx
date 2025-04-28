@@ -79,13 +79,13 @@ export default function Trips() {
             const token = await getItem("token");
             // Fetch upcoming bookings
             axios
-                .get(`${process.env.EXPO_PUBLIC_API_BASE}/upcomingBookings`, {
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/bookings/upcoming`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 })
                 .then((tripsResponse) => {
-                    setUpcomingBookings(tripsResponse.data);
+                    setUpcomingBookings(tripsResponse.data.bookings);
                 })
                 .catch((err) => {
                     setError(err.response?.data?.error || "An error occurred");
@@ -96,7 +96,7 @@ export default function Trips() {
 
             // Fetch watchlist routes
             axios
-                .get(`${process.env.EXPO_PUBLIC_API_BASE}/getSavedRoutes`, {
+                .get(`${process.env.EXPO_PUBLIC_API_BASE}/savedRoutes/get`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -165,7 +165,7 @@ export default function Trips() {
                             />
                         )}
                     </View>
-                    {upcomingBookings.length > 0 ? (
+                    {upcomingBookings && upcomingBookings.length > 0 ? (
                         upcomingBookings.map((item, index) => (
                             <View style={styles.tripItem} key={index}>
                                 <View style={styles.accent} />

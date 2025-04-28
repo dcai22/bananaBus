@@ -73,7 +73,7 @@ export default function booking() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getTrip`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/trips/get`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
@@ -212,7 +212,7 @@ export default function booking() {
         } else {
             const token = await getItem("token");
             try {
-                const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/createBooking`, {
+                const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/bookings/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

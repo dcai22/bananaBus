@@ -1,53 +1,39 @@
 import HTTPError from "http-errors";
 import { ObjectId, DeleteResult  } from "mongodb";
 import { collections, connectToDatabase } from "./mongoUtil";
-import { User, Vehicle } from "./interface";
+import { Vehicle } from "./interface";
 import { findUserByToken } from "./helper";
 
-export async function addManager(token: string) {
-    await connectToDatabase();
-
-    const strippedToken = token.replace('Bearer ', '');
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    }
-    if (user.isManager) {
-        throw HTTPError(400, 'user is already a manager');
-    }
-    user.isManager = true;
-    await collections.users?.updateOne({ userId: user._id }, user);
-    return user;
-}
-
-export async function removeManager(token: string) {
-    await connectToDatabase();
-
-    const strippedToken = token.replace('Bearer ', '');
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        throw HTTPError(403, 'invalid token');
-    }
-    if (!user.isManager) {
-        throw HTTPError(403, 'user is not a manager');
-    }
-    user.isManager = false;
-    await collections.users?.updateOne({ userId: user._id }, user);
-    return user;
-}
-
-
-export async function addVehicle(maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean, numberPlate: string, model: string): Promise<Vehicle> {
+/**
+ * Adds a vehicle to the database
+ * @param token                 token of user
+ * @param maxCapacity           max passenger capacity of vehicle
+ * @param maxLuggageCapacity    max luggage capacity of vehicle
+ * @param hasAssist             whether vehicle has disability accessibility
+ * @param numberPlate           number plate of vehicle
+ * @param model                 model of vehicle
+ * @returns                     vehicle object that was inserted to database
+ */
+export async function addVehicle(token: string, maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean, numberPlate: string, model: string): Promise<Vehicle> {
     await connectToDatabase();
 
     if (!collections.vehicles) {
-            throw HTTPError(500, 'Database collection is not initialized');
-        }
+        throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
+    if (!user.isManager) {
+        throw HTTPError(403, "user is not a manager");
+    }
     
     const checkVehicleExist = await collections.vehicles?.findOne({ numberPlate: numberPlate });
-        if (checkVehicleExist) {
-            throw HTTPError(409, 'Vehicle with number plate already in database');
-        }    
+    if (checkVehicleExist) {
+        throw HTTPError(409, 'Vehicle with number plate already in database');
+    }    
 
     const newVehicle: Vehicle = {
         _id: new ObjectId(),
@@ -69,12 +55,26 @@ export async function addVehicle(maxCapacity: number, maxLuggageCapacity: number
 }
 
 
-// TODO: deleted vehicles should also remove all vehicle IDs from trips
-export async function deleteVehicle(vehicleId: ObjectId) {
+/**
+ * Removes a vehicle from the database
+ * @param token         token of user
+ * @param vehicleId     id of vehicle to be deleted
+ * @returns 
+ */
+export async function deleteVehicle(token: string, vehicleId: ObjectId) {
     await connectToDatabase();
 
     if (!collections.vehicles || !collections.trips) {
         throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
+    if (!user.isManager) {
+        throw HTTPError(403, "user is not a manager");
     }
 
     const now = new Date();
@@ -93,11 +93,31 @@ export async function deleteVehicle(vehicleId: ObjectId) {
     return {};
 }
 
-export async function editVehicle( vehicleId: ObjectId, maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean, numberPlate: string, model: string): Promise<Vehicle>{
+/**
+ * Edits a vehicle in database
+ * @param token                 token of user
+ * @param vehicleId             id of vehicle to be edited
+ * @param maxCapacity           max passenger capacity of vehicle
+ * @param maxLuggageCapacity    max luggage capacity of vehicle
+ * @param hasAssist             whether vehicle has disability accessibility
+ * @param numberPlate           number plate of vehicle
+ * @param model                 model of vehicle
+ * @returns                     vehicle object that was edited in database
+ */
+export async function editVehicle(token: string,  vehicleId: ObjectId, maxCapacity: number, maxLuggageCapacity: number, hasAssist: boolean, numberPlate: string, model: string): Promise<Vehicle>{
     await connectToDatabase();
 
     if (!collections.vehicles) {
         throw HTTPError(500, 'Database collection is not initialized');
+    }
+
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
+    if (!user.isManager) {
+        throw HTTPError(403, "user is not a manager");
     }
 
     const existing = await collections.vehicles.findOne({ numberPlate, _id: { $ne: vehicleId }});
@@ -123,4 +143,87 @@ export async function editVehicle( vehicleId: ObjectId, maxCapacity: number, max
     }
 
     return result;
+}
+
+/**
+ * Adds a route to the database
+ * @param token     token of user
+ * @param stops     stops in the route
+ * @returns 
+ */
+export async function createRoute(token: string, stops: ObjectId[]) {
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
+    if (!user.isManager) {
+        throw HTTPError(403, "user is not a manager");
+    }
+
+    const dbRes = await collections.routes?.insertOne({
+        _id: new ObjectId(),
+        stops,
+        trips: [],
+    });
+    return { insertedId: dbRes?.insertedId };
+}
+
+/**
+ * Deletes a route from the database
+ * @param token         token of user
+ * @param routeId       route to be deleted
+ * @returns 
+ */
+export async function deleteRoute(token: string, routeId: ObjectId) {
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
+    if (!user.isManager) {
+        throw HTTPError(403, "user is not a manager");
+    }
+
+    await collections.routes?.deleteOne({ _id: routeId });
+    return {};
+}
+
+/**
+ * Returns all stops in database
+ * @param token     token of user
+ * @returns         all stops in database
+ */
+export async function allStops(token: string) {
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
+
+    const stops = await collections.stops?.find().toArray();
+    return stops;
+}
+
+/**
+ * returns all vehicles in database
+ * @param token     token of user
+ * @returns         vehicles in database
+ */
+export async function allVehicles(token: string) {
+    await connectToDatabase();
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
+    if (!user.isManager) {
+        throw HTTPError(403, "user is not a manager");
+    }
+
+    const vehicles = await collections.vehicles?.find().toArray();
+    return { vehicles };
 }

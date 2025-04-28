@@ -9,6 +9,7 @@ import { LoadingPage } from "@/app/components/LoadingPage";
 import { Header } from "@/app/components/Header";
 import Container from "@/app/components/Container";
 import { FontAwesome } from "@expo/vector-icons";
+import { getItem } from "../helper";
 
 const { width } = Dimensions.get("window")
 
@@ -30,17 +31,25 @@ export default function Deals() {
      * Fetches promotional deals from the API when the component mounts.
      */
     useEffect(() => {
-        setLoading(true)
-        axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/getDeals`, {})
-        .then((res) => {
-            setPromos(res.data)
-        })
-        .catch((err) => {
-            Alert.alert(`Error ${err.response.data.error}`)
-        })
-        .finally(() => {
-            setLoading(false)
-        })
+        const fetchData = async () => {
+            const token = await getItem("token");
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/deals/get`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            })
+            .then((res) => {
+                setPromos(res.data)
+            })
+            .catch((err) => {
+                Alert.alert(`Error ${err.response.data.error}`)
+            })
+            .finally(() => {
+                setLoading(false)
+            })
+        }
+        setLoading(true);
+        fetchData();
     }, [])
 
     if (loading) {

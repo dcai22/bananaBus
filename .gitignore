@@ -39,5 +39,7 @@ yarn-error.*
 app-example
 android/
 banana-bus/data.json
+banana-bus/.vercel
 
 coverage
+banana-bus/.gitignore

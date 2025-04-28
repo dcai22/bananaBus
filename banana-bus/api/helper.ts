@@ -7,14 +7,17 @@ import dotenv from "dotenv";
 var jwt = require('jsonwebtoken');
 dotenv.config();
 
+// Hashes and salts the password
 export async function getHash(text: string) {
     return await bcrypt.hash(text, 10);
 }
 
+// Compares a string to a hashed string
 export async function compareHash(text: string, hash: string) {
     return await bcrypt.compare(text, hash);
 }
 
+// Finds the user object by their token
 export async function findUserByToken(token: string) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -34,6 +37,7 @@ export async function findUserByToken(token: string) {
     }
 }
 
+// Gets the trip object by its ID
 export async function getTripById(tripId: ObjectId) {
     const trip = await collections.trips?.findOne<Trip>({ _id: tripId });
     if (!trip) {
@@ -42,6 +46,7 @@ export async function getTripById(tripId: ObjectId) {
     return trip;
 }
 
+// Gets the booking object by its ID
 export async function getRouteById(routeId: ObjectId) {
     const route = await collections.routes?.findOne<Route>({ _id: routeId });
     if (!route) {
@@ -50,6 +55,7 @@ export async function getRouteById(routeId: ObjectId) {
     return route;
 }
 
+// Gets the stop object by its ID
 export async function getStopById(stopId: ObjectId) {
     const stop = await collections.stops?.findOne<Stop>({ _id: stopId });
     if (!stop) {
@@ -58,6 +64,7 @@ export async function getStopById(stopId: ObjectId) {
     return stop;
 }
 
+// Gets the vehicle object by its ID
 export async function getVehicleById(vehicleId: ObjectId) {
     const vehicle = await collections.vehicles?.findOne<Vehicle>({ _id: vehicleId});
     if (!vehicle) {
@@ -66,6 +73,7 @@ export async function getVehicleById(vehicleId: ObjectId) {
     return vehicle;
 }
 
+// Finds the user by reset token
 export async function findUserByResetToken(token: string) {
     const users = await collections.users?.find({ resetToken: { $ne: [] as any} }).toArray();
     if (!users) {
@@ -77,58 +85,4 @@ export async function findUserByResetToken(token: string) {
         }
     }
     return;
-}
-
-export async function driverGetTrip(token: string, tripId: ObjectId) {
-    await connectToDatabase();
-    const strippedToken = token.replace("Bearer ", "");
-    const user = await findUserByToken(strippedToken);
-    if (!user) {
-        throw HTTPError(403, "invalid token");
-    }
-    if (!user.isDriver) {
-        throw HTTPError(403, "user is not a driver");
-    }
-
-    const allBookings = await collections.bookings?.find<Booking>({
-        tripId: tripId,
-    }).toArray();
-    if (!allBookings) {
-        throw HTTPError(400, 'bookings not found');
-    }
-
-    const trip = await getTripById(tripId);
-    const route = await getRouteById(trip.routeId);
-    const vehicle = await getVehicleById(trip.vehicleId);
-
-    const stops = await Promise.all(
-        route.stops.map(async (s, i) => {
-            const stop = await getStopById(s);
-            return {
-                _id: s,
-                name: stop.name,
-                stopTime: trip.stopTimes[i],
-            };
-        })
-    );
-
-    const passengers = await Promise.all(
-        allBookings.map(async (booking) => {
-            const user = await collections.users?.findOne<User>({
-                _id: booking.userId
-            });
-
-            if (!user) {
-                throw HTTPError(400, 'User not found');
-            }
-
-            return {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                numTickets: booking.numTickets,
-            };
-        })
-    );
-
-    return { vehicle: Object.assign(vehicle, { _id: vehicle._id.toString() }), stops, passengers };
 }

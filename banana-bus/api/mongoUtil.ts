@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { Booking, Route, Stop, Trip, User, Vehicle } from "./interface";
 
 dotenv.config();
-let dbName = "app";
+let dbName = process.env.MONGO_DBNAME || "test";
 
 export const collections: {
     users?: mongoDB.Collection<User>;
@@ -23,7 +23,6 @@ export async function connectToDatabase() {
     }
     try {
         if (mongoClient && database) {
-            console.log("Already connected to MongoDB");
         } else {
             mongoClient = new mongoDB.MongoClient(process.env.MONGODB_URI);
             await mongoClient.connect();
@@ -36,9 +35,17 @@ export async function connectToDatabase() {
         collections.routes = database.collection("routes");
         collections.stops = database.collection("stops");
         collections.vehicles = database.collection("vehicles");
-        console.log("Connected to MongoDB");
     } catch (error) {
         console.error("Error connecting to MongoDB", error);
         throw new Error("Failed to connect to MongoDB");
     }
 } 
+
+export async function closeConnection() {
+    if (mongoClient) {
+        await mongoClient.close();
+        console.log("MongoDB connection closed");
+    } else {
+        console.log("No MongoDB connection to close");
+    }
+}

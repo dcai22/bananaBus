@@ -1,13 +1,21 @@
 import HTTPError from "http-errors";
 import { Promotion } from "./interface";
 import axios from "axios";
+import { findUserByToken } from "./helper";
 
-export async function getDeals(): Promise<Promotion[]> {
-    let promos: Promotion[] = []
+export async function getDeals(token: string): Promise<Promotion[]> {
+    let promos: Promotion[] = [];
+
+    // user authentication
+    const strippedToken = token.replace("Bearer ", "");
+    const user = await findUserByToken(strippedToken);
+    if (!user) {
+        throw HTTPError(403, "invalid token");
+    }
 
     try {
-        promos = await scrapeUtamaDeals()
-        return promos
+        promos = await scrapeUtamaDeals();
+        return promos;
     } catch (error) {
         throw HTTPError(404, `Unable to fetch deals, ${error}`);
     }

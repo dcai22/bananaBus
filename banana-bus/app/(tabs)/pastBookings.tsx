@@ -49,12 +49,12 @@ export default function pastBookings() {
         if (!refresh) return;
         const fetchData = async () => {
             const token = await getItem("token");
-            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/pastBookings`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/bookings/past`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
             }).then((res) => {
-                setPastTrips(res.data);
+                setPastTrips(res.data.bookings);
             }).catch((err) => {
                 Alert.alert("Error", err.response.data.error);
             }).finally(() => {
@@ -81,7 +81,7 @@ export default function pastBookings() {
             <Header title="Past Bookings" icon={<FontAwesome name="calendar"/>}/>
             {/* List of Past Bookings */}
             <ScrollView style={styles.bookingsContainer}>
-                {pastTrips.length > 0 ? (
+                {pastTrips && pastTrips.length > 0 ? (
                     pastTrips.map((item, index) => (
                         <View style={styles.tripItem} key={index}>
                             <View style={styles.accent} />
