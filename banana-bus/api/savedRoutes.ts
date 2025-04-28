@@ -145,7 +145,7 @@ export async function reachableStops(token: string, fromId: ObjectId) {
 
     const stops = new Set<ObjectId>();
     for (const route of routes) {
-        const fromIndex = route.stops.indexOf(fromId);
+        const fromIndex = route.stops.findIndex(s => s.equals(fromId));
         route.stops.forEach((e, i, a) => {
             if (i > fromIndex) {
                 stops.add(e);
