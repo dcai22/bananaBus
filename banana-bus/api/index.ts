@@ -481,8 +481,13 @@ app.get("/deals/get", async (req: Request, res: Response, next) => {
 app.post("/routes/setup", async (req: Request, res: Response, next) => {
     await connectToDatabase();
     if (await collections.routes?.countDocuments() === 0 || await collections.stops?.countDocuments() === 0) {
+        // reset database
         await collections.routes?.deleteMany({});
         await collections.stops?.deleteMany({});
+        await collections.trips?.deleteMany({});
+        await collections.vehicles?.deleteMany({});
+        await collections.users?.deleteMany({});
+        await collections.bookings?.deleteMany({});
 
         const stops = [
             { _id: new ObjectId(), name: "KLIA Terminal 1", lat: 2.7567602, lng: 101.7007533 },
