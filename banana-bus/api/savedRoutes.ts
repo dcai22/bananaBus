@@ -4,6 +4,14 @@ import { Route, RouteSection } from "./interface";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 
+/**
+ * Saves a route, including the start and end points, to the user's saved routes
+ * @param {string} token        authentication token of user
+ * @param {ObjectId} routeId    id of route to be added
+ * @param {ObjectId} originId   id of the origin stop
+ * @param {ObjectId} destId     id of the destination stop
+ * @returns empty object
+ */
 export async function saveRoute(token: string, routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
     await connectToDatabase();
     
@@ -38,6 +46,14 @@ export async function saveRoute(token: string, routeId: ObjectId, originId: Obje
     return {};
 }
 
+/**
+ * Removes a route, including the start and end points, from the user's saved routes
+ * @param {string} token        authentication token of user
+ * @param {ObjectId} routeId    id of route to be removed
+ * @param {ObjectId} originId   id of the origin stop
+ * @param {ObjectId} destId     id of the destination stop
+ * @returns empty object
+ */
 export async function unsaveRoute(token: string, routeId: ObjectId, originId: ObjectId, destId: ObjectId) {
     await connectToDatabase();
     
@@ -71,6 +87,11 @@ export async function unsaveRoute(token: string, routeId: ObjectId, originId: Ob
     return {};
 }
 
+/**
+ * Gets all routes, including start and end points, saved by a user
+ * @param {string} token    authentication token of user
+ * @returns object containing an array of saved routes, including the start and end points
+ */
 export async function getSavedRoutes(token: string) {
     await connectToDatabase();
     const strippedToken = token.replace('Bearer ', '');
@@ -97,6 +118,12 @@ export async function getSavedRoutes(token: string) {
     )};
 }
 
+/**
+ * Searches all destination stops reachable (in a single route) from an origin stop
+ * @param {string} token    authentication token of the user
+ * @param {ObjectId} fromId id of the origin stop
+ * @returns object containing an array of destination stop IDs
+ */
 export async function reachableStops(token: string, fromId: ObjectId) {
     await connectToDatabase();
     const strippedToken = token.replace('Bearer ', '');
@@ -129,6 +156,13 @@ export async function reachableStops(token: string, fromId: ObjectId) {
     return { stops: Array.from(stops) };
 }
 
+/**
+ * Gets routes containing a section going from a specified origin to a specified destination
+ * @param {string} token        authentication token of user
+ * @param {ObjectId} departId   ID of user-specified origin stop
+ * @param {ObjectId} arriveId   ID of user-specified destination stop
+ * @returns object containing a list of Route objects
+ */
 export async function getRoutes(token: string, departId: ObjectId, arriveId: ObjectId) {
     await connectToDatabase();
     const strippedToken = token.replace('Bearer ', '');

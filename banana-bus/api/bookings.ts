@@ -7,10 +7,15 @@ import { ObjectId } from "mongodb";
 dotenv.config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// timeFrame: 'past', 'upcoming', 'ongoing', 'all'.
-// Past bookings have already arrived at their destination,
-// upcoming bookings are yet to depart from their origin,
-// and so on.
+/**
+ * Get a list of the user's scheduled trips in a specified timeframe
+ * @param {string} token        authentication token of user
+ * @param {string} timeFrame    Can be: 'past', 'upcoming', 'ongoing', 'all'
+ *                              'past' bookings have arrived at their destination
+ *                              'upcoming' bookings are yet to depart from their origin
+ *                              'ongoing' bookings have departed but not arrived
+ * @returns array of objects containing booking details
+ */
 export async function searchBookings(token: string, timeFrame: string) {
     await connectToDatabase();
 
@@ -79,6 +84,16 @@ export async function searchBookings(token: string, timeFrame: string) {
     return userBookings;
 }
 
+/**
+ * Creates a booking submitted by a user
+ * @param {string} token        authentication token of user
+ * @param {ObjectId} tripId     ID for chosen trip
+ * @param {ObjectId} originId   ID for origin stop of the given trip
+ * @param {ObjectId} destId     ID for destination stop of the given trip
+ * @param {number}numTickets    number of tickets to book
+ * @param {number} numLuggage   amount of luggage space to book
+ * @returns object containing ID of the inserted booking
+ */
 export async function createBooking(token: string, tripId: ObjectId, originId: ObjectId, destId: ObjectId, numTickets: number, numLuggage: number) {
     await connectToDatabase();
 
@@ -108,7 +123,6 @@ export async function createBooking(token: string, tripId: ObjectId, originId: O
     )
 
     return { insertedId: dbRes?.insertedId }
-
 }
 
 export async function createPaymentDetails(token: string, price: number) {

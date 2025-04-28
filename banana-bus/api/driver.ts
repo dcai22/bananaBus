@@ -1,9 +1,14 @@
 import HTTPError from "http-errors";
 import { findUserByToken, getRouteById, getStopById, getTripById, getVehicleById } from "./helper";
-import { Booking, Route, RouteSection, Trip, User } from "./interface";
+import { Booking, Trip, User } from "./interface";
 import { collections, connectToDatabase } from "./mongoUtil";
 import { ObjectId } from "mongodb";
 
+/**
+ * Gets upcoming trips which are assigned to the driver
+ * @param {string} token    authentication token for the driver
+ * @returns object containing an array of trip details
+ */
 export async function driverGetUpcomingTrips(token: string) {
     await connectToDatabase();
 
@@ -42,6 +47,12 @@ export async function driverGetUpcomingTrips(token: string) {
     return { upcomingTrips: formattedUpcomingTrips };
 }
 
+/**
+ * Searches a specific trip assigned to the driver
+ * @param {string} token    authentication token of driver
+ * @param {ObjectId} tripId ID of a trip assigned to the driver
+ * @returns object containing vehicle details, a list of stops, and a list booking details
+ */
 export async function driverGetTrip(token: string, tripId: ObjectId) {
     await connectToDatabase();
     const strippedToken = token.replace("Bearer ", "");
@@ -97,6 +108,13 @@ export async function driverGetTrip(token: string, tripId: ObjectId) {
     return { vehicle: Object.assign(vehicle, { _id: vehicle._id.toString() }), stops, passengers };
 }
 
+/**
+ * Creates a vehicle report submitted by a driver
+ * @param {string} token        authentication token of driver
+ * @param {ObjectId} vehicleId  ID of vehicle to be reported
+ * @param {string} reportText   report text sent by the driver
+ * @returns object containing the date the report was sent
+ */
 export async function driverReportVehicle(token: string, vehicleId: ObjectId, reportText: string) {
     await connectToDatabase();
     const strippedToken = token.replace("Bearer ", "");
