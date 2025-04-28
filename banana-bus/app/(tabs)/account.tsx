@@ -3,10 +3,17 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } fr
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Device from 'expo-device';
 import { getItem } from '../helper';
-import Container from '@/components/Container';
+import Container from '@/app/components/Container';
 import { initStripe, CustomerSheetBeta } from '@stripe/stripe-react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
+/**
+ * Account Screen
+ * 
+ * Displays the user's account information, weather details, and a menu
+ * with various options such as Payments, Past Bookings, Support, and more. It also integrates
+ * with Stripe for payment management.
+ */
 export default function Account() {
     const [userName, setUserName] = useState('');
     const [temperature, setTemperature] = useState(0);
@@ -16,6 +23,7 @@ export default function Account() {
     const [isDriver, setIsDriver] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refresh, setRefresh] = useState(false);
+
     const [customerSheetVisible, setCustomerSheetVisible] = useState(false);
     const [customer, setCustomer] = useState('');
     const [ephemeralKey, setEphemeralKey] = useState('');
@@ -24,6 +32,9 @@ export default function Account() {
 
     const router = useRouter();
 
+    /**
+     * Refreshes the account details when the screen is focused.
+     */
     useFocusEffect(
         React.useCallback(() => {
             setRefresh(true);
@@ -31,8 +42,11 @@ export default function Account() {
                 setLoading(true);
             };
         }, [])
-    )
+    );
 
+    /**
+     * Fetches account details and weather data when the component is mounted or refreshed.
+     */
     useEffect(() => {
         const getAccountDetails = async () => {
             let token = null;
@@ -53,19 +67,23 @@ export default function Account() {
                     setIsDriver(data.isDriver);
                 }
             } catch {
-                // console.log('Failed to fetch user name');
+                console.error('Failed to fetch user name');
             } finally {
                 setLoading(false);
             }
-        }
+        };
         getAccountDetails();
-        // TODO Fetch weather data from API
+
+        // TODO: Replace with actual weather API integration
         setTemperature(30);
         setWindSpeed(10);
         setHumidity(80);
         setRefresh(false);
     }, [refresh]);
 
+    /**
+     * Initializes Stripe when the component is mounted.
+     */
     useEffect(() => {
         async function initialise() {
             await initStripe({
@@ -73,8 +91,11 @@ export default function Account() {
             });
         }
         initialise();
-    })
+    }, []);
 
+    /**
+     * Fetches the customer key for Stripe integration.
+     */
     async function fetchCustomerKey() {
         const token = await getItem('token');
         try {
@@ -91,6 +112,9 @@ export default function Account() {
         }
     }
 
+    /**
+     * Fetches the setup intent for Stripe integration.
+     */
     async function fetchCustomerIntent() {
         const token = await getItem('token');
         try {
@@ -107,6 +131,9 @@ export default function Account() {
         }
     }
 
+    /**
+     * Initializes the Stripe Customer Sheet.
+     */
     async function initialiseCustomerSheet() {
         const customerKey = await fetchCustomerKey();
         const customerIntent = await fetchCustomerIntent();
@@ -131,6 +158,9 @@ export default function Account() {
         }
     }
 
+    /**
+     * Handles the payment process by initializing the Customer Sheet.
+     */
     async function handlePayment() {
         setSheetLoading(true);
         await initialiseCustomerSheet();
@@ -140,17 +170,21 @@ export default function Account() {
 
     return (
         <Container>
+            {/* Background Image */}
             <Image
-                source={{ uri: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F022%2F737%2F904%2Foriginal%2Fmodern-city-scape-silhouette-simple-minimalist-blue-city-skyline-background-urban-cityscape-silhouettes-illustration-vector.jpg&f=1&nofb=1&ipt=b867ca6f79e10846ab79381e8bc6910f4c9cd82e1a2553f4f9d03738d544d89c&ipo=images' }}
+                source={require('@/assets/images/account-bg.jpg')}
                 style={styles.backgroundImage}
             />
             <View style={styles.overlay}>
+                {/* Greeting and Weather Information */}
                 <Text style={styles.greeting}>Good Morning, {loading ? <ActivityIndicator size="small" color="#ffffff"/> : userName}</Text>
                 <View style={styles.weatherContainer}>
                     <Text style={styles.weatherText}>☀️ {temperature}°C</Text>  
                     <Text style={styles.weatherText}>💨 {windSpeed} km/h</Text>
                     <Text style={styles.weatherText}>💧 {humidity}%</Text>
                 </View>
+
+                {/* Menu Options */}
                 <View style={styles.menuContainer}>
                     <MenuItem title="Payments" icon="credit-card" onPress={handlePayment} isLoading={sheetLoading}/>
                     <MenuItem title="Past Bookings" icon="bus" onPress={() => router.navigate('/pastBookings')}/>
@@ -164,6 +198,8 @@ export default function Account() {
                     <MenuItem title="Settings" icon="cog" onPress={() => router.push('/settings')} />
                 </View>
             </View>
+
+            {/* Stripe Customer Sheet */}
             <CustomerSheetBeta.CustomerSheet
                 visible={customerSheetVisible}
                 onResult={({error, paymentOption, paymentMethod}) => {
@@ -188,6 +224,15 @@ export default function Account() {
     );
 }
 
+/**
+ * MenuItem Component
+ * 
+ * A reusable component for rendering menu items with an icon, title, and optional loading state.
+ * 
+ * @param {string} title - The title of the menu item.
+ * @param {string} icon - The icon name from FontAwesome.
+ * @param {function} onPress - The function to call when the menu item is pressed.
+ */
 function MenuItem({ title, icon, onPress, isLoading }: { title: string; icon: keyof typeof FontAwesome.glyphMap; onPress: () => void, isLoading?: boolean }) {
     return (
         <TouchableOpacity style={styles.menuItem} onPress={onPress} disabled={isLoading}>
@@ -203,6 +248,7 @@ function MenuItem({ title, icon, onPress, isLoading }: { title: string; icon: ke
     );
 }
 
+// Styles for the Account screen
 const styles = StyleSheet.create({
     backgroundImage: {
         width: '100%',

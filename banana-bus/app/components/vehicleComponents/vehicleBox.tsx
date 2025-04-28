@@ -1,13 +1,26 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity} from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { Vehicle } from "@/api/interface";
+import { Vehicle } from "@/app/interface";
 
 interface VehicleBoxProps {
   vehicle: Vehicle;
   onPress: () => void
 }
 
+/**
+ * VehicleBox Component
+ * 
+ * A card component that displays vehicle information, including model, number plate,
+ * maximum capacity, luggage capacity, and assistance availability.
+ * 
+ * Props:
+ * - `vehicle` (Vehicle): The vehicle data to display in the card.
+ * - `onPress` (function): Callback function to handle card press events.
+ * 
+ * Example Usage:
+ * <VehicleBox vehicle={vehicleData} onPress={() => console.log("Card pressed")} /> 
+ */
 export default function VehicleBox({vehicle, onPress}: VehicleBoxProps) {
 
   return(

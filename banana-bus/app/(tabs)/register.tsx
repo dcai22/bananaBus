@@ -2,10 +2,16 @@ import { Text, View, StyleSheet, Alert, TouchableOpacity, ImageBackground } from
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as Device from 'expo-device';
-import { YesButton } from '@/components/Buttons';
+import { YesButton } from '@/app/components/Buttons';
 import { saveItem } from '../helper';
-import StyledTextInput from '@/components/StyledTextInput';
+import StyledTextInput from '@/app/components/StyledTextInput';
 
+/**
+ * Register Screen
+ * 
+ * Allows users to register by providing their first name, last name, email, and password.
+ * It sends the registration data to the backend and navigates to the main app on success.
+ */
 export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -14,6 +20,10 @@ export default function RegisterScreen() {
     const [lastName, setLastName] = useState('');
     const router = useRouter();
 
+    /**
+     * Handles the registration process.
+     * Validates the input and sends the data to the backend API.
+     */
     const handleRegister = async () => {
         if (password !== confirmPassword) {
             Alert.alert('Error', 'Paswords don\'t match!');
@@ -23,7 +33,6 @@ export default function RegisterScreen() {
         }
 
         // Register user
-
         try {
             const response = await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/register`, {
                 method: 'POST',
@@ -62,6 +71,7 @@ export default function RegisterScreen() {
         >
             <View style={styles.overlay} />
             <View style={styles.container}>
+                {/* Go Back Button */}
                 <TouchableOpacity
                     style={styles.goBack} onPress={() => {
                         setFirstName('');
@@ -74,7 +84,9 @@ export default function RegisterScreen() {
                 >
                     <Text style={styles.goBack}>← go back</Text>
                 </TouchableOpacity>
+                {/* Header */}
                 <Text style={styles.title}>banana bus      🚌</Text>
+                {/* Registration Form */}
                 <View style={styles.form}>
                     <StyledTextInput
                         label="first name"

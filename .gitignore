@@ -39,3 +39,5 @@ yarn-error.*
 app-example
 android/
 banana-bus/data.json
+
+coverage

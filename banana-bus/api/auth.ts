@@ -1,5 +1,5 @@
 import HTTPError from "http-errors";
-import { AuthUserId, DataStore, Error, User, UserBuilder, UserPayload } from "./interface";
+import { Error } from "./interface";
 import { getHash, compareHash, findUserByToken, findUserByResetToken } from "./helper";
 import crypto from "crypto";
 import { collections } from "./mongoUtil";

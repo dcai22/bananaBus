@@ -9,14 +9,14 @@ import {
     TouchableOpacity,
     Alert,
 } from "react-native";
-import { format, set } from "date-fns";
-import TripListBox from "@/components/TripListBox";
+import { format } from "date-fns";
+import TripListBox from "@/app/components/TripListBox";
 import axios from "axios";
-import { TripBox } from "@/api/interface";
-import { LoadingPage } from "@/components/LoadingPage";
+import { TripBox } from "@/app/interface";
+import { LoadingPage } from "@/app/components/LoadingPage";
 import { getItem } from "../helper";
 import DatePicker from "react-native-date-picker";
-import Container from "@/components/Container";
+import Container from "@/app/components/Container";
 
 interface Route {
     route: {
@@ -30,6 +30,13 @@ interface Route {
     destName: string;
 }
 
+/**
+ * Trips List Screen
+ * 
+ * Displays a list of trips for a specific route, allowing users to view available trips for a route
+ * and select a date to filter trips. Users can also save or unsave the route.
+ * Users can book a ticket for a trip by pressing the trip box.
+ */
 export default function tripsList() {
     const { routeId, departId, arriveId } = useLocalSearchParams<{
         routeId: string;
@@ -47,18 +54,22 @@ export default function tripsList() {
     const [open, setOpen] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
 
+    /**
+     * Refreshes the screen on every visit.
+     */
     useFocusEffect(
         useCallback(() => {
             setRefresh(true);
             setError("");
-            // Makes sure to reload page upon leaving page
             return () => {
                 setLoading(true);
             };
         }, [])
     );
 
-    // Check if the route is saved on load
+    /**
+     * Checks if the route is saved on load.
+     */
     useEffect(() => {
         const checkRouteSaved = async () => {
             try {
@@ -85,6 +96,9 @@ export default function tripsList() {
         checkRouteSaved();
     }, [refresh]);
 
+    /**
+     * Fetches trips for the selected route and date when the date changes.
+     */
     useEffect(() => {
         setRefresh(true);
     }, [date]);
@@ -124,6 +138,9 @@ export default function tripsList() {
         fetchData();
     }, [date, routeId, departId, arriveId, refresh]);
 
+    /**
+     * Toggles saving or unsaving the route.
+     */
     const toggleSaveRoute = async () => {
         try {
             const token = await getItem("token");
@@ -149,6 +166,9 @@ export default function tripsList() {
         }
     };
 
+    /**
+     * Header with route details and save button.
+     */
     function Header() {
         return (
             <View style={styles.header}>
@@ -203,6 +223,7 @@ export default function tripsList() {
         <Container>
             <Header />
             <ScrollView style={styles.tripListContainer}>
+                {/* Date Picker */}
                 <TouchableOpacity
                     style={styles.tripListDate}
                     onPress={() => setOpen(true)}
@@ -215,6 +236,7 @@ export default function tripsList() {
                         style={styles.tripDateArrow}
                     ></FontAwesome>
                 </TouchableOpacity>
+                {/* Trip List */}
                 {trips.length > 0 ? (
                     <View>
                         {trips.map((t, index) => (
@@ -232,6 +254,7 @@ export default function tripsList() {
                     </Text>
                 )}
             </ScrollView>
+            {/* Date Picker Modal */}
             <DatePicker
                 modal
                 open={open}
@@ -314,7 +337,6 @@ const styles = StyleSheet.create({
         alignSelf: "center",
         color: "#74b9f1",
     },
-    // Star styles
     starButton: {
         padding: 8,
     },

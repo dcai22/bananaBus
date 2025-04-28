@@ -1,4 +1,4 @@
-import { getRouteById, getStopById, getTripById } from "./helper";
+import { getRouteById, getStopById } from "./helper";
 import { ObjectId } from "mongodb";
 
 export interface Error {
@@ -119,6 +119,7 @@ export interface DataStore {
     bookings: Booking[],
     routes: Route[],
     stops: Stop[],
+    vehicles: Vehicle[],
 }
 
 export interface resetToken {
@@ -276,7 +277,6 @@ export interface Promotion {
 
 export interface Vehicle {
     _id: ObjectId,
-    //driverId : ObjectId,
     maxCapacity: number,
     maxLuggageCapacity: number,
     hasAssist: boolean,

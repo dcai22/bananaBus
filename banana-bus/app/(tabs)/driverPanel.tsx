@@ -1,5 +1,5 @@
-import Container from "@/components/Container";
-import { Header } from "@/components/Header";
+import Container from "@/app/components/Container";
+import { Header } from "@/app/components/Header";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import axios from "axios";
 import { format } from "date-fns";
@@ -8,7 +8,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator, ScrollView, Alert } from "react-native";
 import { getItem } from "../helper";
 
+/**
+ * Driver Panel Screen
+ * 
+ * Displays a list of upcoming trips assigned to the driver. Drivers can view trip details
+ * and navigate to a specific trip's page for more information.
+ */
 export default function driverPanel() {
+    // TODO Interface for the trip object
     interface Trip {
         _id: string,
         stopTimes: Date[],
@@ -22,6 +29,11 @@ export default function driverPanel() {
     const [upcomingTrips, setUpcomingTrips] = useState<Trip[]>([]);
     const [upcomingLoading, setUpcomingLoading] = useState(true);
     
+    /**
+     * Handles navigation to the trip details page.
+     * 
+     * @param trip - The trip object containing details of the selected trip.
+     */
     const handlePress = (trip: Trip) => {
         router.push({
             pathname: '/driverTrip',
@@ -33,6 +45,9 @@ export default function driverPanel() {
         });
     };
 
+    /**
+     * Refreshes the page on every visit.
+     */
     useFocusEffect(
         useCallback(() => { 
             setRefresh(true)
@@ -43,7 +58,10 @@ export default function driverPanel() {
             };
         }, [])
     )
-    
+
+    /**
+     * Fetches upcoming trips from the API when the page is refreshed.
+     */
     useEffect(() => {
         if (!refresh) return;
         setError("");
@@ -68,7 +86,9 @@ export default function driverPanel() {
     
     return (
         <Container>
+            {/* Header */}
             <Header title="Driver Panel" />
+            {/* Upcoming Trips Section */}
             <ScrollView style={styles.section}>
                 <View style={styles.sectionHeaderContainer}>
                     <Text style={styles.sectionHeader}>Designated Trips</Text>
@@ -151,29 +171,12 @@ const styles = StyleSheet.create({
         width: 12,
         alignSelf: 'stretch',
     },
-    watchList: {
-        flex: 1,
-        height: '55%',
-    },
     upcomingList: {
         flex: 1,
         height: "60%",
     },
     arrow: {
         fontSize: 18,
-    },
-    topLeftButton: {
-        position: 'absolute',
-        top: 20,
-        left: 20,
-        padding: 10,
-        backgroundColor: '#007aff',
-        borderRadius: 10,
-        elevation: 20,
-    },
-    topLeftButtonText: {
-        color: 'white',
-        fontSize: 12,
     },
     emptyMessage: {
         fontSize: 18,

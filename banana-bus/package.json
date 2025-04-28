@@ -9,7 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "app-tests": "jest _tests_/app --coverage"
   },
   "jest": {
     "preset": "jest-expo"
@@ -70,9 +71,10 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-typescript": "^7.26.0",
+    "@testing-library/react-native": "^12.9.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^29.5.14",
     "@types/react": "~18.3.12",
     "@types/react-test-renderer": "^18.3.0",
     "babel-cli": "^6.26.0",

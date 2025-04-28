@@ -2,14 +2,20 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getItem, saveItem } from "../helper";
-import { Header } from "@/components/Header";
-import Container from "@/components/Container";
-import { CustomModal } from "@/components/Modal";
-import { NoButton, StandardButton, WarnButton, YesButton } from "@/components/Buttons";
-import StyledTextInput from "@/components/StyledTextInput";
+import { Header } from "@/app/components/Header";
+import Container from "@/app/components/Container";
+import { CustomModal } from "@/app/components/Modal";
+import { NoButton, StandardButton, WarnButton, YesButton } from "@/app/components/Buttons";
+import StyledTextInput from "@/app/components/StyledTextInput";
 import { FontAwesome } from "@expo/vector-icons";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
+/**
+ * Settings Screen
+ * 
+ * Allows users to manage their account settings, including updating details, changing passwords,
+ * logging out, and deleting their account.
+ */
 export default function Settings() {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalType, setModalType] = useState("");
@@ -28,6 +34,9 @@ export default function Settings() {
 
     const router = useRouter();
 
+    /**
+     * Refreshes the screen on every visit.
+     */
     useFocusEffect(
         React.useCallback(() => {
             setRefresh(true);
@@ -37,6 +46,10 @@ export default function Settings() {
         }, [])
     )
 
+    /**
+     * Fetches whether the user is an external (Google) user.
+     * Used to check whether to show the email field in the details modal and change password.
+     */
     useEffect(() => {
         const fetchIsExternal = async () => {
             const externalStatus = await getItem("isExternal");
@@ -47,6 +60,9 @@ export default function Settings() {
         setRefresh(false);
     }, [refresh]);
 
+    /**
+     * Fetches user details from the backend.
+     */
     const fetchUserDetails = async () => {
         const token = await getItem('token');
         if (!token) {
@@ -121,6 +137,9 @@ export default function Settings() {
         setModalVisible(false);
     }
 
+    /**
+     * Handles saving updated details or password sending info to backend.
+     */
     const handleSave = async () => {
         const token = await getItem('token');
         if (!token) {
@@ -187,6 +206,9 @@ export default function Settings() {
         closeModal();
     };
 
+    /**
+     * Handles logging out the user. Invalidating the token and clearing local storage.
+     */
     const handleLogout = async () => {
         const token = await getItem('token');
         const userId = await getItem('userId');
@@ -231,8 +253,10 @@ export default function Settings() {
         router.navigate("/login");
     };
 
+    /**
+     * Removes all user info from database.
+     */
     const handleDeleteAccount = async () => {
-        // TODO Send most likely send an email to account to confirm
         const token = await getItem('token');
         const userId = await getItem('userId');
         if (token === null || userId === null) {
@@ -270,7 +294,9 @@ export default function Settings() {
 
     return (
         <Container>
+            {/* Header */}
             <Header title="Settings" showGoBack={false} icon={<FontAwesome name="cog"/>}/>
+            {/* Options */}
             <View style={styles.section}>
                 <StandardButton text="Change Details" onPress={() => openModal("details")} style={styles.option}/>
                 {!isExternal && (
@@ -279,6 +305,7 @@ export default function Settings() {
                 <StandardButton text="Logout" onPress={() => openModal("logout")} style={styles.option}/>
                 <WarnButton text="Delete Account" onPress={() => openModal("delete")} style={styles.option}/>
             </View>
+            {/* Modal */}
             <CustomModal
                 visible={modalVisible}
                 onCancel={closeModal}
@@ -357,14 +384,6 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#dff4ff",
-    },
-    header: {
-        fontSize: 36,
-        fontWeight: "bold",
-    },
     option: {
         padding: 15,
         borderRadius: 8,

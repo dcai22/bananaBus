@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, Switch, Alert } from "react-native";
 import Modal from "react-native-modal"
 import StyledTextInput from "../StyledTextInput";
 import axios from "axios";
 import { getItem } from "expo-secure-store";
-import { Vehicle } from "@/api/interface";
+import { Vehicle } from "@/app/interface";
 import { LoadingButton, NoButton, WarnButton, YesButton } from "../Buttons";
 import { CustomModal } from "../Modal";
 
@@ -16,6 +16,18 @@ interface VehicleModalProps {
   onDeleteVehicle?: (deletedVehicle: Vehicle) => void;
 }
 
+/**
+ * VehicleModal Component
+ * 
+ * A modal component that displays vehicle details and allows editing or deleting the vehicle.
+ * 
+ * Props:
+ * - `vehicle` (Vehicle): The vehicle object containing details to display in the modal.
+ * - `visible` (boolean): Controls the visibility of the modal.
+ * - `setVisible` (function): Callback function to set the visibility of the modal.
+ * - `onEditVehicle` (function): Callback function to handle the editing of a vehicle.
+ * - `onDeleteVehicle` (function): Callback function to handle the deletion of a vehicle.
+ */
 export default function VehicleModal({vehicle, visible, setVisible, onEditVehicle, onDeleteVehicle}: VehicleModalProps) {
   const [error, setError] = useState("");
 

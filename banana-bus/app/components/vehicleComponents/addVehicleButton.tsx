@@ -3,7 +3,7 @@ import {View, Text, TouchableOpacity, StyleSheet, Switch, Alert, ActivityIndicat
 import StyledTextInput from "../StyledTextInput";
 import { getItem } from "expo-secure-store";
 import axios from "axios";
-import { Vehicle } from "@/api/interface";
+import { Vehicle } from "@/app/interface";
 import { LoadingButton, NoButton, YesButton } from "../Buttons";
 import { CustomModal } from "../Modal";
 
@@ -11,6 +11,18 @@ interface addVehicleButtonProps {
   onAddVehicle?: (newVehicle: Vehicle) => void
 }
 
+/**
+ * AddVehicleButton Component
+ * 
+ * A button that opens a modal for adding a new vehicle. The modal includes fields for vehicle details
+ * and a switch for wheelchair accessibility. Upon submission, the new vehicle is added to the list.
+ * 
+ * Props:
+ * - `onAddVehicle` (function): Callback function to handle the addition of a new vehicle.
+ * 
+ * Example Usage:
+ * <AddVehicleButton onAddVehicle={handleNewVehicle} />
+ */
 export default function AddVehicleButton({onAddVehicle}: addVehicleButtonProps) {
   const [visible, setVisible] = useState(false)
   

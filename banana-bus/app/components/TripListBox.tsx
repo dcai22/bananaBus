@@ -1,11 +1,25 @@
 import React from "react";
-import { TripBox } from "@/api/interface";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { format, formatDistance } from "date-fns";
 import { router } from "expo-router";
-import { View, Text, StyleSheet, TouchableOpacity} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert} from "react-native";
 
 // produce text for time distance from now to departure time
+interface TripBox {
+    tripId: string,
+    departId: string,
+    arriveId: string,
+    departureTime: Date,
+    arrivalTime: Date,
+    price: number,
+    curCapacity: number, 
+    maxCapacity: number,
+    curLuggageCapacity: number,
+    maxLuggageCapacity: number,
+    luggagePrice: number,
+    hasAssist: boolean,
+}
+
 function timeTillDepart(departureTime: Date) {
     const now = new Date()
     let text = formatDistance(departureTime, now, { addSuffix: true})
@@ -37,7 +51,7 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
             })
         } else {
             // make a pop up or something
-            console.log("already departed/ disable")
+            Alert.alert("Trip has already departed or is unavailable.");
         }
     }
 
@@ -49,7 +63,7 @@ export default function TripListBox({ trip, disabled = true}: { trip: TripBox; d
     const isLuggageEmpty = trip.curLuggageCapacity === 0
     
     return(
-        <TouchableOpacity onPress={handlePress}>
+        <TouchableOpacity onPress={handlePress} testID="trip-list-box">
             <View style = {styles.tripListContainer}>
                 <View style = {[styles.timeTillDepartContainer, departed && styles.departedContainer]}>
                     <Text style = {styles.timeTillDepartText}>{nowToDepart}</Text>

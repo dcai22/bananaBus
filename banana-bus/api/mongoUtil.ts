@@ -1,8 +1,6 @@
 import * as mongoDB from "mongodb";
 import dotenv from "dotenv";
 import { Booking, Route, Stop, Trip, User, Vehicle } from "./interface";
-import { addVehicle, deleteVehicle } from "./manager"; 
-import { add } from "date-fns";
 
 dotenv.config();
 let dbName = "app";
