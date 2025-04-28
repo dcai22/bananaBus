@@ -224,6 +224,12 @@ export default function MapSearch({
     const handleFromSelect = (stop: IStop) => {
         console.log(stop);
         setFromLoc(stop);
+        setToLoc({
+            _id: null,
+            name: null,
+            lng: null,
+            lat: null,
+        });
         setFromSearchQuery("");
 
         activateToSearch();
