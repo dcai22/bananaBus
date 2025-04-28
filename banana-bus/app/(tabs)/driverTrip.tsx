@@ -67,7 +67,7 @@ export default function driverTrip() {
         const fetchData = async () => {
             const token = await getItem("token");
             setLoading(true)
-            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/driver/trips/get?tripId=${tripId}`, {
+            axios.get(`${process.env.EXPO_PUBLIC_API_BASE}/driver/getTrip?tripId=${tripId}`, {
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },

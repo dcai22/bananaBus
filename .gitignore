@@ -42,3 +42,4 @@ banana-bus/data.json
 banana-bus/.vercel
 
 coverage
+banana-bus/.gitignore

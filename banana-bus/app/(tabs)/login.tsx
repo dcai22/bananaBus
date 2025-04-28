@@ -124,6 +124,18 @@ export default function LoginScreen() {
         autoLogin();
     }, []);
 
+    useEffect(() => {
+        const setupRoutes = async () => {
+            try {
+                await fetch(`${process.env.EXPO_PUBLIC_API_BASE}/routes/setup`, {
+                    method: 'POST',
+                });
+            } catch {}
+        }
+
+        setupRoutes();
+    }, []);
+
     /**
      * Handles the login process using email and password.
      */
