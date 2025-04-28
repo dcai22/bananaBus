@@ -72,9 +72,11 @@ async function getPossibleDestinations(
         return destinations;
     } catch (error) {
         console.error("Error fetching destinations:", error);
-        Alert.alert("Something went wrong!", "Error fetching destinations", [
-            { text: "OK" },
-        ]);
+        Alert.alert(
+            "Something went wrong!",
+            "The selected route could not be found. Please try something else.",
+            [{ text: "OK" }]
+        );
         return [];
     }
 }
