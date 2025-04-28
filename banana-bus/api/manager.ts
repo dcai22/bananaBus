@@ -203,9 +203,6 @@ export async function allStops(token: string) {
     if (!user) {
         throw HTTPError(403, "invalid token");
     }
-    if (!user.isManager) {
-        throw HTTPError(403, "user is not a manager");
-    }
 
     const stops = await collections.stops?.find().toArray();
     return stops;
