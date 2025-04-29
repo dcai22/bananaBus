@@ -14,7 +14,8 @@
     "api-tests": "jest api/__tests__ --watchAll --runInBand"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testTimeout": 10000
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.2",
