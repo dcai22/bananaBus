@@ -9,16 +9,16 @@ https://docs.expo.dev/get-started/set-up-your-environment
 We recommend using an android emulator as a development build and without EAS
 https://docs.expo.dev/get-started/set-up-your-environment/?platform=android&device=simulated&mode=development-build&buildEnv=local
 
-Either download the zip or
+Clone the repository with git
 ```
-$ git clone https://github.com/unsw-cse-comp99-3900/capstone-project-2025-t1-25t1-3900-f15a-banana.git
-$ cd banana-bus
+$ git clone https://github.com/dcai22/bananaBus.git
+$ cd bananaBus
 $ npm i
 ```
 
 Before we build the application, we should set up our **environment variables**
 
-There should be one included in the submission in Moodle, or edit the template to use your own services
+Edit the template to use your own services
 ```
 MONGODB_URI=""
 EMAIL_USER=""
@@ -58,5 +58,5 @@ npm run app-tests
 
 To run **backend tests**
 ```
-Npm run api-tests
+npm run api-tests
 ```
