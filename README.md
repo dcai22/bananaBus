@@ -12,7 +12,7 @@ https://docs.expo.dev/get-started/set-up-your-environment/?platform=android&devi
 Clone the repository with git
 ```
 $ git clone https://github.com/dcai22/bananaBus.git
-$ cd bananaBus
+$ cd bananaBus/banana-bus
 $ npm i
 ```
 
